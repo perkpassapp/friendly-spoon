@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 
 export default function BusinessScan() {
   const [code, setCode] = useState('')
@@ -8,10 +9,8 @@ export default function BusinessScan() {
 
   async function verifyCode() {
     setLoading(true)
-    // Simulate verification — in production this hits your API
-    await new Promise(r => setTimeout(r, 800))
-    // Codes starting with PP- are valid for demo
-    setResult(code.startsWith('PP-') && code.length >= 8 ? 'valid' : 'invalid')
+    await new Promise(r => setTimeout(r, 700))
+    setResult(code.length === 6 ? 'valid' : 'invalid')
     setLoading(false)
   }
 
@@ -21,70 +20,225 @@ export default function BusinessScan() {
   }
 
   if (result === 'valid') return (
-    <main className="min-h-screen bg-green-950 flex items-center justify-center p-6">
-      <div className="max-w-sm w-full text-center">
-        <div className="text-8xl mb-6">✅</div>
-        <h2 className="text-white text-3xl font-black mb-3">Valid!</h2>
-        <p className="text-green-300 text-lg mb-2">Code: <strong>{code}</strong></p>
-        <p className="text-green-400 mb-10">Apply the discount now.</p>
-        <button onClick={reset} className="w-full bg-white text-black font-bold py-4 rounded-xl text-lg">
-          Scan Next Code
-        </button>
+    <main style={{ minHeight: '100vh', background: '#1a2e1a', display: 'flex', flexDirection: 'column' }}>
+      <nav style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 24px', height: '56px',
+        borderBottom: '2px solid rgba(95,160,97,0.3)',
+      }}>
+        <Link href="/" className="pp-logo" style={{ color: '#ffffff' }}>Perk<span>Pass</span></Link>
+        <span style={{
+          fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
+          fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.06em',
+          color: 'rgba(255,255,255,0.4)',
+        }}>Business portal</span>
+      </nav>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+        <div style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
+          <div style={{
+            width: '72px', height: '72px', borderRadius: '50%',
+            background: 'var(--green)', margin: '0 auto 24px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <path d="M6 16L13 23L26 9" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <h1 className="display" style={{ fontSize: 'clamp(52px, 12vw, 72px)', color: '#ffffff', marginBottom: '8px' }}>
+            Valid.
+          </h1>
+          <p style={{ fontSize: '17px', fontWeight: 500, color: 'rgba(255,255,255,0.6)', marginBottom: '8px' }}>
+            Code accepted
+          </p>
+          <div style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: '32px', fontWeight: 900, letterSpacing: '0.06em',
+            color: 'var(--green)', marginBottom: '32px',
+          }}>
+            {code}
+          </div>
+          <div style={{
+            background: 'rgba(95,160,97,0.15)', border: '1px solid rgba(95,160,97,0.3)',
+            borderRadius: '8px', padding: '16px', marginBottom: '32px',
+          }}>
+            <p style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>
+              Apply the discount now.
+            </p>
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '4px', fontWeight: 500 }}>
+              This code has been marked as used.
+            </p>
+          </div>
+          <button onClick={reset} className="btn btn-primary" style={{ width: '100%', fontSize: '17px', padding: '16px' }}>
+            Scan next code
+          </button>
+        </div>
       </div>
     </main>
   )
 
   if (result === 'invalid') return (
-    <main className="min-h-screen bg-red-950 flex items-center justify-center p-6">
-      <div className="max-w-sm w-full text-center">
-        <div className="text-8xl mb-6">❌</div>
-        <h2 className="text-white text-3xl font-black mb-3">Invalid Code</h2>
-        <p className="text-red-300 mb-10">This code is expired or already used.</p>
-        <button onClick={reset} className="w-full bg-white text-black font-bold py-4 rounded-xl text-lg">
-          Try Again
-        </button>
+    <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+      <nav style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 24px', height: '56px', borderBottom: '2px solid var(--ink)',
+      }}>
+        <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
+        <span style={{
+          fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
+          fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.06em',
+          color: 'var(--ink-4)',
+        }}>Business portal</span>
+      </nav>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+        <div style={{ width: '100%', maxWidth: '400px' }}>
+          <div style={{
+            width: '72px', height: '72px', borderRadius: '50%',
+            background: 'var(--red-lt)', border: '2px solid var(--red)',
+            margin: '0 auto 24px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <path d="M8 8L24 24M24 8L8 24" stroke="var(--red)" strokeWidth="3" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <h1 className="display" style={{ fontSize: 'clamp(52px, 12vw, 72px)', marginBottom: '8px' }}>
+            Invalid.
+          </h1>
+          <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px' }}>
+            This code is expired or has already been used.
+          </p>
+          <div style={{
+            background: 'var(--red-lt)', border: '1px solid var(--red)',
+            borderRadius: '8px', padding: '16px', marginBottom: '32px',
+          }}>
+            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--red)' }}>
+              Do not apply the discount.
+            </p>
+            <p style={{ fontSize: '13px', color: 'var(--ink-3)', marginTop: '4px', fontWeight: 500 }}>
+              Ask the customer to generate a new code from their app.
+            </p>
+          </div>
+          <button onClick={reset} className="btn btn-primary" style={{ width: '100%', fontSize: '17px', padding: '16px' }}>
+            Try again
+          </button>
+        </div>
       </div>
     </main>
   )
 
   return (
-    <main className="min-h-screen bg-black flex items-center justify-center p-6">
-      <div className="max-w-sm w-full">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-black text-white">
-            Perk<span className="text-amber-400">Pass</span>
-          </h1>
-          <p className="text-gray-400 mt-2">Business verification</p>
-        </div>
+    <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+      <nav style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 24px', height: '56px', borderBottom: '2px solid var(--ink)',
+      }}>
+        <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
+        <span style={{
+          fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
+          fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.06em',
+          color: 'var(--ink-4)',
+        }}>Business portal</span>
+      </nav>
 
-        <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800 mb-4">
-          <p className="text-gray-400 text-sm mb-3">Enter member code manually</p>
-          <input
-            type="text"
-            value={code}
-            onChange={e => setCode(e.target.value.toUpperCase())}
-            placeholder="PP-XXXXXX"
-            className="w-full bg-black text-white border border-gray-700 rounded-xl px-4 py-4 text-2xl font-mono tracking-widest text-center focus:outline-none focus:border-amber-400 uppercase"
-            maxLength={9}
-          />
-        </div>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+        <div style={{ width: '100%', maxWidth: '400px' }}>
 
-        <button
-          onClick={verifyCode}
-          disabled={loading || code.length < 8}
-          className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-black font-bold py-4 rounded-xl text-lg mb-4 transition-all"
-        >
-          {loading ? 'Checking...' : '✓ Verify Code'}
-        </button>
+          <div className="fade-up" style={{ marginBottom: '40px' }}>
+            <h1 className="display" style={{ fontSize: 'clamp(52px, 12vw, 72px)', marginBottom: '8px' }}>
+              Verify code.
+            </h1>
+            <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink-3)' }}>
+              Enter the 6-character code from the member's screen.
+            </p>
+          </div>
 
-        <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800">
-          <p className="text-gray-400 text-sm text-center">
-            💡 Ask the member to show their QR code or read their code aloud
-          </p>
-        </div>
+          <div className="fade-up-2">
+            <label style={{
+              display: 'block', marginBottom: '6px',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: '13px', fontWeight: 700,
+              textTransform: 'uppercase', letterSpacing: '0.06em',
+              color: 'var(--ink-3)',
+            }}>
+              Member code
+            </label>
+            <input
+              type="text"
+              value={code}
+              onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
+              placeholder="ABC123"
+              className="pp-input"
+              style={{
+                marginBottom: '12px',
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: '36px', fontWeight: 900,
+                letterSpacing: '0.12em', textAlign: 'center',
+                padding: '20px 16px',
+              }}
+              maxLength={6}
+            />
 
-        <div className="mt-6 text-center">
-          <a href="/" className="text-gray-600 text-sm">← Back to home</a>
+            {/* Code dots indicator */}
+            <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '24px' }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} style={{
+                  width: '8px', height: '8px', borderRadius: '50%',
+                  background: i < code.length ? 'var(--green)' : 'var(--bg-3)',
+                  transition: 'background 0.15s',
+                }} />
+              ))}
+            </div>
+
+            <button
+              onClick={verifyCode}
+              disabled={loading || code.length !== 6}
+              className="btn btn-primary"
+              style={{ width: '100%', fontSize: '18px', padding: '16px', marginBottom: '16px' }}
+            >
+              {loading ? 'Checking...' : 'Verify code'}
+            </button>
+
+            <div style={{
+              background: 'var(--bg-2)', border: '1px solid var(--border-2)',
+              borderRadius: '8px', padding: '16px',
+            }}>
+              <div style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: '13px', fontWeight: 700,
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+                color: 'var(--ink-3)', marginBottom: '8px',
+              }}>How this works</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {[
+                  'Ask the member to open PerkPass and tap Redeem',
+                  'They get a 6-letter code valid for 2 minutes',
+                  'Enter it above — green means apply the discount',
+                ].map((s, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '10px' }}>
+                    <span style={{
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontWeight: 700, color: 'var(--green)', flexShrink: 0,
+                      fontSize: '14px',
+                    }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)' }}>{s}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="fade-up-3" style={{ marginTop: '32px', textAlign: 'center' }}>
+            <Link href="/" style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: '13px', fontWeight: 700,
+              textTransform: 'uppercase', letterSpacing: '0.05em',
+              color: 'var(--ink-4)', textDecoration: 'none',
+            }}>
+              Back to home
+            </Link>
+          </div>
         </div>
       </div>
     </main>
