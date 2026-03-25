@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -7,13 +8,8 @@ export default function SignupPage() {
   const [error, setError] = useState('')
 
   async function handleCheckout() {
-    if (!email || !email.includes('@')) {
-      setError('Please enter a valid email address')
-      return
-    }
-    setLoading(true)
-    setError('')
-
+    if (!email || !email.includes('@')) { setError('Enter a valid email address'); return }
+    setLoading(true); setError('')
     try {
       const res = await fetch('/api/create-checkout', {
         method: 'POST',
@@ -21,92 +17,115 @@ export default function SignupPage() {
         body: JSON.stringify({ email })
       })
       const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        setError('Something went wrong. Please try again.')
-        setLoading(false)
-      }
+      if (data.url) window.location.href = data.url
+      else { setError('Something went wrong. Try again.'); setLoading(false) }
     } catch {
-      setError('Something went wrong. Please try again.')
+      setError('Something went wrong. Try again.')
       setLoading(false)
     }
   }
 
   return (
-    <main className="min-h-screen bg-black flex items-center justify-center p-6">
-      <div className="max-w-sm w-full">
+    <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+      <nav style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 24px', height: '56px',
+        borderBottom: '2px solid var(--ink)',
+      }}>
+        <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
+        <Link href="/member/login" style={{
+          fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
+          fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em',
+          color: 'var(--ink-3)', textDecoration: 'none',
+        }}>
+          Already a member
+        </Link>
+      </nav>
 
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <h1 className="text-5xl font-black text-white tracking-tight">
-            Perk<span className="text-amber-400">Pass</span>
-          </h1>
-          <p className="text-gray-400 mt-2">Philadelphia&apos;s local deal membership</p>
-        </div>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+        <div style={{ width: '100%', maxWidth: '440px' }}>
 
-        {/* Pricing card */}
-        <div className="bg-gray-900 rounded-3xl p-6 border border-amber-400 mb-6 relative">
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-xs font-black px-4 py-1 rounded-full">
-            ALL ACCESS
+          <div className="fade-up" style={{ marginBottom: '40px' }}>
+            <h1 className="display" style={{ fontSize: 'clamp(52px, 12vw, 72px)', marginBottom: '8px' }}>
+              Get PerkPass.
+            </h1>
+            <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)' }}>
+              Every Philly deal, one low price.
+            </p>
           </div>
-          <div className="text-center mb-6 mt-2">
-            <div className="flex items-end justify-center gap-1">
-              <span className="text-6xl font-black text-white">$3</span>
-              <span className="text-gray-400 mb-2">/month</span>
+
+          {/* Pricing card */}
+          <div className="fade-up-2" style={{
+            background: 'var(--forest)', borderRadius: '10px',
+            padding: '28px', marginBottom: '24px',
+            border: '2px solid var(--green)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '20px' }}>
+              <span className="display" style={{ fontSize: '64px', color: '#ffffff' }}>$3</span>
+              <span style={{ fontSize: '16px', fontWeight: 600, color: 'rgba(255,255,255,0.45)' }}>/month</span>
+              <span style={{
+                marginLeft: 'auto',
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: '12px', fontWeight: 700,
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+                background: 'var(--green)', color: '#ffffff',
+                padding: '4px 10px', borderRadius: '4px',
+              }}>
+                All Access
+              </span>
             </div>
-            <p className="text-gray-400 text-sm">Cancel anytime</p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {[
+                'Unlimited deal redemptions',
+                'All categories — food, fitness, beauty',
+                'Instant codes at checkout',
+                'New Philly deals every week',
+                'Cancel anytime, no questions',
+              ].map(f => (
+                <div key={f} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                  <span style={{ color: 'var(--green)', fontWeight: 700, flexShrink: 0, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '15px' }}>+</span>
+                  <span style={{ fontSize: '14px', fontWeight: 500, color: 'rgba(255,255,255,0.7)' }}>{f}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="space-y-3 mb-6">
-            {[
-              '✓ Unlimited deal redemptions',
-              '✓ Restaurants, cafes & barbers',
-              '✓ Fitness & nail salons',
-              '✓ New deals added weekly',
-              '✓ Works on any phone',
-              '✓ Cancel anytime',
-            ].map(f => (
-              <p key={f} className="text-gray-300 text-sm">{f}</p>
-            ))}
+          {/* Form */}
+          <div className="fade-up-3">
+            <label style={{
+              display: 'block', marginBottom: '6px',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: '13px', fontWeight: 700,
+              textTransform: 'uppercase', letterSpacing: '0.06em',
+              color: 'var(--ink-3)',
+            }}>
+              Email address
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="you@email.com"
+              className="pp-input"
+              style={{ marginBottom: '10px' }}
+              onKeyDown={e => e.key === 'Enter' && handleCheckout()}
+            />
+            {error && (
+              <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', marginBottom: '10px' }}>{error}</p>
+            )}
+            <button
+              onClick={handleCheckout}
+              disabled={loading || !email}
+              className="btn btn-primary"
+              style={{ width: '100%', fontSize: '18px', padding: '16px', marginBottom: '12px' }}
+            >
+              {loading ? 'Redirecting...' : 'Continue to payment'}
+            </button>
+            <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500 }}>
+              Secured by Stripe · Cancel anytime
+            </p>
           </div>
-        </div>
-
-        {/* Email input */}
-        <div className="mb-4">
-          <label className="text-gray-400 text-sm mb-2 block">Your email address</label>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="you@email.com"
-            className="w-full bg-gray-900 text-white border border-gray-700 rounded-xl px-4 py-4 text-lg focus:outline-none focus:border-amber-400"
-            onKeyDown={e => e.key === 'Enter' && handleCheckout()}
-          />
-        </div>
-
-        {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
-
-        <button
-          onClick={handleCheckout}
-          disabled={loading || !email}
-          className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-black font-black py-4 rounded-xl text-xl transition-all active:scale-95 mb-4"
-        >
-          {loading ? 'Redirecting to checkout...' : 'Get Perk Pass — $3/mo'}
-        </button>
-
-        <p className="text-gray-600 text-xs text-center mb-6">
-          Secured by Stripe. Cancel anytime from your account.
-        </p>
-
-        <div className="text-center">
-          <p className="text-gray-500 text-sm">Already a member?{' '}
-            <a href="/member/login" className="text-amber-400 hover:underline">Log in</a>
-          </p>
-        </div>
-
-        <div className="mt-8 text-center">
-          <a href="/" className="text-gray-700 text-sm hover:text-gray-500">← Back</a>
         </div>
       </div>
     </main>

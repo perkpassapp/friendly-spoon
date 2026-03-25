@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
 
 export default function MemberLogin() {
   const [email, setEmail] = useState('')
@@ -18,54 +19,94 @@ export default function MemberLogin() {
   }
 
   return (
-    <main className="min-h-screen bg-black flex items-center justify-center p-6">
-      <div className="max-w-sm w-full">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-black text-white">
-            Perk<span className="text-amber-400">Pass</span>
-          </h1>
-          <p className="text-gray-400 mt-2">Member login</p>
-        </div>
+    <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+      <nav style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 24px', height: '56px',
+        borderBottom: '2px solid var(--ink)',
+      }}>
+        <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
+        <Link href="/signup" style={{
+          fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
+          fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em',
+          color: 'var(--green-dk)', textDecoration: 'none',
+        }}>
+          Get PerkPass
+        </Link>
+      </nav>
 
-        {sent ? (
-          <div className="bg-green-900 border border-green-500 rounded-2xl p-6 text-center">
-            <div className="text-4xl mb-3">📬</div>
-            <h2 className="text-white font-bold text-xl mb-2">Check your email!</h2>
-            <p className="text-green-300 text-sm">
-              We sent a magic link to <strong>{email}</strong>.
-              Click it to access your deals.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <label className="text-gray-400 text-sm mb-2 block">Your email address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@email.com"
-                className="w-full bg-gray-900 text-white border border-gray-700 rounded-xl px-4 py-4 text-lg focus:outline-none focus:border-amber-400"
-                onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              />
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+        <div style={{ width: '100%', maxWidth: '400px' }}>
+
+          {sent ? (
+            <div className="fade-up">
+              <h1 className="display" style={{ fontSize: 'clamp(48px, 12vw, 72px)', marginBottom: '16px' }}>
+                Check your email.
+              </h1>
+              <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px', lineHeight: 1.55 }}>
+                We sent a magic link to <strong style={{ color: 'var(--ink)' }}>{email}</strong>. Click it to access your deals.
+              </p>
+              <div style={{
+                background: 'var(--bg-2)', border: '2px solid var(--border-2)',
+                borderRadius: '8px', padding: '16px',
+                fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)',
+              }}>
+                No password needed — ever. Just click the link in your email.
+              </div>
             </div>
+          ) : (
+            <div>
+              <div className="fade-up" style={{ marginBottom: '40px' }}>
+                <h1 className="display" style={{ fontSize: 'clamp(48px, 12vw, 72px)', marginBottom: '8px' }}>
+                  Welcome back.
+                </h1>
+                <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)' }}>
+                  Enter your email to log in.
+                </p>
+              </div>
 
-            <button
-              onClick={handleLogin}
-              disabled={loading || !email}
-              className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-black font-bold py-4 rounded-xl text-lg transition-all active:scale-95"
-            >
-              {loading ? 'Sending...' : '✉️ Send Magic Link'}
-            </button>
+              <div className="fade-up-2">
+                <label style={{
+                  display: 'block', marginBottom: '6px',
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: '13px', fontWeight: 700,
+                  textTransform: 'uppercase', letterSpacing: '0.06em',
+                  color: 'var(--ink-3)',
+                }}>
+                  Email address
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@email.com"
+                  className="pp-input"
+                  style={{ marginBottom: '12px' }}
+                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                />
+                <button
+                  onClick={handleLogin}
+                  disabled={loading || !email}
+                  className="btn btn-primary"
+                  style={{ width: '100%', fontSize: '18px', padding: '16px', marginBottom: '12px' }}
+                >
+                  {loading ? 'Sending...' : 'Send magic link'}
+                </button>
+                <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500 }}>
+                  No password needed. We email you a secure login link.
+                </p>
+              </div>
 
-            <p className="text-gray-600 text-xs text-center">
-              No password needed. We&apos;ll email you a secure login link.
-            </p>
-          </div>
-        )}
-
-        <div className="mt-8 text-center">
-          <a href="/" className="text-gray-600 text-sm hover:text-gray-400">← Back</a>
+              <div className="fade-up-3" style={{ marginTop: '40px', paddingTop: '24px', borderTop: '1px solid var(--border-2)' }}>
+                <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500 }}>
+                  Not a member yet?{' '}
+                  <Link href="/signup" style={{ color: 'var(--green-dk)', fontWeight: 700, textDecoration: 'none' }}>
+                    Get PerkPass for $3/month
+                  </Link>
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </main>

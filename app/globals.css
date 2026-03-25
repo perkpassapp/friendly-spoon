@@ -1,26 +1,137 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg:        #e9e2cf;
+  --bg-2:      #f7f3ec;
+  --bg-3:      #ddd8c4;
+  --ink:       #1c1c1a;
+  --ink-2:     #3a3830;
+  --ink-3:     #5a5850;
+  --ink-4:     #9a9890;
+  --border:    rgba(0,0,0,0.08);
+  --border-2:  rgba(0,0,0,0.16);
+  --green:     #5fa061;
+  --green-dk:  #3d7a3f;
+  --green-lt:  rgba(95,160,97,0.15);
+  --forest:    #1a2e1a;
+  --red:       #c0382b;
+  --red-lt:    rgba(192,56,43,0.1);
+  --shadow:    0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Barlow', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.55;
 }
+
+.display {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.92;
+  color: var(--ink);
+}
+
+.pp-logo {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.pp-logo span { color: var(--green); }
+
+.btn {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 17px;
+  padding: 14px 28px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: all 0.12s ease;
+  line-height: 1;
+}
+.btn-primary { background: var(--green); color: #ffffff; }
+.btn-primary:hover { background: var(--green-dk); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.btn-outline { background: transparent; color: var(--ink); border: 2px solid var(--border-2); }
+.btn-outline:hover { border-color: var(--ink); }
+.btn-dark { background: var(--ink); color: var(--bg); }
+.btn-dark:hover { background: var(--ink-2); }
+
+.card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; }
+
+.pp-input {
+  width: 100%;
+  background: var(--bg-2);
+  border: 2px solid var(--border-2);
+  border-radius: 6px;
+  color: var(--ink);
+  font-family: 'Barlow', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 14px 16px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.pp-input:focus { border-color: var(--green); }
+.pp-input::placeholder { color: var(--ink-4); }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.tag-green { background: var(--green-lt); color: var(--green-dk); }
+.tag-neutral { background: var(--bg-3); color: var(--ink-3); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes softPulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+
+.fade-up   { animation: fadeUp 0.35s ease both; }
+.fade-up-2 { animation: fadeUp 0.35s ease 0.07s both; }
+.fade-up-3 { animation: fadeUp 0.35s ease 0.14s both; }
+.fade-up-4 { animation: fadeUp 0.35s ease 0.21s both; }
+.fade-in   { animation: fadeIn 0.25s ease both; }
+.pulse     { animation: softPulse 1.8s ease infinite; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 3px; }
