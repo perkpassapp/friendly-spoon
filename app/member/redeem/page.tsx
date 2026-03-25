@@ -81,7 +81,7 @@ function RedeemContent() {
 
       if (data && data.length > 0) {
         const lastUsed = new Date(data[0].redeemed_at).getTime()
-        const secondsLeft = Math.ceil((lastUsed + 15 * 60 * 1000 - Date.now()) / 1000)
+        const secondsLeft = Math.min(Math.ceil((lastUsed + 15 * 60 * 1000 - Date.now()) / 1000), 900)
         if (secondsLeft > 0) {
           startCooldownTimer(secondsLeft)
           setLoading(false)
