@@ -212,7 +212,7 @@ export default function Home() {
         <a href="/" className="pp-logo">Perk<span>Pass</span></a>
         <div style={{ display: 'flex', gap: '20px' }}>
           {[
-            { l: 'For businesses', h: '/business/scan' },
+            { l: 'For businesses', h: '/for-business' },
             { l: 'Admin', h: '/admin' },
             { l: 'Log in', h: '/member/login' },
           ].map(x => (
