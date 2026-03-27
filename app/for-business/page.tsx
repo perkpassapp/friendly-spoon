@@ -85,21 +85,39 @@ export default function ForBusiness() {
 
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '48px 24px 80px', width: '100%' }}>
 
+        {/* Already a partner — login */}
+        <div className="fade-up" style={{ background: 'var(--forest)', borderRadius: '10px', padding: '28px', border: '2px solid var(--green)', marginBottom: '48px' }}>
+          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--green)', marginBottom: '8px' }}>Already a partner?</div>
+          <div className="display" style={{ fontSize: '32px', color: '#ffffff', marginBottom: '8px' }}>View your dashboard.</div>
+          <p style={{ fontSize: '14px', fontWeight: 500, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: '16px' }}>
+            See how many customers we sent you, peak times, deal performance, and more.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px' }}>
+            {['Total redemptions this month', 'Busiest days and peak hours', 'Deal performance tracking', 'Live code verification scanner'].map(f => (
+              <div key={f} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, color: 'var(--green)', fontSize: '14px' }}>+</span>
+                <span style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.6)' }}>{f}</span>
+              </div>
+            ))}
+          </div>
+          <a href="/business/dashboard" className="btn btn-primary" style={{ fontSize: '16px', padding: '14px 28px', display: 'inline-flex', textDecoration: 'none' }}>
+            Log in to your dashboard
+          </a>
+        </div>
+
         {/* Hero */}
-        <div className="fade-up" style={{ marginBottom: '48px' }}>
+        <div className="fade-up-2" style={{ marginBottom: '48px' }}>
           <div style={{ display: 'inline-block', background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '4px 12px', borderRadius: '4px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '16px' }}>
-            For businesses
+            Not listed yet?
           </div>
           <h1 className="display" style={{ fontSize: 'clamp(52px, 10vw, 80px)', marginBottom: '16px' }}>
             Get new customers.<br />Pay nothing.
           </h1>
           <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.55, marginBottom: '32px' }}>
-            List your business on PerkPass and we send you paying Philadelphia customers. You offer a small deal. We do the rest. Zero cost, zero risk.
+            List your business on PerkPass and we send you paying customers. You offer a small deal. We do the rest. Zero cost, zero risk.
           </p>
-
-          {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '2px', borderTop: '2px solid var(--ink)', paddingTop: '24px' }}>
-            {[{ n: '$0', l: 'Cost to list' }, { n: '2min', l: 'To get verified' }, { n: '0%', l: 'Commission' }].map(s => (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '2px', borderTop: '2px solid var(--ink)', paddingTop: '24px' }}>
+            {[{ n: '$0', l: 'Cost to list' }, { n: '2min', l: 'To get verified' }, { n: '0%', l: 'Commission' }, { n: '100%', l: 'Your profits' }].map(s => (
               <div key={s.l}>
                 <div className="display" style={{ fontSize: '36px', color: 'var(--green)' }}>{s.n}</div>
                 <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: '4px' }}>{s.l}</div>
