@@ -53,6 +53,8 @@ export default function BusinessDashboard() {
 
   const [loading, setLoading] = useState(false)
   const [togglingDeal, setTogglingDeal] = useState<string | null>(null)
+  const [deletingDeal, setDeletingDeal] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<Deal | null>(null)
   const [error, setError] = useState('')
   const [tab, setTab] = useState<'overview' | 'deals' | 'submit'>('overview')
 
@@ -156,6 +158,14 @@ export default function BusinessDashboard() {
     await supabase.from('deals').update({ active: !deal.active }).eq('id', deal.id)
     setDeals(prev => prev.map(d => d.id === deal.id ? { ...d, active: !d.active } : d))
     setTogglingDeal(null)
+  }
+
+  async function deleteDeal(deal: Deal) {
+    setDeletingDeal(deal.id)
+    await supabase.from('deals').delete().eq('id', deal.id)
+    setDeals(prev => prev.filter(d => d.id !== deal.id))
+    setConfirmDelete(null)
+    setDeletingDeal(null)
   }
 
   async function submitNewDeal() {
@@ -271,7 +281,7 @@ export default function BusinessDashboard() {
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: '80px' }}>
       <header style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg)', borderBottom: '2px solid var(--ink)', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
+        <Link href="/business/dashboard" className="pp-logo">Perk<span>Pass</span></Link>
         <button onClick={() => { setAuthed(false); setAccount(null); setEmail(''); setAccessCode('') }}
           style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>
           Sign out
@@ -395,13 +405,20 @@ export default function BusinessDashboard() {
                         </span>
                       </div>
                     </div>
-                    <button
-                      onClick={() => toggleDeal(deal)}
-                      disabled={togglingDeal === deal.id}
-                      className={deal.active ? 'btn btn-outline' : 'btn btn-primary'}
-                      style={{ fontSize: '14px', padding: '10px 20px', flexShrink: 0, minWidth: '90px' }}>
-                      {togglingDeal === deal.id ? '...' : deal.active ? 'Pause' : 'Activate'}
-                    </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flexShrink: 0 }}>
+                      <button
+                        onClick={() => toggleDeal(deal)}
+                        disabled={togglingDeal === deal.id}
+                        className={deal.active ? 'btn btn-outline' : 'btn btn-primary'}
+                        style={{ fontSize: '14px', padding: '10px 20px', minWidth: '90px' }}>
+                        {togglingDeal === deal.id ? '...' : deal.active ? 'Pause' : 'Activate'}
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(deal)}
+                        style={{ fontSize: '12px', fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
