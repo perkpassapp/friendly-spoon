@@ -97,7 +97,6 @@ export default function BusinessDashboard() {
       .from('business_accounts')
       .select('*')
       .eq('contact_email', email.toLowerCase().trim())
-      .eq('active', true)
       .limit(1)
 
     if (sbError || !data || data.length === 0) {
@@ -458,6 +457,9 @@ export default function BusinessDashboard() {
                 <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', marginTop: '12px' }}>
                   Please contact PerkPass to resolve this.
                 </p>
+                <a href="tel:6105337791" style={{ display: 'inline-block', marginTop: '12px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--red)', textDecoration: 'none', border: '2px solid var(--red)', borderRadius: '8px', padding: '10px 24px' }}>
+                  Call (610) 533-7791
+                </a>
               </div>
             ) : (
             <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '24px' }}>Toggle deals on or off. Members only see active deals.</p>
