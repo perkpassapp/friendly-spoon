@@ -97,7 +97,7 @@ export default function MemberDeals() {
   const rest = filtered.slice(2)
 
   if (loading) return (
-    <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: '100px' }}>
+    <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: '48px' }}>
       <header style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg)', borderBottom: '2px solid var(--ink)', padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span className="pp-logo">Perk<span>Pass</span></span>
       </header>
@@ -154,11 +154,11 @@ export default function MemberDeals() {
   )
 
   return (
-    <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: '100px' }}>
+    <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: '48px' }}>
 
       {/* Confirmation overlay */}
       {selectedDeal && (
-        <div className="fade-in" style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '16px' }}>
+        <div className="fade-in" style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
           <div style={{ background: 'var(--bg)', borderRadius: '16px', overflow: 'hidden', width: '100%', maxWidth: '440px', border: '2px solid var(--ink)' }}>
             {/* Photo */}
             <div style={{ height: '160px', overflow: 'hidden', position: 'relative' }}>
@@ -388,18 +388,7 @@ export default function MemberDeals() {
         )}
       </div>
 
-      {/* Bottom nav */}
-      <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--bg)', borderTop: '2px solid var(--ink)', padding: '10px 40px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', zIndex: 10 }}>
-        {[
-          { label: 'Deals', href: '/member/deals', active: true, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
-          { label: 'Account', href: '/account', active: false, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
-        ].map(item => (
-          <Link key={item.label} href={item.href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', textDecoration: 'none', color: item.active ? 'var(--ink)' : 'var(--ink-4)', transition: 'color 0.12s' }}>
-            {item.icon}
-            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{item.label}</span>
-          </Link>
-        ))}
-      </nav>
+
     </main>
   )
 }
