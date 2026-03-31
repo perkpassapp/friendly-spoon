@@ -9,6 +9,15 @@ const DEALS = [
   { name: 'Rally Pickleball', deal: 'Free drop-in class', cat: 'Sport', addr: 'Old City' },
 ]
 
+const CAT_COLORS: Record<string, { bg: string; color: string }> = {
+  Cafe:       { bg: '#FFF3CD', color: '#92600A' },
+  Barber:     { bg: '#E8F4FD', color: '#1A6B9E' },
+  Fitness:    { bg: '#E8F8EF', color: '#1A6B3E' },
+  Nails:      { bg: '#FCE8F3', color: '#8B1A5E' },
+  Restaurant: { bg: '#FDE8E8', color: '#8B1A1A' },
+  Sport:      { bg: '#EDE8FD', color: '#4A1A8B' },
+}
+
 const HOW = [
   { num: '01', title: 'Sign up for $3/month', body: 'Enter your email, pay with any card. Instant access. No contracts ever.' },
   { num: '02', title: 'Browse Philly deals', body: 'Restaurants, cafes, barbers, gyms, nail salons — all in one place.' },
@@ -18,22 +27,11 @@ const HOW = [
 export default function Home() {
   return (
     <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
-
       {/* Nav */}
-      <nav style={{
-        position: 'sticky', top: 0, zIndex: 100,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 24px', height: '56px',
-        background: 'var(--bg)',
-        borderBottom: '2px solid var(--ink)',
-      }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', height: '56px', background: 'var(--bg)', borderBottom: '2px solid var(--ink)', }}>
         <a href="/" className="pp-logo">Perk<span>Pass</span></a>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <Link href="/member/login" style={{
-            fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
-            fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.03em',
-            color: 'var(--ink-3)', textDecoration: 'none', padding: '8px 12px',
-          }}>
+          <Link href="/member/login" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.03em', color: 'var(--ink-3)', textDecoration: 'none', padding: '8px 12px', }}>
             Log in
           </Link>
           <Link href="/signup" className="btn btn-primary" style={{ fontSize: '15px', padding: '10px 20px' }}>
@@ -44,33 +42,15 @@ export default function Home() {
 
       {/* Hero */}
       <section style={{ padding: '72px 24px 64px', maxWidth: '720px', margin: '0 auto' }}>
-        <div className="fade-up" style={{
-          display: 'inline-block',
-          background: 'var(--green-lt)',
-          color: 'var(--green-dk)',
-          padding: '4px 12px', borderRadius: '4px',
-          fontFamily: "'Barlow Condensed', sans-serif",
-          fontSize: '13px', fontWeight: 700,
-          textTransform: 'uppercase', letterSpacing: '0.06em',
-          marginBottom: '24px',
-        }}>
+        <div className="fade-up" style={{ display: 'inline-block', background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '4px 12px', borderRadius: '4px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '24px', }}>
           Now live in Philadelphia
         </div>
-
-        <h1 className="display fade-up-2" style={{
-          fontSize: 'clamp(64px, 14vw, 112px)',
-          marginBottom: '24px',
-        }}>
-          Stop paying<br />full price.
+        <h1 className="display fade-up-2" style={{ fontSize: 'clamp(56px, 13vw, 104px)', marginBottom: '24px', lineHeight: 0.95 }}>
+          Local spots.<br />Hooked you<br />up.
         </h1>
-
-        <p className="fade-up-3" style={{
-          fontSize: '18px', fontWeight: 500, color: 'var(--ink-3)',
-          maxWidth: '480px', marginBottom: '36px', lineHeight: 1.6,
-        }}>
-          One membership unlocks exclusive deals at Philly restaurants, cafes, barbers, gyms, and more. Three bucks a month.
+        <p className="fade-up-3" style={{ fontSize: '18px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '480px', marginBottom: '36px', lineHeight: 1.6, }}>
+          From your lowkey favorites to your everyday go-to's — one membership unlocks exclusive deals at the Philly spots that actually matter to you.
         </p>
-
         <div className="fade-up-4" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '48px' }}>
           <Link href="/signup" className="btn btn-primary" style={{ fontSize: '18px', padding: '16px 32px' }}>
             Get PerkPass — $3/mo
@@ -81,12 +61,9 @@ export default function Home() {
         </div>
 
         {/* Stats row */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '2px', borderTop: '2px solid var(--ink)', paddingTop: '32px',
-        }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2px', borderTop: '2px solid var(--ink)', paddingTop: '32px', }}>
           {[
-            { n: '50+', l: 'Active deals' },
+            { n: 'Growing', l: 'Active deals' },
             { n: '$3', l: 'Per month' },
             { n: '2 min', l: 'To redeem' },
           ].map(s => (
@@ -98,56 +75,48 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Deals */}
+      {/* Deals — card grid */}
       <section style={{ padding: '64px 24px', borderTop: '2px solid var(--ink)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '12px' }}>
             <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)' }}>
               What's included
             </h2>
-            <Link href="/signup" style={{
-              fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
-              fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em',
-              color: 'var(--green)', textDecoration: 'none',
-            }}>
+            <Link href="/signup" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green)', textDecoration: 'none', }}>
               See all deals
             </Link>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            {DEALS.map((d, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: '16px',
-                padding: '18px 0',
-                borderBottom: '1px solid var(--border)',
-              }}>
-                <div style={{
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: '12px', fontWeight: 700, color: 'var(--ink-4)',
-                  width: '28px', flexShrink: 0,
-                  letterSpacing: '0.04em',
-                }}>
-                  {String(i + 1).padStart(2, '0')}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    fontSize: '20px', fontWeight: 800,
-                    color: 'var(--ink)', letterSpacing: '-0.01em', lineHeight: 1.1,
-                  }}>
+          {/* Card grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '32px' }}>
+            {DEALS.map((d, i) => {
+              const colors = CAT_COLORS[d.cat] || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
+              return (
+                <div key={i} style={{ background: 'var(--bg-2)', border: '1.5px solid var(--border-2)', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px', transition: 'border-color 0.15s', cursor: 'default' }}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--green)')}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-2)')}>
+                  {/* Category pill */}
+                  <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 9px', borderRadius: '4px' }}>
+                    {d.cat}
+                  </span>
+                  {/* Business name */}
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.01em' }}>
                     {d.name}
                   </div>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--green-dk)', marginTop: '2px' }}>{d.deal}</div>
+                  {/* Deal */}
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--green-dk)', lineHeight: 1.3 }}>
+                    {d.deal}
+                  </div>
+                  {/* Neighborhood */}
+                  <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--ink-4)', marginTop: 'auto', paddingTop: '4px' }}>
+                    {d.addr}
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                  <span className="tag tag-neutral" style={{ display: 'none' }}>{d.cat}</span>
-                  <span style={{ fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500 }}>{d.addr}</span>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
-          <div style={{ marginTop: '32px' }}>
+          <div>
             <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px' }}>
               Unlock all deals — $3/month
             </Link>
@@ -163,19 +132,12 @@ export default function Home() {
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
             {HOW.map(s => (
-              <div key={s.num} style={{
-                display: 'flex', gap: '24px', alignItems: 'flex-start',
-                padding: '28px 0', borderBottom: '1px solid rgba(255,255,255,0.08)',
-              }}>
+              <div key={s.num} style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', padding: '28px 0', borderBottom: '1px solid rgba(255,255,255,0.08)', }}>
                 <div className="display" style={{ fontSize: '48px', color: 'var(--green)', flexShrink: 0, lineHeight: 1 }}>
                   {s.num}
                 </div>
                 <div>
-                  <div style={{
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    fontSize: '22px', fontWeight: 800, color: '#ffffff',
-                    textTransform: 'uppercase', letterSpacing: '0.01em', marginBottom: '6px',
-                  }}>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '22px', fontWeight: 800, color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.01em', marginBottom: '6px', }}>
                     {s.title}
                   </div>
                   <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.5)', fontWeight: 400, lineHeight: 1.55 }}>
@@ -204,11 +166,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer style={{
-        padding: '24px', borderTop: '2px solid var(--ink)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexWrap: 'wrap', gap: '12px',
-      }}>
+      <footer style={{ padding: '24px', borderTop: '2px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', }}>
         <a href="/" className="pp-logo">Perk<span>Pass</span></a>
         <div style={{ display: 'flex', gap: '20px' }}>
           {[
@@ -216,11 +174,7 @@ export default function Home() {
             { l: 'Admin', h: '/admin' },
             { l: 'Log in', h: '/member/login' },
           ].map(x => (
-            <Link key={x.l} href={x.h} style={{
-              fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
-              fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em',
-              color: 'var(--ink-3)', textDecoration: 'none',
-            }}>{x.l}</Link>
+            <Link key={x.l} href={x.h} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-3)', textDecoration: 'none', }}>{x.l}</Link>
           ))}
         </div>
         <p style={{ fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500 }}>
