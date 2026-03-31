@@ -4,6 +4,12 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+type Schedule = {
+  days: number[]
+  start: string
+  end: string
+}
+
 type Deal = {
   id: string
   business_name: string
@@ -12,6 +18,7 @@ type Deal = {
   address: string
   emoji: string
   photo_url?: string
+  schedule: Schedule | null
 }
 
 type BusinessGroup = {
@@ -90,6 +97,32 @@ export default function MemberDeals() {
   function formatCooldown(secs: number) {
     const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60)
     return h > 0 ? `${h}h ${m}m` : `${m}m`
+  }
+
+  function isScheduleActive(deal: Deal): boolean {
+    if (!deal.schedule) return true
+    const now = new Date()
+    const day = now.getDay()
+    if (!deal.schedule.days.includes(day)) return false
+    const [sh, sm] = deal.schedule.start.split(':').map(Number)
+    const [eh, em] = deal.schedule.end.split(':').map(Number)
+    const nowMins = now.getHours() * 60 + now.getMinutes()
+    const startMins = sh * 60 + sm
+    const endMins = eh * 60 + em
+    return nowMins >= startMins && nowMins < endMins
+  }
+
+  function scheduleLabel(deal: Deal): string {
+    if (!deal.schedule) return ''
+    const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+    const days = deal.schedule.days.map(d => DAY_LABELS[d])
+    function fmt(t: string) {
+      const [hh, mm] = t.split(':').map(Number)
+      const ampm = hh >= 12 ? 'PM' : 'AM'
+      return `${hh % 12 || 12}${mm ? ':' + String(mm).padStart(2,'0') : ''}${ampm}`
+    }
+    const dayStr = deal.schedule.days.length === 7 ? 'Daily' : days.join(', ')
+    return `${dayStr} ${fmt(deal.schedule.start)}–${fmt(deal.schedule.end)}`
   }
 
   function getPhoto(deal: Deal) {
@@ -195,10 +228,17 @@ export default function MemberDeals() {
               <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '15px', fontWeight: 700, color: 'var(--ink)', marginBottom: '14px', textAlign: 'center' }}>
                 Are you at {selectedDeal.business_name} right now?
               </p>
-              <button onClick={() => { router.push(`/member/redeem?id=${selectedDeal.id}&biz=${encodeURIComponent(selectedDeal.business_name)}&deal=${encodeURIComponent(selectedDeal.deal_description)}`); setSelectedDeal(null) }}
-                className="btn btn-primary" style={{ width: '100%', fontSize: '17px', padding: '16px', marginBottom: '8px' }}>
-                Yes — show my code
-              </button>
+              {isScheduleActive(selectedDeal) ? (
+                <button onClick={() => { router.push(`/member/redeem?id=${selectedDeal.id}&biz=${encodeURIComponent(selectedDeal.business_name)}&deal=${encodeURIComponent(selectedDeal.deal_description)}`); setSelectedDeal(null) }}
+                  className="btn btn-primary" style={{ width: '100%', fontSize: '17px', padding: '16px', marginBottom: '8px' }}>
+                  Yes — show my code
+                </button>
+              ) : (
+                <div style={{ background: 'var(--bg-2)', borderRadius: '8px', padding: '14px 16px', marginBottom: '8px', border: '1px solid var(--border)', textAlign: 'center' }}>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)', marginBottom: '4px' }}>Not available right now</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-3)' }}>Available: {scheduleLabel(selectedDeal)}</div>
+                </div>
+              )}
               <button onClick={() => setSelectedDeal(null)} className="btn btn-outline" style={{ width: '100%', fontSize: '15px', padding: '13px' }}>
                 Not yet
               </button>
@@ -301,9 +341,13 @@ export default function MemberDeals() {
                                 <div>
                                   <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '1px' }}>{deal.deal_description}</div>
                                   {onCooldown && <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Back in {formatCooldown(cooldowns[deal.id])}</div>}
+                                  {!onCooldown && deal.schedule && !isScheduleActive(deal) && <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Available: {scheduleLabel(deal)}</div>}
                                 </div>
-                                {!onCooldown && (
+                                {!onCooldown && isScheduleActive(deal) && (
                                   <div className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '13px', flexShrink: 0, borderRadius: '4px' }}>Redeem</div>
+                                )}
+                                {!onCooldown && !isScheduleActive(deal) && (
+                                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0 }}>Later</div>
                                 )}
                               </div>
                             )
@@ -315,6 +359,9 @@ export default function MemberDeals() {
                             <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '3px' }}>{firstDeal.deal_description}</p>
                             {cooldowns[firstDeal.id] !== undefined && (
                               <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase' }}>Back in {formatCooldown(cooldowns[firstDeal.id])}</p>
+                            )}
+                            {firstDeal.schedule && !isScheduleActive(firstDeal) && cooldowns[firstDeal.id] === undefined && (
+                              <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase' }}>Available: {scheduleLabel(firstDeal)}</p>
                             )}
                           </div>
                           {cooldowns[firstDeal.id] === undefined && (
