@@ -97,8 +97,38 @@ export default function MemberDeals() {
   const rest = filtered.slice(2)
 
   if (loading) return (
-    <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="display pulse" style={{ fontSize: '24px', color: 'var(--green)' }}>Loading your deals...</div>
+    <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: '100px' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg)', borderBottom: '2px solid var(--ink)', padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span className="pp-logo">Perk<span>Pass</span></span>
+      </header>
+      <div style={{ maxWidth: '680px', margin: '0 auto', padding: '28px 20px' }}>
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ width: '200px', height: '36px', background: 'var(--bg-3)', borderRadius: '6px', marginBottom: '8px', animation: 'shimmer 1.4s ease infinite' }} />
+          <div style={{ width: '160px', height: '16px', background: 'var(--bg-3)', borderRadius: '4px' }} />
+        </div>
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '24px' }}>
+          {[80,70,90,75].map((w,i) => <div key={i} style={{ width: w, height: '34px', background: 'var(--bg-3)', borderRadius: '4px', flexShrink: 0 }} />)}
+        </div>
+        {[1,2].map(i => (
+          <div key={i} style={{ background: 'var(--bg-2)', borderRadius: '12px', overflow: 'hidden', marginBottom: '12px', border: '1px solid var(--border)' }}>
+            <div style={{ height: '180px', background: 'var(--bg-3)' }} />
+            <div style={{ padding: '14px 16px' }}>
+              <div style={{ width: '60%', height: '18px', background: 'var(--bg-3)', borderRadius: '4px', marginBottom: '8px' }} />
+              <div style={{ width: '40%', height: '14px', background: 'var(--bg-3)', borderRadius: '4px' }} />
+            </div>
+          </div>
+        ))}
+        {[1,2,3].map(i => (
+          <div key={i} style={{ display: 'flex', gap: '14px', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '8px', background: 'var(--bg-3)', flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ width: '55%', height: '16px', background: 'var(--bg-3)', borderRadius: '4px', marginBottom: '6px' }} />
+              <div style={{ width: '70%', height: '13px', background: 'var(--bg-3)', borderRadius: '4px' }} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <style>{`@keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:0.5} }`}</style>
     </main>
   )
 

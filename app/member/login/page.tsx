@@ -9,14 +9,13 @@ export default function MemberLogin() {
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-  const [checking, setChecking] = useState(true)
   const [showEmail, setShowEmail] = useState(false)
   const router = useRouter()
 
+  // Silently redirect if already logged in — no loading screen
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) router.push('/member/deals')
-      else setChecking(false)
+      if (data.user) router.replace('/member/deals')
     })
   }, [router])
 
@@ -44,12 +43,6 @@ export default function MemberLogin() {
     setLoading(false)
   }
 
-  if (checking) return (
-    <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="display pulse" style={{ fontSize: '24px', color: 'var(--green)' }}>Loading...</div>
-    </main>
-  )
-
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
       <nav style={{
@@ -61,9 +54,7 @@ export default function MemberLogin() {
           fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
           fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em',
           color: 'var(--green-dk)', textDecoration: 'none',
-        }}>
-          Get PerkPass
-        </Link>
+        }}>Get PerkPass</Link>
       </nav>
 
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
@@ -71,9 +62,7 @@ export default function MemberLogin() {
 
           {sent ? (
             <div className="fade-up">
-              <h1 className="display" style={{ fontSize: 'clamp(48px, 12vw, 64px)', marginBottom: '16px' }}>
-                Check your email.
-              </h1>
+              <h1 className="display" style={{ fontSize: 'clamp(48px, 12vw, 64px)', marginBottom: '16px' }}>Check your email.</h1>
               <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px', lineHeight: 1.55 }}>
                 We sent a login link to <strong style={{ color: 'var(--ink)' }}>{email}</strong>. Tap it — you'll land straight on your deals.
               </p>
@@ -92,35 +81,26 @@ export default function MemberLogin() {
           ) : (
             <div>
               <div className="fade-up" style={{ marginBottom: '32px' }}>
-                <h1 className="display" style={{ fontSize: 'clamp(48px, 12vw, 64px)', marginBottom: '8px' }}>
-                  Welcome back.
-                </h1>
-                <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)' }}>
-                  Log in to access your deals.
-                </p>
+                <h1 className="display" style={{ fontSize: 'clamp(48px, 12vw, 64px)', marginBottom: '8px' }}>Welcome back.</h1>
+                <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)' }}>Log in to access your deals.</p>
               </div>
 
               <div className="fade-up-2" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-
-                {/* Google button */}
                 <button
                   onClick={handleGoogle}
                   disabled={googleLoading}
                   style={{
                     width: '100%', padding: '16px',
-                    background: 'var(--bg-2)',
-                    border: '2px solid var(--border-2)',
+                    background: 'var(--bg-2)', border: '2px solid var(--border-2)',
                     borderRadius: '8px', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    fontSize: '17px', fontWeight: 700,
-                    textTransform: 'uppercase', letterSpacing: '0.03em',
-                    color: 'var(--ink)', transition: 'all 0.12s',
+                    fontFamily: "'Barlow Condensed', sans-serif", fontSize: '17px', fontWeight: 700,
+                    textTransform: 'uppercase', letterSpacing: '0.03em', color: 'var(--ink)',
+                    transition: 'all 0.12s',
                   }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ink)'; e.currentTarget.style.background = 'var(--bg-3)' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-2)'; e.currentTarget.style.background = 'var(--bg-2)' }}
                 >
-                  {/* Google G logo */}
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -130,28 +110,21 @@ export default function MemberLogin() {
                   {googleLoading ? 'Redirecting...' : 'Continue with Google'}
                 </button>
 
-                {/* Divider */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ flex: 1, height: '1px', background: 'var(--border-2)' }} />
-                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)' }}>
-                    or
-                  </span>
+                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)' }}>or</span>
                   <div style={{ flex: 1, height: '1px', background: 'var(--border-2)' }} />
                 </div>
 
-                {/* Email toggle */}
                 {!showEmail ? (
                   <button
                     onClick={() => setShowEmail(true)}
                     style={{
-                      width: '100%', padding: '16px',
-                      background: 'transparent',
-                      border: '1px solid var(--border-2)',
-                      borderRadius: '8px', cursor: 'pointer',
-                      fontFamily: "'Barlow Condensed', sans-serif",
-                      fontSize: '16px', fontWeight: 700,
-                      textTransform: 'uppercase', letterSpacing: '0.03em',
-                      color: 'var(--ink-3)', transition: 'all 0.12s',
+                      width: '100%', padding: '15px', background: 'transparent',
+                      border: '1px solid var(--border-2)', borderRadius: '8px', cursor: 'pointer',
+                      fontFamily: "'Barlow Condensed', sans-serif", fontSize: '16px', fontWeight: 700,
+                      textTransform: 'uppercase', letterSpacing: '0.03em', color: 'var(--ink-3)',
+                      transition: 'color 0.12s',
                     }}
                     onMouseEnter={e => e.currentTarget.style.color = 'var(--ink)'}
                     onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-3)'}
@@ -159,16 +132,13 @@ export default function MemberLogin() {
                     Continue with email
                   </button>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <input
-                      type="email"
-                      value={email}
+                      type="email" value={email}
                       onChange={e => setEmail(e.target.value)}
                       placeholder="you@email.com"
-                      className="pp-input"
-                      autoFocus
-                      autoComplete="email"
-                      inputMode="email"
+                      className="pp-input" autoFocus
+                      autoComplete="email" inputMode="email"
                       onKeyDown={e => e.key === 'Enter' && email && handleMagicLink()}
                     />
                     <button
@@ -182,7 +152,6 @@ export default function MemberLogin() {
                   </div>
                 )}
 
-                {/* Not a member */}
                 <div style={{ paddingTop: '16px', borderTop: '1px solid var(--border-2)', textAlign: 'center' }}>
                   <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500 }}>
                     Not a member?{' '}

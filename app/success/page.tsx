@@ -36,12 +36,6 @@ function SuccessContent() {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ width: '100%', maxWidth: '440px' }}>
 
-          {status === 'loading' && (
-            <div className="display pulse" style={{ fontSize: '32px', color: 'var(--green)' }}>
-              Setting up your account...
-            </div>
-          )}
-
           {status === 'done' && (
             <div className="fade-up">
               <div style={{
