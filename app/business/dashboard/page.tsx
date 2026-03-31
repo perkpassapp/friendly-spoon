@@ -12,6 +12,7 @@ type BusinessAccount = {
   contact_email: string
   active: boolean
   access_code: string | null
+  admin_disabled: boolean
 }
 
 type Schedule = {
@@ -28,6 +29,7 @@ type Deal = {
   address: string
   active: boolean
   schedule: Schedule | null
+  admin_disabled: boolean
 }
 
 type Redemption = {
@@ -178,6 +180,7 @@ export default function BusinessDashboard() {
   }
 
   async function toggleDeal(deal: Deal) {
+    if (deal.admin_disabled) return
     setTogglingDeal(deal.id)
     await supabase.from('deals').update({ active: !deal.active }).eq('id', deal.id)
     setDeals(prev => prev.map(d => d.id === deal.id ? { ...d, active: !d.active } : d))
@@ -441,6 +444,22 @@ export default function BusinessDashboard() {
         {tab === 'deals' && (
           <div>
             <h2 className="display" style={{ fontSize: '36px', marginBottom: '8px' }}>Your deals</h2>
+            {account?.admin_disabled ? (
+              <div style={{ background: 'var(--red-lt)', borderRadius: '10px', padding: '28px', textAlign: 'center', border: '1px solid var(--red)', marginBottom: '24px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--red-lt)', border: '2px solid var(--red)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                  </svg>
+                </div>
+                <div className="display" style={{ fontSize: '24px', color: 'var(--red)', marginBottom: '8px' }}>Account suspended.</div>
+                <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--red)', lineHeight: 1.5 }}>
+                  Your account has been disabled by PerkPass. Your deals are no longer visible to members and cannot be managed until your account is reinstated.
+                </p>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', marginTop: '12px' }}>
+                  Please contact PerkPass to resolve this.
+                </p>
+              </div>
+            ) : (
             <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '24px' }}>Toggle deals on or off. Members only see active deals.</p>
             {deals.length === 0 ? (
               <div style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '32px', textAlign: 'center', border: '1px solid var(--border-2)' }}>
@@ -455,9 +474,9 @@ export default function BusinessDashboard() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)', marginBottom: '4px' }}>{deal.deal_description}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                        <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: deal.active ? 'var(--green)' : 'var(--ink-4)', flexShrink: 0 }} />
-                        <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: deal.active ? 'var(--green-dk)' : 'var(--ink-4)' }}>
-                          {deal.active ? 'Live' : 'Paused'}
+                        <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: deal.admin_disabled ? 'var(--red)' : deal.active ? 'var(--green)' : 'var(--ink-4)', flexShrink: 0 }} />
+                        <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: deal.admin_disabled ? 'var(--red)' : deal.active ? 'var(--green-dk)' : 'var(--ink-4)' }}>
+                          {deal.admin_disabled ? 'Disabled by admin' : deal.active ? 'Live' : 'Paused'}
                         </span>
                       </div>
                       {deal.schedule ? (
@@ -469,23 +488,31 @@ export default function BusinessDashboard() {
                       )}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flexShrink: 0 }}>
-                      <button
-                        onClick={() => toggleDeal(deal)}
-                        disabled={togglingDeal === deal.id}
-                        className={deal.active ? 'btn btn-outline' : 'btn btn-primary'}
-                        style={{ fontSize: '14px', padding: '10px 20px', minWidth: '90px' }}>
-                        {togglingDeal === deal.id ? '...' : deal.active ? 'Pause' : 'Activate'}
-                      </button>
-                      <button
-                        onClick={() => openScheduleEditor(deal)}
-                        style={{ fontSize: '12px', fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green-dk)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
-                        {deal.schedule ? 'Edit hours' : 'Set hours'}
-                      </button>
-                      <button
-                        onClick={() => setConfirmDelete(deal)}
-                        style={{ fontSize: '12px', fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
-                        Delete
-                      </button>
+                      {deal.admin_disabled ? (
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--red)', textAlign: 'center', padding: '4px 8px' }}>
+                          Contact PerkPass
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => toggleDeal(deal)}
+                            disabled={togglingDeal === deal.id}
+                            className={deal.active ? 'btn btn-outline' : 'btn btn-primary'}
+                            style={{ fontSize: '14px', padding: '10px 20px', minWidth: '90px' }}>
+                            {togglingDeal === deal.id ? '...' : deal.active ? 'Pause' : 'Activate'}
+                          </button>
+                          <button
+                            onClick={() => openScheduleEditor(deal)}
+                            style={{ fontSize: '12px', fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green-dk)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                            {deal.schedule ? 'Edit hours' : 'Set hours'}
+                          </button>
+                          <button
+                            onClick={() => setConfirmDelete(deal)}
+                            style={{ fontSize: '12px', fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -496,6 +523,7 @@ export default function BusinessDashboard() {
                 + Submit a new deal
               </button>
             </div>
+            )}
           </div>
         )}
 
