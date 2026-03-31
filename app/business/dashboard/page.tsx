@@ -462,6 +462,7 @@ export default function BusinessDashboard() {
                 </a>
               </div>
             ) : (
+            <>
             <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '24px' }}>Toggle deals on or off. Members only see active deals.</p>
             {deals.length === 0 ? (
               <div style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '32px', textAlign: 'center', border: '1px solid var(--border-2)' }}>
@@ -525,6 +526,7 @@ export default function BusinessDashboard() {
                 + Submit a new deal
               </button>
             </div>
+            </>
             )}
           </div>
         )}
