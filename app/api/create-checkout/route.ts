@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
       customer_email: email,
       line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/success?email=${encodeURIComponent(email)}`,
+            allow_promotion_codes: true,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/signup`,
       metadata: { email, name: name || '', phone: phone || '' },
     })
