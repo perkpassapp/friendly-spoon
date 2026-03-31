@@ -62,6 +62,17 @@ export default function BusinessDashboard() {
   const [submitting, setSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
 
+  // Restore session from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('biz_session')
+    if (saved) {
+      try {
+        const biz = JSON.parse(saved) as BusinessAccount
+        loadDashboard(biz)
+      } catch { localStorage.removeItem('biz_session') }
+    }
+  }, [])
+
   async function handleLogin() {
     if (!email) { setError('Enter your email'); return }
     if (!accessCode) { setError('Enter your access code'); return }
@@ -149,6 +160,7 @@ export default function BusinessDashboard() {
     })
 
     setStats({ total: r.length, thisMonth, lastMonth, byDay })
+    localStorage.setItem('biz_session', JSON.stringify(biz))
     setAuthed(true)
     setLoading(false)
   }
@@ -282,7 +294,7 @@ export default function BusinessDashboard() {
     <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: '80px' }}>
       <header style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg)', borderBottom: '2px solid var(--ink)', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link href="/business/dashboard" className="pp-logo">Perk<span>Pass</span></Link>
-        <button onClick={() => { setAuthed(false); setAccount(null); setEmail(''); setAccessCode('') }}
+        <button onClick={() => { localStorage.removeItem('biz_session'); setAuthed(false); setAccount(null); setEmail(''); setAccessCode('') }}
           style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>
           Sign out
         </button>
@@ -477,6 +489,36 @@ export default function BusinessDashboard() {
           </div>
         )}
       </div>
+
+      {/* Delete confirmation modal */}
+      {confirmDelete && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+          <div style={{ background: 'var(--bg)', borderRadius: '16px', padding: '28px 24px', width: '100%', maxWidth: '380px', border: '2px solid var(--ink)', textAlign: 'center' }}>
+            <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'var(--red-lt)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+              </svg>
+            </div>
+            <h2 className="display" style={{ fontSize: '28px', marginBottom: '8px' }}>Delete this deal?</h2>
+            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--green-dk)', marginBottom: '8px' }}>{confirmDelete.deal_description}</p>
+            <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.5, marginBottom: '8px' }}>
+              This action cannot be undone. The deal will be permanently removed and members won't see it anymore.
+            </p>
+            <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-4)', marginBottom: '24px' }}>
+              To offer a new deal, use the Submit Deal tab.
+            </p>
+            <button
+              onClick={() => deleteDeal(confirmDelete)}
+              disabled={deletingDeal === confirmDelete.id}
+              style={{ width: '100%', marginBottom: '10px', padding: '14px', background: 'var(--red-lt)', border: '1px solid var(--red)', borderRadius: '8px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '16px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--red)', cursor: 'pointer' }}>
+              {deletingDeal === confirmDelete.id ? 'Deleting...' : 'Yes, delete permanently'}
+            </button>
+            <button onClick={() => setConfirmDelete(null)} className="btn btn-primary" style={{ width: '100%', fontSize: '16px', padding: '14px' }}>
+              Keep this deal
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
