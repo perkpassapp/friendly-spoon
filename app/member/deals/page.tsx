@@ -331,86 +331,84 @@ export default function MemberDeals() {
           </div>
         )}
 
-        {/* Rest — compact grouped rows */}
+        {/* Rest — card layout matching featured */}
         {restGroups.length > 0 && (
           <div>
             <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '12px' }}>
               More deals
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {restGroups.map((group, gi) => {
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {restGroups.map(group => {
                 const firstDeal = group.deals[0]
                 const hasMultiple = group.deals.length > 1
                 const allOnCooldown = group.deals.every(d => cooldowns[d.id] !== undefined)
                 return (
                   <div key={group.business_name} style={{
-                    borderBottom: gi < restGroups.length - 1 ? '1px solid var(--border)' : 'none',
-                    opacity: allOnCooldown ? 0.5 : 1,
+                    background: 'var(--bg-2)', borderRadius: '12px', overflow: 'hidden',
+                    border: '1px solid var(--border)', opacity: allOnCooldown ? 0.6 : 1,
                   }}>
-                    {/* Business header row */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 0', cursor: hasMultiple ? 'default' : (allOnCooldown ? 'not-allowed' : 'pointer') }}
-                      onClick={() => !hasMultiple && !allOnCooldown && setSelectedDeal(firstDeal)}>
-                      <div style={{ width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, border: '1px solid var(--border)' }}>
-                        <img src={getPhoto(firstDeal)} alt={group.business_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                    {/* Photo */}
+                    <div style={{ height: '180px', overflow: 'hidden', position: 'relative', cursor: allOnCooldown ? 'not-allowed' : 'pointer' }}
+                      onClick={() => !allOnCooldown && !hasMultiple && setSelectedDeal(firstDeal)}>
+                      <img src={getPhoto(firstDeal)} alt={group.business_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 60%)' }} />
+                      <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'var(--ink)', color: 'var(--bg)', padding: '4px 10px', borderRadius: '3px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        {group.category}
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)', letterSpacing: '-0.01em', lineHeight: 1.1 }}>
-                            {group.business_name}
-                          </div>
-                          {hasMultiple && (
-                            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '2px 7px', borderRadius: '3px', textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0 }}>
-                              {group.deals.length} deals
-                            </span>
-                          )}
+                      {hasMultiple && (
+                        <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--green)', color: '#fff', padding: '4px 10px', borderRadius: '3px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          {group.deals.length} deals
                         </div>
-                        {!hasMultiple && (
-                          <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '2px' }}>{firstDeal.deal_description}</div>
-                        )}
-                        <div style={{ fontSize: '11px', color: 'var(--ink-4)', fontWeight: 500 }}>{group.address}</div>
+                      )}
+                      <div style={{ position: 'absolute', bottom: '12px', left: '14px', right: '14px' }}>
+                        <div className="display" style={{ fontSize: '22px', color: '#ffffff', lineHeight: 1.1, textShadow: '0 1px 6px rgba(0,0,0,0.4)' }}>
+                          {group.business_name}
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', fontWeight: 500, marginTop: '2px' }}>📍 {group.address}</div>
                       </div>
-                      {!hasMultiple && (
-                        <div style={{ flexShrink: 0 }}>
-                          {cooldowns[firstDeal.id] !== undefined ? (
-                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                              {formatCooldown(cooldowns[firstDeal.id])}
-                            </div>
-                          ) : (
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M5 12h14M12 5l7 7-7 7"/>
-                            </svg>
+                    </div>
+                    {/* Deals */}
+                    <div style={{ padding: hasMultiple ? '0' : '14px 16px' }}>
+                      {hasMultiple ? (
+                        <div>
+                          {group.deals.map((deal, i) => {
+                            const onCooldown = cooldowns[deal.id] !== undefined
+                            return (
+                              <div key={deal.id} onClick={() => !onCooldown && setSelectedDeal(deal)}
+                                style={{
+                                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                  padding: '13px 16px', cursor: onCooldown ? 'not-allowed' : 'pointer',
+                                  borderBottom: i < group.deals.length - 1 ? '1px solid var(--border)' : 'none',
+                                  opacity: onCooldown ? 0.5 : 1, transition: 'background 0.1s',
+                                }}
+                                onMouseEnter={e => { if (!onCooldown) e.currentTarget.style.background = 'var(--bg-3)' }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+                                <div>
+                                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '1px' }}>{deal.deal_description}</div>
+                                  {onCooldown && <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Back in {formatCooldown(cooldowns[deal.id])}</div>}
+                                </div>
+                                {!onCooldown && (
+                                  <div className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '13px', flexShrink: 0, borderRadius: '4px' }}>Redeem</div>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '3px' }}>{firstDeal.deal_description}</p>
+                            {cooldowns[firstDeal.id] !== undefined && (
+                              <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase' }}>Back in {formatCooldown(cooldowns[firstDeal.id])}</p>
+                            )}
+                          </div>
+                          {cooldowns[firstDeal.id] === undefined && (
+                            <div className="btn btn-primary" style={{ padding: '10px 18px', fontSize: '14px', flexShrink: 0, borderRadius: '4px', cursor: 'pointer' }}
+                              onClick={() => setSelectedDeal(firstDeal)}>Redeem</div>
                           )}
                         </div>
                       )}
                     </div>
-
-                    {/* Sub-deals for multi-deal businesses */}
-                    {hasMultiple && (
-                      <div style={{ marginLeft: '78px', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {group.deals.map(deal => {
-                          const onCooldown = cooldowns[deal.id] !== undefined
-                          return (
-                            <div key={deal.id} onClick={() => !onCooldown && setSelectedDeal(deal)}
-                              style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                background: 'var(--bg-2)', borderRadius: '8px', padding: '10px 14px',
-                                cursor: onCooldown ? 'not-allowed' : 'pointer', opacity: onCooldown ? 0.5 : 1,
-                                border: '1px solid var(--border)',
-                              }}>
-                              <div>
-                                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--green-dk)' }}>{deal.deal_description}</div>
-                                {onCooldown && <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: '2px' }}>Back in {formatCooldown(cooldowns[deal.id])}</div>}
-                              </div>
-                              {!onCooldown && (
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                                </svg>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
                   </div>
                 )
               })}
