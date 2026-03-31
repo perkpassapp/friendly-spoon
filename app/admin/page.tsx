@@ -117,7 +117,7 @@ export default function AdminDashboard() {
     setTogglingBiz(biz.id)
     const disabling = !biz.admin_disabled
     await supabase.from('business_accounts')
-      .update({ admin_disabled: disabling, active: disabling ? false : true })
+      .update({ admin_disabled: disabling })
       .eq('id', biz.id)
     // Also disable/re-enable all their deals
     if (disabling) {
