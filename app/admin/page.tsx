@@ -54,19 +54,29 @@ export default function AdminDashboard() {
   const [approving, setApproving] = useState<string | null>(null)
   const [togglingBiz, setTogglingBiz] = useState<string | null>(null)
 
+  // Delete deal state
+  const [deletingDeal, setDeletingDeal] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+
+  // Edit deal state
+  const [editingDeal, setEditingDeal] = useState<string | null>(null)
+  const [editFields, setEditFields] = useState<{ deal_description: string; category: string }>({ deal_description: '', category: '' })
+  const [savingEdit, setSavingEdit] = useState(false)
+
   async function loadData() {
     setLoading(true)
-    const [appsRes, dealsRes, redemptionsRes, bizRes] = await Promise.all([
+    const [appsRes, dealsRes, redemptionsRes, bizRes, membersRes] = await Promise.all([
       supabase.from('business_applications').select('*').order('created_at', { ascending: false }),
       supabase.from('deals').select('*').order('created_at', { ascending: false }),
       supabase.from('redemptions').select('id'),
       supabase.from('business_accounts').select('*').order('business_name'),
+      supabase.from('members').select('id'),
     ])
     setApplications(appsRes.data || [])
     setDeals(dealsRes.data || [])
     setBusinesses(bizRes.data || [])
     setStats({
-      members: 0,
+      members: membersRes.data?.length || 0,
       redemptions: redemptionsRes.data?.length || 0,
       deals: dealsRes.data?.filter(d => d.active && !d.admin_disabled).length || 0,
     })
@@ -112,6 +122,33 @@ export default function AdminDashboard() {
     await loadData()
   }
 
+  // Permanently delete a deal
+  async function deleteDeal(id: string) {
+    setDeletingDeal(id)
+    await supabase.from('deals').delete().eq('id', id)
+    setConfirmDelete(null)
+    await loadData()
+    setDeletingDeal(null)
+  }
+
+  // Start editing a deal
+  function startEdit(deal: Deal) {
+    setEditingDeal(deal.id)
+    setEditFields({ deal_description: deal.deal_description, category: deal.category })
+    setConfirmDelete(null)
+  }
+
+  // Save edited deal
+  async function saveEdit(id: string) {
+    setSavingEdit(true)
+    await supabase.from('deals')
+      .update({ deal_description: editFields.deal_description, category: editFields.category })
+      .eq('id', id)
+    setEditingDeal(null)
+    setSavingEdit(false)
+    await loadData()
+  }
+
   // Disable/enable entire business — disables all their deals too
   async function toggleBusiness(biz: Business) {
     setTogglingBiz(biz.id)
@@ -119,7 +156,6 @@ export default function AdminDashboard() {
     await supabase.from('business_accounts')
       .update({ admin_disabled: disabling })
       .eq('id', biz.id)
-    // Also disable/re-enable all their deals
     if (disabling) {
       await supabase.from('deals')
         .update({ admin_disabled: true, active: false })
@@ -134,15 +170,36 @@ export default function AdminDashboard() {
   }
 
   function login() {
-    if (password === 'perkpassadmin') { setAuthed(true); loadData() }
-    else setError('Wrong password')
+    if (password === 'perkpassadmin') {
+      setAuthed(true); loadData()
+    } else setError('Wrong password')
   }
 
   const pending = applications.filter(a => a.status === 'pending')
   const activeBusinesses = businesses.filter(b => !b.admin_disabled).length
   const disabledBusinesses = businesses.filter(b => b.admin_disabled).length
 
-  const LABEL = { fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--ink-4)' }
+  const LABEL = {
+    fontFamily: "'Barlow Condensed', sans-serif",
+    fontSize: '12px',
+    fontWeight: 700,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.06em',
+    color: 'var(--ink-4)'
+  }
+
+  const INPUT_STYLE = {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: '13px',
+    fontWeight: 500,
+    color: 'var(--ink)',
+    background: 'var(--bg)',
+    border: '1.5px solid var(--ink)',
+    borderRadius: '6px',
+    padding: '8px 10px',
+    width: '100%',
+    outline: 'none',
+  }
 
   if (!authed) return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
@@ -155,7 +212,15 @@ export default function AdminDashboard() {
           <p className="fade-up-2" style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px' }}>Your command center.</p>
           <div className="fade-up-3">
             <label style={{ display: 'block', marginBottom: '6px', ...LABEL }}>Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Admin password" className="pp-input" style={{ marginBottom: '10px' }} onKeyDown={e => e.key === 'Enter' && login()} />
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Admin password"
+              className="pp-input"
+              style={{ marginBottom: '10px' }}
+              onKeyDown={e => e.key === 'Enter' && login()}
+            />
             {error && <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', marginBottom: '10px' }}>{error}</p>}
             <button onClick={login} className="btn btn-primary" style={{ width: '100%', fontSize: '17px', padding: '15px' }}>Enter</button>
           </div>
@@ -185,13 +250,7 @@ export default function AdminDashboard() {
             { key: 'deals', label: 'Live Deals' },
             { key: 'businesses', label: `Businesses${disabledBusinesses > 0 ? ` (${disabledBusinesses} off)` : ''}` },
           ] as const).map(t => (
-            <button key={t.key} onClick={() => setTab(t.key)} style={{
-              fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '15px', textTransform: 'uppercase',
-              letterSpacing: '0.04em', padding: '12px 16px', border: 'none', cursor: 'pointer', background: 'none',
-              color: tab === t.key ? 'var(--ink)' : 'var(--ink-4)',
-              borderBottom: tab === t.key ? '2px solid var(--ink)' : '2px solid transparent',
-              marginBottom: '-2px', flexShrink: 0,
-            }}>{t.label}</button>
+            <button key={t.key} onClick={() => setTab(t.key)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.04em', padding: '12px 16px', border: 'none', cursor: 'pointer', background: 'none', color: tab === t.key ? 'var(--ink)' : 'var(--ink-4)', borderBottom: tab === t.key ? '2px solid var(--ink)' : '2px solid transparent', marginBottom: '-2px', flexShrink: 0, }}>{t.label}</button>
           ))}
         </div>
 
@@ -201,9 +260,9 @@ export default function AdminDashboard() {
             <h2 className="display" style={{ fontSize: '40px', marginBottom: '20px' }}>Overview</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '32px' }}>
               {[
-                { label: 'Active deals', value: stats.deals },
+                { label: 'Active members', value: stats.members },
                 { label: 'Total redemptions', value: stats.redemptions },
-                { label: 'Pending applications', value: pending.length },
+                { label: 'Active deals', value: stats.deals },
                 { label: 'Active businesses', value: activeBusinesses },
               ].map(s => (
                 <div key={s.label} style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '24px', border: '1px solid var(--border-2)' }}>
@@ -251,9 +310,7 @@ export default function AdminDashboard() {
                         <div className="display" style={{ fontSize: '22px', marginBottom: '2px' }}>{app.business_name}</div>
                         <div style={{ fontSize: '13px', color: 'var(--green-dk)', fontWeight: 700 }}>{app.deal_offer}</div>
                       </div>
-                      <span style={{ ...LABEL, padding: '4px 10px', borderRadius: '4px', flexShrink: 0,
-                        background: app.status === 'pending' ? 'var(--green-lt)' : app.status === 'approved' ? 'rgba(59,130,246,0.12)' : 'var(--red-lt)',
-                        color: app.status === 'pending' ? 'var(--green-dk)' : app.status === 'approved' ? '#1d4ed8' : 'var(--red)' }}>
+                      <span style={{ ...LABEL, padding: '4px 10px', borderRadius: '4px', flexShrink: 0, background: app.status === 'pending' ? 'var(--green-lt)' : app.status === 'approved' ? 'rgba(59,130,246,0.12)' : 'var(--red-lt)', color: app.status === 'pending' ? 'var(--green-dk)' : app.status === 'approved' ? '#1d4ed8' : 'var(--red)' }}>
                         {app.status}
                       </span>
                     </div>
@@ -284,26 +341,107 @@ export default function AdminDashboard() {
         {tab === 'deals' && (
           <div>
             <h2 className="display" style={{ fontSize: '40px', marginBottom: '4px' }}>Live Deals</h2>
-            <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '20px' }}>Deals you disable here cannot be re-activated by the business.</p>
+            <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '20px' }}>Deals you disable here cannot be re-activated by the business. Delete removes permanently.</p>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {deals.map(deal => (
-                <div key={deal.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 0', borderBottom: '1px solid var(--border)', opacity: deal.admin_disabled ? 0.5 : 1 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)' }}>{deal.business_name}</div>
-                      {deal.admin_disabled && (
-                        <span style={{ ...LABEL, fontSize: '10px', background: 'var(--red-lt)', color: 'var(--red)', padding: '2px 8px', borderRadius: '3px' }}>Admin disabled</span>
-                      )}
+                <div key={deal.id} style={{ padding: '16px 0', borderBottom: '1px solid var(--border)', opacity: deal.admin_disabled && editingDeal !== deal.id ? 0.5 : 1 }}>
+
+                  {/* Delete confirmation */}
+                  {confirmDelete === deal.id ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--red-lt)', borderRadius: '8px', padding: '14px 16px' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '15px', fontWeight: 800, color: 'var(--red)', textTransform: 'uppercase' }}>Delete {deal.business_name}?</div>
+                        <div style={{ fontSize: '12px', color: 'var(--red)', fontWeight: 500, opacity: 0.8, marginTop: '2px' }}>This cannot be undone.</div>
+                      </div>
+                      <button
+                        onClick={() => deleteDeal(deal.id)}
+                        disabled={deletingDeal === deal.id}
+                        style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: 'var(--red)', color: '#fff', flexShrink: 0 }}>
+                        {deletingDeal === deal.id ? '...' : 'Confirm'}
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(null)}
+                        style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '8px 16px', borderRadius: '6px', border: '1px solid var(--red)', cursor: 'pointer', background: 'none', color: 'var(--red)', flexShrink: 0 }}>
+                        Cancel
+                      </button>
                     </div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--green-dk)' }}>{deal.deal_description}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '2px' }}>{deal.category} · {deal.address}</div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: deal.active && !deal.admin_disabled ? 'var(--green)' : 'var(--ink-4)' }} />
-                    <button onClick={() => adminToggleDeal(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: deal.admin_disabled ? 'var(--green-dk)' : 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                      {deal.admin_disabled ? 'Re-enable' : 'Disable'}
-                    </button>
-                  </div>
+
+                  /* Edit mode */
+                  ) : editingDeal === deal.id ? (
+                    <div style={{ background: 'var(--bg-2)', border: '1.5px solid var(--ink)', borderRadius: '10px', padding: '16px' }}>
+                      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '16px', fontWeight: 800, color: 'var(--ink)', marginBottom: '12px', textTransform: 'uppercase' }}>{deal.business_name}</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '14px' }}>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Deal Description</label>
+                          <input
+                            style={INPUT_STYLE}
+                            value={editFields.deal_description}
+                            onChange={e => setEditFields(f => ({ ...f, deal_description: e.target.value }))}
+                            placeholder="e.g. 10% off any order"
+                          />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Category</label>
+                          <input
+                            style={INPUT_STYLE}
+                            value={editFields.category}
+                            onChange={e => setEditFields(f => ({ ...f, category: e.target.value }))}
+                            placeholder="e.g. Restaurant"
+                          />
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => saveEdit(deal.id)}
+                          disabled={savingEdit}
+                          className="btn btn-primary"
+                          style={{ fontSize: '14px', padding: '10px 20px' }}>
+                          {savingEdit ? 'Saving...' : 'Save changes'}
+                        </button>
+                        <button
+                          onClick={() => setEditingDeal(null)}
+                          className="btn btn-outline"
+                          style={{ fontSize: '14px', padding: '10px 20px' }}>
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+
+                  /* Normal row */
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)' }}>{deal.business_name}</div>
+                          {deal.admin_disabled && (
+                            <span style={{ ...LABEL, fontSize: '10px', background: 'var(--red-lt)', color: 'var(--red)', padding: '2px 8px', borderRadius: '3px' }}>Admin disabled</span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--green-dk)' }}>{deal.deal_description}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '2px' }}>{deal.category} · {deal.address}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: deal.active && !deal.admin_disabled ? 'var(--green)' : 'var(--ink-4)' }} />
+                        <button
+                          onClick={() => startEdit(deal)}
+                          style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                          Edit
+                        </button>
+                        <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
+                        <button
+                          onClick={() => adminToggleDeal(deal)}
+                          style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: deal.admin_disabled ? 'var(--green-dk)' : 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                          {deal.admin_disabled ? 'Re-enable' : 'Disable'}
+                        </button>
+                        <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
+                        <button
+                          onClick={() => { setConfirmDelete(deal.id); setEditingDeal(null) }}
+                          style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -336,10 +474,7 @@ export default function AdminDashboard() {
                     <button
                       onClick={() => toggleBusiness(biz)}
                       disabled={togglingBiz === biz.id}
-                      style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '10px 18px', borderRadius: '6px', border: 'none', cursor: 'pointer', flexShrink: 0,
-                        background: biz.admin_disabled ? 'var(--green-lt)' : 'var(--red-lt)',
-                        color: biz.admin_disabled ? 'var(--green-dk)' : 'var(--red)',
-                      }}>
+                      style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '10px 18px', borderRadius: '6px', border: 'none', cursor: 'pointer', flexShrink: 0, background: biz.admin_disabled ? 'var(--green-lt)' : 'var(--red-lt)', color: biz.admin_disabled ? 'var(--green-dk)' : 'var(--red)', }}>
                       {togglingBiz === biz.id ? '...' : biz.admin_disabled ? 'Re-enable' : 'Remove'}
                     </button>
                   </div>
