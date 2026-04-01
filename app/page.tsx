@@ -27,6 +27,38 @@ const HOW = [
 export default function Home() {
   return (
     <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      <style>{`
+        .deal-card {
+          background: var(--bg-2);
+          border: 1.5px solid var(--border-2);
+          border-radius: 12px;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          transition: border-color 0.15s;
+        }
+        .deal-card:hover {
+          border-color: var(--green);
+        }
+        .quick-link {
+          background: var(--bg-2);
+          border: 1px solid var(--border-2);
+          border-radius: 8px;
+          padding: 16px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          cursor: pointer;
+          text-align: left;
+          width: 100%;
+          transition: border-color 0.15s;
+        }
+        .quick-link:hover {
+          border-color: var(--green);
+        }
+      `}</style>
+
       {/* Nav */}
       <nav style={{ position: 'sticky', top: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', height: '56px', background: 'var(--bg)', borderBottom: '2px solid var(--ink)', }}>
         <a href="/" className="pp-logo">Perk<span>Pass</span></a>
@@ -49,7 +81,7 @@ export default function Home() {
           Local spots.<br />Hooked you<br />up.
         </h1>
         <p className="fade-up-3" style={{ fontSize: '18px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '480px', marginBottom: '36px', lineHeight: 1.6, }}>
-          From your lowkey favorites to your everyday go-to's — one membership unlocks exclusive deals at the Philly spots that actually matter to you.
+          From your lowkey favorites to your everyday go-to&apos;s — one membership unlocks exclusive deals at the Philly spots that actually matter to you.
         </p>
         <div className="fade-up-4" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '48px' }}>
           <Link href="/signup" className="btn btn-primary" style={{ fontSize: '18px', padding: '16px 32px' }}>
@@ -80,7 +112,7 @@ export default function Home() {
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '12px' }}>
             <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)' }}>
-              What's included
+              What&apos;s included
             </h2>
             <Link href="/signup" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green)', textDecoration: 'none', }}>
               See all deals
@@ -92,22 +124,16 @@ export default function Home() {
             {DEALS.map((d, i) => {
               const colors = CAT_COLORS[d.cat] || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
               return (
-                <div key={i} style={{ background: 'var(--bg-2)', border: '1.5px solid var(--border-2)', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px', transition: 'border-color 0.15s', cursor: 'default' }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--green)')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-2)')}>
-                  {/* Category pill */}
+                <div key={i} className="deal-card">
                   <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 9px', borderRadius: '4px' }}>
                     {d.cat}
                   </span>
-                  {/* Business name */}
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.01em' }}>
                     {d.name}
                   </div>
-                  {/* Deal */}
                   <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--green-dk)', lineHeight: 1.3 }}>
                     {d.deal}
                   </div>
-                  {/* Neighborhood */}
                   <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--ink-4)', marginTop: 'auto', paddingTop: '4px' }}>
                     {d.addr}
                   </div>
