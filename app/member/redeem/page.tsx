@@ -14,7 +14,7 @@ function RedeemContent() {
   const [code, setCode] = useState('')
   const [expired, setExpired] = useState(false)
   const [cooldown, setCooldown] = useState<number | null>(null)
-  const [cooldownType, setCooldownType] = useState<'15min' | '24hr'>('15min')
+  const [cooldownType, setCooldownType] = useState<'15min' >('15min')
   const [loading, setLoading] = useState(true)
   const [confirmed, setConfirmed] = useState(false)
   const [showLeaveWarning, setShowLeaveWarning] = useState(false)
@@ -88,10 +88,10 @@ function RedeemContent() {
 
       const { data: d1 } = await supabase.from('redemptions').select('redeemed_at')
         .eq('member_email', email).eq('deal_id', dealId)
-        .gte('redeemed_at', new Date(Date.now() - 86400000).toISOString())
+        .gte('redeemed_at', new Date(Date.now() - 900000).toISOString())
         .order('redeemed_at', { ascending: false }).limit(1)
       if (d1 && d1.length > 0) {
-        const s = Math.ceil((new Date(d1[0].redeemed_at).getTime() + 86400000 - Date.now()) / 1000)
+        const s = Math.ceil((new Date(d1[0].redeemed_at).getTime() + 900000 - Date.now()) / 1000)
         if (s > 0) { setCooldownType('15min'); startCooldownTimer(s, '15min'); setLoading(false); return }
       }
 
@@ -308,7 +308,7 @@ function RedeemContent() {
             {code}
           </div>
           <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>
-            Valid 2 min — single use — 24hr cooldown
+            Valid 2 min — single use — 15 min cooldown
           </div>
         </div>
 
