@@ -73,6 +73,7 @@ export default function BusinessDashboard() {
   const [tab, setTab] = useState<'overview' | 'deals' | 'submit'>('overview')
 
   const [newDealOffer, setNewDealOffer] = useState('')
+  const [newDealDetails, setNewDealDetails] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
 
@@ -236,6 +237,7 @@ export default function BusinessDashboard() {
       category: account!.category,
       address: account!.address,
       deal_offer: newDealOffer.trim(),
+      deal_details: newDealDetails.trim() || null,
       contact_name: '',
       contact_email: account!.contact_email,
       phone: '',
@@ -243,6 +245,7 @@ export default function BusinessDashboard() {
     })
 
     setNewDealOffer('')
+    setNewDealDetails('')
     setSubmitSuccess(true)
     setSubmitting(false)
     setTimeout(() => setSubmitSuccess(false), 5000)
@@ -559,6 +562,23 @@ export default function BusinessDashboard() {
                   />
                   <p style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '6px' }}>
                     Keep it short and clear. Members will see exactly this text.
+                  </p>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>
+                    Deal Details <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0, color: 'var(--ink-4)' }}>(optional)</span>
+                  </label>
+                  <textarea
+                    value={newDealDetails}
+                    onChange={e => setNewDealDetails(e.target.value)}
+                    placeholder="e.g. Combo meal comes with your choice of side and a drink. Valid on orders over $10."
+                    rows={3}
+                    className="pp-input"
+                    style={{ resize: 'vertical', fontFamily: 'inherit', fontSize: '15px', lineHeight: 1.5 }}
+                  />
+                  <p style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '6px' }}>
+                    Describe what's included. Members see this under the deal title.
                   </p>
                 </div>
 

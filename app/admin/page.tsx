@@ -14,6 +14,7 @@ type Application = {
   category: string
   address: string
   deal_offer: string
+  deal_details: string | null
   contact_name: string
   contact_email: string
   phone: string
@@ -88,6 +89,7 @@ export default function AdminDashboard() {
     await supabase.from('deals').insert({
       business_name: app.business_name,
       deal_description: app.deal_offer,
+      deal_details: app.deal_details || null,
       category: app.category,
       address: app.address,
       emoji: '🎟️',
@@ -309,6 +311,9 @@ export default function AdminDashboard() {
                       <div>
                         <div className="display" style={{ fontSize: '22px', marginBottom: '2px' }}>{app.business_name}</div>
                         <div style={{ fontSize: '13px', color: 'var(--green-dk)', fontWeight: 700 }}>{app.deal_offer}</div>
+                        {app.deal_details && (
+                          <div style={{ fontSize: '12px', color: 'var(--ink-3)', fontWeight: 500, marginTop: '3px', lineHeight: 1.5 }}>{app.deal_details}</div>
+                        )}
                       </div>
                       <span style={{ ...LABEL, padding: '4px 10px', borderRadius: '4px', flexShrink: 0, background: app.status === 'pending' ? 'var(--green-lt)' : app.status === 'approved' ? 'rgba(59,130,246,0.12)' : 'var(--red-lt)', color: app.status === 'pending' ? 'var(--green-dk)' : app.status === 'approved' ? '#1d4ed8' : 'var(--red)' }}>
                         {app.status}

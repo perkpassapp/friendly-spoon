@@ -14,6 +14,7 @@ type Deal = {
   id: string
   business_name: string
   deal_description: string
+  deal_details?: string   // ← add this
   category: string
   address: string
   emoji: string
@@ -216,6 +217,12 @@ export default function MemberDeals() {
             </div>
             <div style={{ padding: '20px 24px 24px' }}>
               <p style={{ fontSize: '16px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '4px' }}>{selectedDeal.deal_description}</p>
+              {/* ADD THIS */}
+{selectedDeal.deal_details && (
+  <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '4px', lineHeight: 1.5 }}>
+    {selectedDeal.deal_details}
+  </p>
+)}
               <p style={{ fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500, marginBottom: '20px' }}>{selectedDeal.address}</p>
               <div style={{ background: 'var(--bg-2)', borderRadius: '8px', padding: '14px', marginBottom: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                 {[{ n: '2 min', l: 'Window' }, { n: '24 hrs', l: 'Cooldown' }, { n: '1x', l: 'Per day' }].map(r => (
