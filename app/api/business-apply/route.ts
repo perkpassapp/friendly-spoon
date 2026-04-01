@@ -15,9 +15,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 })
     }
 
+    // Normalize email to lowercase so business login always works regardless of how they typed it
+    const normalizedEmail = contact_email.toLowerCase().trim()
+
     const { error } = await supabase
       .from('business_applications')
-      .insert([{ business_name, category, address, deal_offer, contact_name, contact_email, phone }])
+      .insert([{ business_name, category, address, deal_offer, contact_name, contact_email: normalizedEmail, phone }])
 
     if (error) throw error
 

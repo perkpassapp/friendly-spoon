@@ -99,7 +99,7 @@ export default function AdminDashboard() {
       category: app.category,
       address: app.address,
       deal_offer: app.deal_offer,
-      contact_email: app.contact_email,
+      contact_email: app.contact_email.toLowerCase().trim(),
       active: true,
       admin_disabled: false,
     })
