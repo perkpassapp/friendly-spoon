@@ -66,8 +66,8 @@ function RedeemContent() {
     }, 2000)
   }
 
-  function startCooldownTimer(secs: number, type: '15min' | '24hr') {
-    const capped = Math.min(secs, type === '24hr' ? 86400 : 900)
+  function startCooldownTimer(secs: number, type: '15min' | '15min') {
+    const capped = Math.min(secs, 900)
     setCooldown(capped)
     if (cooldownRef.current) clearInterval(cooldownRef.current)
     cooldownRef.current = setInterval(() => {
@@ -92,7 +92,7 @@ function RedeemContent() {
         .order('redeemed_at', { ascending: false }).limit(1)
       if (d1 && d1.length > 0) {
         const s = Math.ceil((new Date(d1[0].redeemed_at).getTime() + 86400000 - Date.now()) / 1000)
-        if (s > 0) { setCooldownType('24hr'); startCooldownTimer(s, '24hr'); setLoading(false); return }
+        if (s > 0) { setCooldownType('15min'); startCooldownTimer(s, '15min'); setLoading(false); return }
       }
 
       const { data: d2 } = await supabase.from('redemptions').select('redeemed_at')
@@ -157,7 +157,7 @@ function RedeemContent() {
 
   // ── Cooldown ──
   if (cooldown !== null) {
-    const is24 = cooldownType === '24hr'
+    const is24 = cooldownType === '15min'
     return (
       <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
         <div style={{ maxWidth: '400px', width: '100%' }}>
