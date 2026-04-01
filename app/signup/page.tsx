@@ -61,6 +61,19 @@ export default function SignupPage() {
     })
   }
 
+  async function handleContinueManual() {
+    if (!validateManual()) return
+    setLoading(true)
+    const res = await fetch(`/api/check-email?email=${encodeURIComponent(email)}`)
+    const { exists } = await res.json()
+    setLoading(false)
+    if (exists) {
+      setError('An account with this email already exists. Please log in instead.')
+      return
+    }
+    setStep('pay')
+  }
+
   async function handleCheckout() {
     setLoading(true)
     setError('')
@@ -76,6 +89,7 @@ export default function SignupPage() {
       })
       const data = await res.json()
       if (data.url) window.location.href = data.url
+      else if (res.status === 409) { setError(data.error); setLoading(false) }
       else { setError('Something went wrong. Try again.'); setLoading(false) }
     } catch {
       setError('Something went wrong. Try again.')
@@ -306,11 +320,12 @@ export default function SignupPage() {
                 {error && <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)' }}>{error}</p>}
 
                 <button
-                  onClick={() => validateManual() && setStep('pay')}
+                  onClick={handleContinueManual}
+                  disabled={loading}
                   className="btn btn-primary"
                   style={{ width: '100%', fontSize: '18px', padding: '16px' }}
                 >
-                  Continue
+                  {loading ? 'Checking...' : 'Continue'}
                 </button>
 
                 <button

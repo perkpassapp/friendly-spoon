@@ -12,6 +12,22 @@ export async function POST(req: NextRequest) {
   try {
     const { email, name, phone } = await req.json()
 
+    // Block duplicate accounts — if a member record already exists for this
+    // email, they have a completed account and should log in instead
+    if (email) {
+      const { data: existing } = await supabase
+        .from('members')
+        .select('email')
+        .eq('email', email.toLowerCase())
+        .maybeSingle()
+      if (existing) {
+        return NextResponse.json(
+          { error: 'An account with this email already exists. Please log in instead.' },
+          { status: 409 }
+        )
+      }
+    }
+
     // Store member info before checkout
     if (email) {
       await supabase.from('members').upsert({

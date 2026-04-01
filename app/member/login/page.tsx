@@ -10,6 +10,7 @@ export default function MemberLogin() {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [showEmail, setShowEmail] = useState(false)
+  const [noAccount, setNoAccount] = useState(false)
   const router = useRouter()
 
   // Silently redirect if already logged in — no loading screen
@@ -39,7 +40,11 @@ export default function MemberLogin() {
         shouldCreateUser: false,
       }
     })
-    if (!error) setSent(true)
+    if (!error) {
+      setSent(true)
+    } else if (error.status === 422) {
+      setNoAccount(true)
+    }
     setLoading(false)
   }
 
@@ -60,7 +65,23 @@ export default function MemberLogin() {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ width: '100%', maxWidth: '400px' }}>
 
-          {sent ? (
+          {noAccount ? (
+            <div className="fade-up">
+              <h1 className="display" style={{ fontSize: 'clamp(48px, 12vw, 64px)', marginBottom: '16px' }}>No account found.</h1>
+              <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px', lineHeight: 1.55 }}>
+                <strong style={{ color: 'var(--ink)' }}>{email}</strong> isn't associated with a PerkPass account.
+              </p>
+              <Link href="/signup" className="btn btn-primary" style={{ display: 'block', textAlign: 'center', fontSize: '17px', padding: '15px', marginBottom: '16px' }}>
+                Create an account
+              </Link>
+              <button
+                onClick={() => { setNoAccount(false); setEmail('') }}
+                style={{ background: 'none', border: 'none', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-4)', cursor: 'pointer', padding: 0 }}
+              >
+                Try a different email
+              </button>
+            </div>
+          ) : sent ? (
             <div className="fade-up">
               <h1 className="display" style={{ fontSize: 'clamp(48px, 12vw, 64px)', marginBottom: '16px' }}>Check your email.</h1>
               <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px', lineHeight: 1.55 }}>
