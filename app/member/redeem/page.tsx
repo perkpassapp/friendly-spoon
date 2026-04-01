@@ -157,23 +157,22 @@ function RedeemContent() {
 
   // ── Cooldown ──
   if (cooldown !== null) {
-    const is24 = cooldownType === '15min'
     return (
       <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
         <div style={{ maxWidth: '400px', width: '100%' }}>
           <h2 className="display" style={{ fontSize: 'clamp(40px, 10vw, 64px)', marginBottom: '12px' }}>
-            {is24 ? 'Come back tomorrow.' : 'Hold tight.'}
+            {'Hold tight.'}
           </h2>
           <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px' }}>
-            {is24 ? 'You already used this deal today. Each deal resets every 24 hours.' : 'Wait a moment before generating a new code.'}
+            {'Wait 15 minutes before using this deal again.'}
           </p>
           <div style={{ background: 'var(--forest)', borderRadius: '10px', padding: '32px', marginBottom: '24px', textAlign: 'center' }}>
             <div className="display" style={{ fontSize: '64px', color: 'var(--green)', lineHeight: 1 }}>{fmtCooldown(cooldown)}</div>
             <div style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              {is24 ? 'Hours remaining' : 'Minutes remaining'}
+              {'Minutes remaining'}
             </div>
             <div style={{ marginTop: '20px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', height: '4px' }}>
-              <div style={{ height: '100%', background: 'var(--green)', borderRadius: '4px', width: `${(cooldown / (is24 ? 86400 : 900)) * 100}%`, transition: 'width 1s linear' }} />
+              <div style={{ height: '100%', background: 'var(--green)', borderRadius: '4px', width: `${(cooldown / 900) * 100}%`, transition: 'width 1s linear' }} />
             </div>
           </div>
           <button onClick={() => router.push('/member/deals')} className="btn btn-primary" style={{ width: '100%', fontSize: '17px', padding: '16px' }}>
