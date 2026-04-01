@@ -76,15 +76,15 @@ export default function MemberDeals() {
         .from('deals').select('*').eq('active', true).order('created_at')
       if (dealsData) setDeals(dealsData)
 
-      const oneDayAgo = new Date(Date.now() - 86400000).toISOString()
+      const fifteenMinsAgo = new Date(Date.now() - 900000).toISOString()
       const { data: redemptions } = await supabase
         .from('redemptions').select('deal_id, redeemed_at')
-        .eq('member_email', email).gte('redeemed_at', oneDayAgo)
+        .eq('member_email', email).gte('redeemed_at', fifteenMinsAgo)
       if (redemptions) {
         const cdMap: Record<string, number> = {}
         redemptions.forEach(r => {
           if (!r.deal_id) return
-          const s = Math.ceil((new Date(r.redeemed_at).getTime() + 86400000 - Date.now()) / 1000)
+          const s = Math.ceil((new Date(r.redeemed_at).getTime() + 900000 - Date.now()) / 1000)
           if (s > 0) cdMap[r.deal_id] = s
         })
         setCooldowns(cdMap)
