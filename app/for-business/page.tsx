@@ -130,7 +130,7 @@ export default function ForBusiness() {
         <div className="fade-up-2">
           <div style={{ borderTop: '2px solid var(--ink)', paddingTop: '32px', marginBottom: '32px' }}>
             <h2 className="display" style={{ fontSize: '40px', marginBottom: '8px' }}>Apply now.</h2>
-            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)' }}>Takes 2 minutes. We review every application personally.</p>
+            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)' }}>Takes 2 minutes to apply. We review every application and will contact you with any questions.</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -167,7 +167,7 @@ export default function ForBusiness() {
               <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>
                 Your deal offer *
               </label>
-              <input type="text" value={form.deal_offer} onChange={e => update('deal_offer', e.target.value)} placeholder="e.g. 20% off any drink, $10 off first haircut" className="pp-input" />
+              <input type="text" value={form.deal_offer} onChange={e => update('deal_offer', e.target.value)} placeholder="e.g. 10% off any drink, $5 off first haircut" className="pp-input" />
               <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>
                 Keep it simple. The best deals are specific and easy to apply at the register.
               </p>
@@ -208,7 +208,7 @@ export default function ForBusiness() {
             {/* Phone */}
             <div>
               <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>
-                Phone number
+                Phone number *
               </label>
               <input type="tel" value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="(215) 555-0100" className="pp-input" />
             </div>
