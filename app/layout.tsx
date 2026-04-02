@@ -21,7 +21,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <meta name="theme-color" content="#5fa061" />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <footer style={{ borderTop: '1px solid var(--border)', padding: '20px 24px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+          <a href="/terms" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', textDecoration: 'none' }}>Terms</a>
+          <a href="/privacy" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', textDecoration: 'none' }}>Privacy</a>
+          <a href="/refund-policy" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', textDecoration: 'none' }}>Refund Policy</a>
+          <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 500, color: 'var(--ink-4)' }}>© 2026 Sam Lee Ventures LLC</span>
+        </footer>
+      </body>
     </html>
   )
 }
