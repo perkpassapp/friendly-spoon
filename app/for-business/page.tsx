@@ -114,7 +114,7 @@ export default function ForBusiness() {
             Get new customers.<br />Pay nothing.
           </h1>
           <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.55, marginBottom: '32px' }}>
-            List your business on PerkPass and we send you paying customers. You offer a small deal. We do the rest. Zero cost, zero risk.
+            List your business on PerkPass and we send you paying customers. You offer a small exclusive deal for the locals. We do the rest. Zero cost, zero risk.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '2px', borderTop: '2px solid var(--ink)', paddingTop: '24px' }}>
             {[{ n: '$0', l: 'Cost to list' }, { n: '2min', l: 'To get verified' }, { n: '0%', l: 'Commission' }, { n: '100%', l: 'Your profits' }].map(s => (
