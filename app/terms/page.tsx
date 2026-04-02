@@ -20,7 +20,6 @@ export default function TermsPage() {
           <section>
             <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.03em', color: 'var(--ink)', marginBottom: '10px' }}>1. Overview</h2>
             <p>Welcome to PerkPass. These Terms of Service govern your access to and use of the PerkPass platform.</p>
-            <p style={{ marginTop: '8px' }}>PerkPass is operated by <strong style={{ color: 'var(--ink)', fontWeight: 700 }}>Sam Lee Ventures LLC</strong>.</p>
           </section>
 
           <section>
