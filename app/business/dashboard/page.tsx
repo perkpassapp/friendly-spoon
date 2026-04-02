@@ -46,6 +46,8 @@ export default function BusinessDashboard() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [photoError, setPhotoError] = useState('')
   const [photoSuccess, setPhotoSuccess] = useState(false)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [pendingPreview, setPendingPreview] = useState<string | null>(null)
 
   useEffect(() => {
     const saved = localStorage.getItem('biz_session')
@@ -138,18 +140,30 @@ export default function BusinessDashboard() {
     setTimeout(() => setSubmitSuccess(false), 5000)
   }
 
-  async function handlePhotoUpload(file: File) {
+  function stagePhoto(file: File) {
     if (file.size > 5 * 1024 * 1024) { setPhotoError('File must be under 5MB'); return }
+    setPhotoError(''); setPhotoSuccess(false); setPendingFile(file)
+    const reader = new FileReader()
+    reader.onload = e => setPendingPreview(e.target?.result as string)
+    reader.readAsDataURL(file)
+  }
+
+  async function savePhoto() {
+    if (!pendingFile) return
     setPhotoUploading(true); setPhotoError(''); setPhotoSuccess(false)
-    const ext = file.name.split('.').pop()
+    const ext = pendingFile.name.split('.').pop()
     const path = account!.id + '/photo.' + ext
-    const { error: uploadError } = await supabase.storage.from('business-photos').upload(path, file, { upsert: true, contentType: file.type })
+    const { error: uploadError } = await supabase.storage.from('business-photos').upload(path, pendingFile, { upsert: true, contentType: pendingFile.type })
     if (uploadError) { setPhotoError('Upload failed. Please try again.'); setPhotoUploading(false); return }
     const { data: urlData } = supabase.storage.from('business-photos').getPublicUrl(path)
     const url = urlData.publicUrl + '?t=' + Date.now()
     await supabase.from('deals').update({ photo_url: url }).eq('business_name', account!.business_name)
-    setPhotoUrl(url); setPhotoSuccess(true); setPhotoUploading(false)
+    setPhotoUrl(url); setPendingFile(null); setPendingPreview(null); setPhotoSuccess(true); setPhotoUploading(false)
     setTimeout(() => setPhotoSuccess(false), 4000)
+  }
+
+  function discardPhoto() {
+    setPendingFile(null); setPendingPreview(null); setPhotoError('')
   }
 
   function formatDate(ts: string) {
@@ -392,34 +406,58 @@ export default function BusinessDashboard() {
             <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '28px' }}>
               This photo appears on your deal cards that members browse. Upload a real photo of your space — it makes a big difference.
             </p>
-            {photoUrl ? (
-              <div style={{ marginBottom: '24px' }}>
-                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '10px' }}>Current photo</div>
-                <div style={{ borderRadius: '10px', overflow: 'hidden', border: '2px solid var(--green)', height: '200px', position: 'relative' }}>
-                  <img src={photoUrl} alt={account?.business_name || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', bottom: '10px', left: '12px' }}>
-                    <div className="display" style={{ fontSize: '18px', color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{account?.business_name}</div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div style={{ background: 'var(--bg-2)', borderRadius: '10px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border-2)', marginBottom: '24px' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '4px' }}>No photo yet</div>
-                  <div style={{ fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500 }}>Using a category stock photo for now</div>
-                </div>
+
+            {photoSuccess && (
+              <div style={{ background: 'var(--green-lt)', border: '1px solid var(--green)', borderRadius: '6px', padding: '10px 16px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green-dk)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--green-dk)' }}>Photo saved. Members will see it right away.</span>
               </div>
             )}
-            <div style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '20px', border: '1px solid var(--border-2)', marginBottom: '16px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>
-                {photoUrl ? 'Replace photo' : 'Upload your photo'}
-              </label>
-              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(f) }} className="pp-input" style={{ padding: '10px', cursor: 'pointer' }} disabled={photoUploading} />
-              <p style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '8px' }}>JPG, PNG or WebP - Max 5MB - Updates instantly across all your deals</p>
-            </div>
-            {photoError && <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', marginBottom: '12px' }}>{photoError}</p>}
-            {photoUploading && <div style={{ background: 'var(--bg-2)', borderRadius: '8px', padding: '14px 16px', marginBottom: '12px', border: '1px solid var(--border-2)' }}><p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-3)' }}>Uploading photo...</p></div>}
-            {photoSuccess && <div style={{ background: 'var(--green-lt)', borderRadius: '8px', padding: '14px 16px', border: '1px solid var(--green)' }}><p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--green-dk)' }}>Photo updated. Members will see it right away.</p></div>}
+
+            {pendingPreview ? (
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '10px' }}>Preview — not saved yet</div>
+                <div style={{ borderRadius: '10px', overflow: 'hidden', border: '2px dashed var(--green)', height: '200px', position: 'relative' }}>
+                  <img src={pendingPreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'var(--ink)', color: 'var(--bg)', borderRadius: '4px', padding: '3px 10px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unsaved</div>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                  <button onClick={savePhoto} disabled={photoUploading} className="btn btn-primary" style={{ fontSize: '15px', padding: '12px 28px' }}>
+                    {photoUploading ? 'Saving...' : 'Save photo'}
+                  </button>
+                  <button onClick={discardPhoto} disabled={photoUploading} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em', padding: '12px 20px', background: 'none', border: '1.5px solid var(--border-2)', borderRadius: '8px', color: 'var(--ink-3)', cursor: 'pointer' }}>Remove</button>
+                </div>
+                {photoError && <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', marginTop: '10px' }}>{photoError}</p>}
+              </div>
+            ) : (
+              <>
+                {photoUrl ? (
+                  <div style={{ marginBottom: '24px' }}>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '10px' }}>Current photo</div>
+                    <div style={{ borderRadius: '10px', overflow: 'hidden', border: '2px solid var(--green)', height: '200px', position: 'relative' }}>
+                      <img src={photoUrl} alt={account?.business_name || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div style={{ position: 'absolute', bottom: '10px', left: '12px' }}>
+                        <div className="display" style={{ fontSize: '18px', color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{account?.business_name}</div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ background: 'var(--bg-2)', borderRadius: '10px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border-2)', marginBottom: '24px' }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '4px' }}>No photo yet</div>
+                      <div style={{ fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500 }}>Using a category stock photo for now</div>
+                    </div>
+                  </div>
+                )}
+                <div style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '20px', border: '1px solid var(--border-2)' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>
+                    {photoUrl ? 'Choose a new photo' : 'Upload your photo'}
+                  </label>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => { const f = e.target.files?.[0]; if (f) stagePhoto(f) }} className="pp-input" style={{ padding: '10px', cursor: 'pointer' }} />
+                  <p style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '8px' }}>JPG, PNG or WebP — max 5MB</p>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
