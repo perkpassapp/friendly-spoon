@@ -15,7 +15,7 @@ type Application = {
 }
 type Deal = {
   id: string; business_name: string; deal_description: string; category: string
-  address: string; active: boolean; admin_disabled: boolean; photo_url?: string | null
+  address: string; active: boolean; admin_disabled: boolean; photo_url?: string | null; featured: boolean
 }
 type Business = {
   id: string; business_name: string; category: string; address: string
@@ -73,6 +73,11 @@ export default function AdminDashboard() {
   async function adminToggleDeal(deal: Deal) {
     const disabling = !deal.admin_disabled
     await supabase.from('deals').update({ admin_disabled: disabling, active: disabling ? false : deal.active }).eq('id', deal.id)
+    await loadData()
+  }
+
+  async function toggleFeatured(deal: Deal) {
+    await supabase.from('deals').update({ featured: !deal.featured }).eq('id', deal.id)
     await loadData()
   }
 
@@ -272,12 +277,17 @@ export default function AdminDashboard() {
                           <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)' }}>{deal.business_name}</div>
                           {deal.admin_disabled && <span style={{ ...LABEL, fontSize: '10px', background: 'var(--red-lt)', color: 'var(--red)', padding: '2px 8px', borderRadius: '3px' }}>Admin disabled</span>}
                         </div>
-                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--green-dk)' }}>{deal.deal_description}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--green-dk)' }}>{deal.deal_description}</div>
+                          {deal.featured && <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '2px 8px', borderRadius: '3px' }}>Featured</span>}
+                        </div>
                         <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '2px' }}>{deal.category} · {deal.address}</div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: deal.active && !deal.admin_disabled ? 'var(--green)' : 'var(--ink-4)' }} />
                         <button onClick={() => startEdit(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
+                        <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
+                        <button onClick={() => toggleFeatured(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: deal.featured ? 'var(--green-dk)' : 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>{deal.featured ? '★ Featured' : '☆ Feature'}</button>
                         <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
                         <button onClick={() => adminToggleDeal(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: deal.admin_disabled ? 'var(--green-dk)' : 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>{deal.admin_disabled ? 'Re-enable' : 'Disable'}</button>
                         <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
