@@ -16,7 +16,7 @@ export default function PrivacyPage() {
         <p style={{ fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500, marginBottom: '40px' }}>Last updated: April 2, 2026</p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '28px', fontSize: '15px', lineHeight: 1.65, color: 'var(--ink-3)' }}>
-          <p>PerkPass, operated by Sam Lee Ventures LLC, collects information to provide and improve our services.</p>
+          <p>PerkPass, collects information to provide and improve our services.</p>
 
           <section>
             <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.03em', color: 'var(--ink)', marginBottom: '10px' }}>Information We Collect</h2>
