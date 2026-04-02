@@ -9,7 +9,7 @@ const supabase = createClient(
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { business_name, category, address, deal_offer, contact_name, contact_email, phone } = body
+    const { business_name, category, address, deal_offer, deal_details, contact_name, contact_email, phone } = body
 
     if (!business_name || !category || !address || !deal_offer || !contact_name || !contact_email) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 })
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 
     const { error } = await supabase
       .from('business_applications')
-      .insert([{ business_name, category, address, deal_offer, contact_name, contact_email: normalizedEmail, phone }])
+      .insert([{ business_name, category, address, deal_offer, deal_details: deal_details || null, contact_name, contact_email: normalizedEmail, phone }])
 
     if (error) throw error
 
