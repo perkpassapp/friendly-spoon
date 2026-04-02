@@ -27,7 +27,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <a href="/terms" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', textDecoration: 'none' }}>Terms</a>
           <a href="/privacy" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', textDecoration: 'none' }}>Privacy</a>
           <a href="/refund-policy" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', textDecoration: 'none' }}>Refund Policy</a>
-          <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 500, color: 'var(--ink-4)' }}>© 2026 Sam Lee Ventures LLC</span>
         </footer>
       </body>
     </html>
