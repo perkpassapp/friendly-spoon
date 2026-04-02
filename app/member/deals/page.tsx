@@ -19,6 +19,7 @@ type Deal = {
   address: string
   emoji: string
   photo_url?: string
+  featured?: boolean
   schedule: Schedule | null
 }
 
@@ -151,8 +152,9 @@ export default function MemberDeals() {
   const categories = ['All', ...Array.from(new Set(deals.map(d => d.category)))]
   const filtered = filter === 'All' ? deals : deals.filter(d => d.category === filter)
   const groups = groupDeals(filtered)
-  const featuredGroups = groups.slice(0, 2)
-  const restGroups = groups.slice(2)
+  // Admin-controlled featured: groups where at least one deal has featured=true
+  const featuredGroups = groups.filter(g => g.deals.some(d => d.featured))
+  const restGroups = groups.filter(g => g.deals.every(d => !d.featured))
 
   if (loading) return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: '48px' }}>
@@ -295,7 +297,7 @@ export default function MemberDeals() {
         {featuredGroups.length > 0 && (
           <div style={{ marginBottom: '32px' }}>
             <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '12px' }}>
-              {filter === 'All' ? 'Featured' : filter}
+  Featured
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {featuredGroups.map(group => {
