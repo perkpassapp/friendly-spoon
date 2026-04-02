@@ -166,7 +166,7 @@ export default function AdminDashboard() {
         <button onClick={() => setAuthed(false)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>Sign out</button>
       </header>
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '24px' }}>
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '32px', borderBottom: '2px solid var(--ink)', overflowX: 'hidden' }}>
+        <div style={{ display: 'flex', gap: '4px', marginBottom: '32px', borderBottom: '2px solid var(--ink)'}}>
           {([{ key: 'overview', label: 'Overview' }, { key: 'applications', label: 'Applications' + (pending.length > 0 ? ' (' + pending.length + ')' : '') }, { key: 'deals', label: 'Live Deals' }, { key: 'businesses', label: 'Businesses' + (disabledBusinesses > 0 ? ' (' + disabledBusinesses + ' off)' : '') }] as const).map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.04em', padding: '12px 16px', border: 'none', cursor: 'pointer', background: 'none', color: tab === t.key ? 'var(--ink)' : 'var(--ink-4)', borderBottom: tab === t.key ? '2px solid var(--ink)' : '2px solid transparent', marginBottom: '-2px', flexShrink: 0 }}>{t.label}</button>
           ))}
