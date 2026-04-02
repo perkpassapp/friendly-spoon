@@ -7,7 +7,7 @@ const CATEGORIES = ['Cafe', 'Restaurant', 'Barber', 'Nail Salon', 'Fitness', 'Pi
 export default function ForBusiness() {
   const [form, setForm] = useState({
     business_name: '', category: '', address: '',
-    deal_offer: '', contact_name: '', contact_email: '', phone: ''
+    deal_offer: '', deal_details: '', contact_name: '', contact_email: '', phone: ''
   })
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -171,6 +171,15 @@ export default function ForBusiness() {
               <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>
                 Keep it simple. The best deals are specific and easy to apply at the register.
               </p>
+            </div>
+
+            {/* Deal details */}
+            <div>
+              <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>
+                Deal details <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0, color: 'var(--ink-4)', fontSize: '12px' }}>(optional)</span>
+              </label>
+              <textarea value={form.deal_details} onChange={e => update('deal_details', e.target.value)} placeholder="e.g. Valid on orders over $10. One per visit. Cannot be combined with other offers." rows={3} className="pp-input" style={{ resize: 'vertical', fontFamily: 'inherit', fontSize: '15px', lineHeight: 1.5 }} />
+              <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>Any fine print, restrictions, or extra context members should know. Shown under your deal on the deals page.</p>
             </div>
 
             {/* Divider */}
