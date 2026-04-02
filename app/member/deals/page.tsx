@@ -14,7 +14,7 @@ type Deal = {
   id: string
   business_name: string
   deal_description: string
-  deal_details?: string   // ← add this
+  deal_details?: string
   category: string
   address: string
   emoji: string
@@ -44,8 +44,21 @@ const CAT_PHOTOS: Record<string, string> = {
 }
 
 const CAT_EMOJI: Record<string, string> = {
-  Cafe: '☕', Restaurant: '🍽️', Barber: '✂️', Fitness: '🏋️',
-  Nails: '💅', Sport: '🏓', Wellness: '🧘', Retail: '🛍️', Other: '🎟️',
+  Cafe: '☕',
+  Restaurant: '🍽️',
+  Barber: '✂️',
+  Fitness: '🏋️',
+  Nails: '💅',
+  Sport: '🏓',
+  Wellness: '🧘',
+  Retail: '🛍️',
+  Other: '🎟️',
+}
+
+function getMapsUrl(address: string): string {
+  const encoded = encodeURIComponent(address)
+  // maps:// is intercepted by iOS for Apple Maps; Android/desktop falls through to Google Maps
+  return `https://maps.google.com/?q=${encoded}`
 }
 
 export default function MemberDeals() {
@@ -66,18 +79,16 @@ export default function MemberDeals() {
       const { data: memberData } = await supabase
         .from('members').select('name').eq('email', email).limit(1)
       if (memberData?.[0]?.name) setUserName(memberData[0].name.split(' ')[0])
-
       const res = await fetch('/api/verify-subscription', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       })
       const { active } = await res.json()
       if (!active) { setAccessDenied(true); setLoading(false); return }
-
       const { data: dealsData } = await supabase
         .from('deals').select('*').eq('active', true).order('created_at')
       if (dealsData) setDeals(dealsData)
-
       const fifteenMinsAgo = new Date(Date.now() - 900000).toISOString()
       const { data: redemptions } = await supabase
         .from('redemptions').select('deal_id, redeemed_at')
@@ -131,7 +142,6 @@ export default function MemberDeals() {
     return deal.photo_url || CAT_PHOTOS[deal.category] || CAT_PHOTOS['Other']
   }
 
-  // Group deals by business name
   function groupDeals(dealList: Deal[]): BusinessGroup[] {
     const map = new Map<string, BusinessGroup>()
     dealList.forEach(d => {
@@ -152,9 +162,89 @@ export default function MemberDeals() {
   const categories = ['All', ...Array.from(new Set(deals.map(d => d.category)))]
   const filtered = filter === 'All' ? deals : deals.filter(d => d.category === filter)
   const groups = groupDeals(filtered)
-  // Admin-controlled featured: groups where at least one deal has featured=true
   const featuredGroups = groups.filter(g => g.deals.some(d => d.featured))
   const restGroups = groups.filter(g => g.deals.every(d => !d.featured))
+
+  // Reusable photo block with Option C frosted footer bar
+  function BusinessPhotoBlock({
+    group,
+    firstDeal,
+    hasMultiple,
+    allOnCooldown,
+    onClick,
+  }: {
+    group: BusinessGroup
+    firstDeal: Deal
+    hasMultiple: boolean
+    allOnCooldown: boolean
+    onClick: () => void
+  }) {
+    return (
+      <div
+        style={{ height: '180px', overflow: 'hidden', position: 'relative', cursor: allOnCooldown ? 'not-allowed' : 'pointer' }}
+        onClick={onClick}
+      >
+        <img
+          src={getPhoto(firstDeal)}
+          alt={group.business_name}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          loading="lazy"
+        />
+        {/* Category pill — top left */}
+        <div style={{
+          position: 'absolute', top: '12px', left: '12px',
+          background: 'var(--ink)', color: 'var(--bg)',
+          padding: '4px 10px', borderRadius: '3px',
+          fontFamily: "'Barlow Condensed', sans-serif",
+          fontSize: '11px', fontWeight: 700,
+          textTransform: 'uppercase', letterSpacing: '0.06em'
+        }}>
+          {group.category}
+        </div>
+        {/* Multi-deal badge — top right */}
+        {hasMultiple && (
+          <div style={{
+            position: 'absolute', top: '12px', right: '12px',
+            background: 'var(--green)', color: '#fff',
+            padding: '4px 10px', borderRadius: '3px',
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: '11px', fontWeight: 700,
+            textTransform: 'uppercase', letterSpacing: '0.04em'
+          }}>
+            {group.deals.length} deals
+          </div>
+        )}
+        {/* Option C: frosted footer bar — always opaque, guaranteed contrast */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          background: 'rgba(15,15,15,0.84)',
+          padding: '10px 14px 12px',
+        }}>
+          <div className="display" style={{
+            fontSize: '20px', color: '#ffffff',
+            lineHeight: 1.1, marginBottom: '3px'
+          }}>
+            {group.business_name}
+          </div>
+          <a
+            href={getMapsUrl(group.address)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={e => e.stopPropagation()}
+            style={{
+              fontSize: '12px',
+              color: 'rgba(255,255,255,0.75)',
+              textDecoration: 'underline',
+              textDecorationColor: 'rgba(255,255,255,0.35)',
+              cursor: 'pointer',
+            }}
+          >
+            📍 {group.address}
+          </a>
+        </div>
+      </div>
+    )
+  }
 
   if (loading) return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: '48px' }}>
@@ -194,8 +284,10 @@ export default function MemberDeals() {
           <Link href="/signup" className="btn btn-primary" style={{ width: '100%', fontSize: '17px', padding: '16px', display: 'flex', marginBottom: '12px' }}>
             Get PerkPass — $3/month
           </Link>
-          <button onClick={async () => { await supabase.auth.signOut(); router.push('/') }}
-            style={{ width: '100%', background: 'none', border: 'none', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)', cursor: 'pointer', padding: '8px' }}>
+          <button
+            onClick={async () => { await supabase.auth.signOut(); router.push('/') }}
+            style={{ width: '100%', background: 'none', border: 'none', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)', cursor: 'pointer', padding: '8px' }}
+          >
             Sign out
           </button>
         </div>
@@ -219,13 +311,19 @@ export default function MemberDeals() {
             </div>
             <div style={{ padding: '20px 24px 24px' }}>
               <p style={{ fontSize: '16px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '4px' }}>{selectedDeal.deal_description}</p>
-              {/* ADD THIS */}
-{selectedDeal.deal_details && (
-  <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '4px', lineHeight: 1.5 }}>
-    {selectedDeal.deal_details}
-  </p>
-)}
-              <p style={{ fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500, marginBottom: '20px' }}>{selectedDeal.address}</p>
+              {selectedDeal.deal_details && (
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '4px', lineHeight: 1.5 }}>
+                  {selectedDeal.deal_details}
+                </p>
+              )}
+              <a
+                href={getMapsUrl(selectedDeal.address)}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500, marginBottom: '20px', display: 'block', textDecoration: 'underline', textDecorationColor: 'var(--border)' }}
+              >
+                {selectedDeal.address}
+              </a>
               <div style={{ background: 'var(--bg-2)', borderRadius: '8px', padding: '14px', marginBottom: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                 {[{ n: '2 min', l: 'Window' }, { n: '24 hrs', l: 'Cooldown' }, { n: '1x', l: 'Per day' }].map(r => (
                   <div key={r.l} style={{ textAlign: 'center' }}>
@@ -238,8 +336,14 @@ export default function MemberDeals() {
                 Are you at {selectedDeal.business_name} right now?
               </p>
               {isScheduleActive(selectedDeal) ? (
-                <button onClick={() => { router.push(`/member/redeem?id=${selectedDeal.id}&biz=${encodeURIComponent(selectedDeal.business_name)}&deal=${encodeURIComponent(selectedDeal.deal_description)}`); setSelectedDeal(null) }}
-                  className="btn btn-primary" style={{ width: '100%', fontSize: '17px', padding: '16px', marginBottom: '8px' }}>
+                <button
+                  onClick={() => {
+                    router.push(`/member/redeem?id=${selectedDeal.id}&biz=${encodeURIComponent(selectedDeal.business_name)}&deal=${encodeURIComponent(selectedDeal.deal_description)}`)
+                    setSelectedDeal(null)
+                  }}
+                  className="btn btn-primary"
+                  style={{ width: '100%', fontSize: '17px', padding: '16px', marginBottom: '8px' }}
+                >
                   Yes — show my code
                 </button>
               ) : (
@@ -260,8 +364,10 @@ export default function MemberDeals() {
         <Link href="/member/deals" className="pp-logo">Perk<span>Pass</span></Link>
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <Link href="/account" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-3)', textDecoration: 'none' }}>Account</Link>
-          <button onClick={async () => { await supabase.auth.signOut(); router.push('/') }}
-            style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>
+          <button
+            onClick={async () => { await supabase.auth.signOut(); router.push('/') }}
+            style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}
+          >
             Sign out
           </button>
         </div>
@@ -280,13 +386,17 @@ export default function MemberDeals() {
         {/* Category filters */}
         <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '16px 0 20px', scrollbarWidth: 'none' }}>
           {categories.map(cat => (
-            <button key={cat} onClick={() => setFilter(cat)} style={{
-              flexShrink: 0, padding: '8px 16px', borderRadius: '4px', border: 'none', cursor: 'pointer',
-              fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700,
-              textTransform: 'uppercase', letterSpacing: '0.05em',
-              background: filter === cat ? 'var(--ink)' : 'var(--bg-2)',
-              color: filter === cat ? 'var(--bg)' : 'var(--ink-3)',
-            }}>
+            <button
+              key={cat}
+              onClick={() => setFilter(cat)}
+              style={{
+                flexShrink: 0, padding: '8px 16px', borderRadius: '4px', border: 'none', cursor: 'pointer',
+                fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700,
+                textTransform: 'uppercase', letterSpacing: '0.05em',
+                background: filter === cat ? 'var(--ink)' : 'var(--bg-2)',
+                color: filter === cat ? 'var(--bg)' : 'var(--ink-3)',
+              }}
+            >
               {cat !== 'All' && <span style={{ marginRight: '4px' }}>{CAT_EMOJI[cat] || '🎟️'}</span>}
               {cat}
             </button>
@@ -297,7 +407,7 @@ export default function MemberDeals() {
         {featuredGroups.length > 0 && (
           <div style={{ marginBottom: '32px' }}>
             <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '12px' }}>
-  Featured
+              Featured
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {featuredGroups.map(group => {
@@ -305,30 +415,14 @@ export default function MemberDeals() {
                 const hasMultiple = group.deals.length > 1
                 const allOnCooldown = group.deals.every(d => cooldowns[d.id] !== undefined)
                 return (
-                  <div key={group.business_name} style={{
-                    background: 'var(--bg-2)', borderRadius: '12px', overflow: 'hidden',
-                    border: '1px solid var(--border)', opacity: allOnCooldown ? 0.6 : 1,
-                  }}>
-                    {/* Photo */}
-                    <div style={{ height: '180px', overflow: 'hidden', position: 'relative', cursor: allOnCooldown ? 'not-allowed' : 'pointer' }}
-                      onClick={() => !allOnCooldown && !hasMultiple && setSelectedDeal(firstDeal)}>
-                      <img src={getPhoto(firstDeal)} alt={group.business_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 60%)' }} />
-                      <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'var(--ink)', color: 'var(--bg)', padding: '4px 10px', borderRadius: '3px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                        {group.category}
-                      </div>
-                      {hasMultiple && (
-                        <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--green)', color: '#fff', padding: '4px 10px', borderRadius: '3px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                          {group.deals.length} deals
-                        </div>
-                      )}
-                      <div style={{ position: 'absolute', bottom: '12px', left: '14px', right: '14px' }}>
-                        <div className="display" style={{ fontSize: '22px', color: '#ffffff', lineHeight: 1.1, textShadow: '0 1px 6px rgba(0,0,0,0.4)' }}>
-                          {group.business_name}
-                        </div>
-                        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', fontWeight: 500, marginTop: '2px' }}>📍 {group.address}</div>
-                      </div>
-                    </div>
+                  <div key={group.business_name} style={{ background: 'var(--bg-2)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)', opacity: allOnCooldown ? 0.6 : 1 }}>
+                    <BusinessPhotoBlock
+                      group={group}
+                      firstDeal={firstDeal}
+                      hasMultiple={hasMultiple}
+                      allOnCooldown={allOnCooldown}
+                      onClick={() => !allOnCooldown && !hasMultiple && setSelectedDeal(firstDeal)}
+                    />
                     {/* Deals list */}
                     <div style={{ padding: hasMultiple ? '0' : '14px 16px' }}>
                       {hasMultiple ? (
@@ -336,14 +430,10 @@ export default function MemberDeals() {
                           {group.deals.map((deal, i) => {
                             const onCooldown = cooldowns[deal.id] !== undefined
                             return (
-                              <div key={deal.id} onClick={() => !onCooldown && setSelectedDeal(deal)}
-                                style={{
-                                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                  padding: '13px 16px', cursor: onCooldown ? 'not-allowed' : 'pointer',
-                                  borderBottom: i < group.deals.length - 1 ? '1px solid var(--border)' : 'none',
-                                  opacity: onCooldown ? 0.5 : 1,
-                                  transition: 'background 0.1s',
-                                }}
+                              <div
+                                key={deal.id}
+                                onClick={() => !onCooldown && setSelectedDeal(deal)}
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', cursor: onCooldown ? 'not-allowed' : 'pointer', borderBottom: i < group.deals.length - 1 ? '1px solid var(--border)' : 'none', opacity: onCooldown ? 0.5 : 1, transition: 'background 0.1s' }}
                                 onMouseEnter={e => { if (!onCooldown) e.currentTarget.style.background = 'var(--bg-3)' }}
                                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                               >
@@ -374,8 +464,7 @@ export default function MemberDeals() {
                             )}
                           </div>
                           {cooldowns[firstDeal.id] === undefined && (
-                            <div className="btn btn-primary" style={{ padding: '10px 18px', fontSize: '14px', flexShrink: 0, borderRadius: '4px', cursor: 'pointer' }}
-                              onClick={() => setSelectedDeal(firstDeal)}>Redeem</div>
+                            <div className="btn btn-primary" style={{ padding: '10px 18px', fontSize: '14px', flexShrink: 0, borderRadius: '4px', cursor: 'pointer' }} onClick={() => setSelectedDeal(firstDeal)}>Redeem</div>
                           )}
                         </div>
                       )}
@@ -399,30 +488,14 @@ export default function MemberDeals() {
                 const hasMultiple = group.deals.length > 1
                 const allOnCooldown = group.deals.every(d => cooldowns[d.id] !== undefined)
                 return (
-                  <div key={group.business_name} style={{
-                    background: 'var(--bg-2)', borderRadius: '12px', overflow: 'hidden',
-                    border: '1px solid var(--border)', opacity: allOnCooldown ? 0.6 : 1,
-                  }}>
-                    {/* Photo */}
-                    <div style={{ height: '180px', overflow: 'hidden', position: 'relative', cursor: allOnCooldown ? 'not-allowed' : 'pointer' }}
-                      onClick={() => !allOnCooldown && !hasMultiple && setSelectedDeal(firstDeal)}>
-                      <img src={getPhoto(firstDeal)} alt={group.business_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 60%)' }} />
-                      <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'var(--ink)', color: 'var(--bg)', padding: '4px 10px', borderRadius: '3px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                        {group.category}
-                      </div>
-                      {hasMultiple && (
-                        <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--green)', color: '#fff', padding: '4px 10px', borderRadius: '3px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                          {group.deals.length} deals
-                        </div>
-                      )}
-                      <div style={{ position: 'absolute', bottom: '12px', left: '14px', right: '14px' }}>
-                        <div className="display" style={{ fontSize: '22px', color: '#ffffff', lineHeight: 1.1, textShadow: '0 1px 6px rgba(0,0,0,0.4)' }}>
-                          {group.business_name}
-                        </div>
-                        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', fontWeight: 500, marginTop: '2px' }}>📍 {group.address}</div>
-                      </div>
-                    </div>
+                  <div key={group.business_name} style={{ background: 'var(--bg-2)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)', opacity: allOnCooldown ? 0.6 : 1 }}>
+                    <BusinessPhotoBlock
+                      group={group}
+                      firstDeal={firstDeal}
+                      hasMultiple={hasMultiple}
+                      allOnCooldown={allOnCooldown}
+                      onClick={() => !allOnCooldown && !hasMultiple && setSelectedDeal(firstDeal)}
+                    />
                     {/* Deals */}
                     <div style={{ padding: hasMultiple ? '0' : '14px 16px' }}>
                       {hasMultiple ? (
@@ -430,15 +503,13 @@ export default function MemberDeals() {
                           {group.deals.map((deal, i) => {
                             const onCooldown = cooldowns[deal.id] !== undefined
                             return (
-                              <div key={deal.id} onClick={() => !onCooldown && setSelectedDeal(deal)}
-                                style={{
-                                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                  padding: '13px 16px', cursor: onCooldown ? 'not-allowed' : 'pointer',
-                                  borderBottom: i < group.deals.length - 1 ? '1px solid var(--border)' : 'none',
-                                  opacity: onCooldown ? 0.5 : 1, transition: 'background 0.1s',
-                                }}
+                              <div
+                                key={deal.id}
+                                onClick={() => !onCooldown && setSelectedDeal(deal)}
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', cursor: onCooldown ? 'not-allowed' : 'pointer', borderBottom: i < group.deals.length - 1 ? '1px solid var(--border)' : 'none', opacity: onCooldown ? 0.5 : 1, transition: 'background 0.1s' }}
                                 onMouseEnter={e => { if (!onCooldown) e.currentTarget.style.background = 'var(--bg-3)' }}
-                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                              >
                                 <div>
                                   <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '1px' }}>{deal.deal_description}</div>
                                   {onCooldown && <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Back in {formatCooldown(cooldowns[deal.id])}</div>}
@@ -459,8 +530,7 @@ export default function MemberDeals() {
                             )}
                           </div>
                           {cooldowns[firstDeal.id] === undefined && (
-                            <div className="btn btn-primary" style={{ padding: '10px 18px', fontSize: '14px', flexShrink: 0, borderRadius: '4px', cursor: 'pointer' }}
-                              onClick={() => setSelectedDeal(firstDeal)}>Redeem</div>
+                            <div className="btn btn-primary" style={{ padding: '10px 18px', fontSize: '14px', flexShrink: 0, borderRadius: '4px', cursor: 'pointer' }} onClick={() => setSelectedDeal(firstDeal)}>Redeem</div>
                           )}
                         </div>
                       )}
