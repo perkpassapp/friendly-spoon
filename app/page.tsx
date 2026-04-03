@@ -1,11 +1,11 @@
 import Link from 'next/link'
 
 const DEALS = [
-  { name: 'La Colombe', cat: 'Cafe', addr: 'Fishtown' },
-  { name: 'Barpride', cat: 'Barber', addr: 'Passyunk' },
-  { name: 'Everybody Fights', cat: 'Fitness', addr: 'Center City' },
-  { name: 'Nails by Design', cat: 'Nails', addr: 'Old City' },
-  { name: 'Suraya', cat: 'Restaurant', addr: 'Fishtown' },
+  { name: 'La Colombe', deal: 'Free drip with any pastry', cat: 'Cafe', addr: 'Fishtown' },
+  { name: 'Barpride', deal: '$10 off first cut', cat: 'Barber', addr: 'Passyunk' },
+  { name: 'Everybody Fights', deal: 'First week free', cat: 'Fitness', addr: 'Center City' },
+  { name: 'Nails by Design', deal: '20% off mani-pedi', cat: 'Nails', addr: 'Old City' },
+  { name: 'Suraya', deal: 'Free mezze with any entree', cat: 'Restaurant', addr: 'Fishtown' },
 ]
 
 const CAT_COLORS: Record<string, { bg: string; color: string }> = {
