@@ -1,11 +1,11 @@
 import Link from 'next/link'
 
 const DEALS = [
-  { name: 'La Colombe', deal: '', cat: 'Cafe', addr: 'Fishtown' },
-  { name: 'Barpride', deal: '', cat: 'Barber', addr: 'Passyunk' },
-  { name: 'Everybody Fights', deal: '', cat: 'Fitness', addr: 'Center City' },
-  { name: 'Nails by Design', deal: '', cat: 'Nails', addr: 'Old City' },
-  { name: 'Suraya', deal: '', cat: 'Restaurant', addr: 'Fishtown' },
+  { name: 'La Colombe', deal: '1335 Frankford Ave, Philadelphia, PA 19125', cat: 'Cafe', addr: 'Fishtown' },
+  { name: 'Mango Mango Dessert', deal: '1013 Cherry St, Philadelphia, PA 19107', cat: 'Cafe', addr: 'Chinatown' },
+  { name: 'Earn Everything Gym', deal: '2035 E Glenwood Ave, Philadelphia, PA 19124', cat: 'Fitness', addr: 'Center City' },
+  { name: 'Top Design Nails And Jewelry', deal: '1459 E Luzerne St, Philadelphia, PA 19124', cat: 'Nails', addr: 'Old City' },
+  { name: 'Suraya', deal: '1528 Frankford Ave, Philadelphia, PA 19125', cat: 'Restaurant', addr: 'Fishtown' },
 ]
 
 const CAT_COLORS: Record<string, { bg: string; color: string }> = {
