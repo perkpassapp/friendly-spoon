@@ -130,12 +130,12 @@ export default function Home() {
             })}
             {/* CTA tile */}
             <Link href="/for-business" style={{ textDecoration: 'none' }}>
-              <div className="deal-card" style={{ background: 'var(--bg)', border: '1.5px solid var(--green)', minHeight: '220px', cursor: 'pointer' }}>
+              <div className="deal-card" style={{ background: 'var(--bg)', border: '1.5px solid var(--forest)', minHeight: '220px', cursor: 'pointer' }}>
                 <div className="deal-card-body" style={{ justifyContent: 'center', gap: '16px' }}>
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--green)' }}>
                     Own a business?
                   </div>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '24px', fontWeight: 900, color: 'var(--green)', lineHeight: 1.05 }}>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '24px', fontWeight: 900, color: 'var(--forest)', lineHeight: 1.05 }}>
                     Wanna list your business? Let&apos;s do it.
                   </div>
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green)' }}>
