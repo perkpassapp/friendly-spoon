@@ -520,7 +520,6 @@ export default function BusinessDashboard() {
           </div>
         </div>
       )}
-      </div>
     </main>
   )
 }
