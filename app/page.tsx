@@ -1,12 +1,11 @@
 import Link from 'next/link'
 
 const DEALS = [
-  { name: 'Fishtown Coffee Co.', deal: '20% off any drink', cat: 'Cafe', addr: 'Fishtown' },
-  { name: 'The Craft Barber', deal: '$10 off first haircut', cat: 'Barber', addr: 'Northern Liberties' },
-  { name: 'Iron Body Gym', deal: 'Free 1-week trial', cat: 'Fitness', addr: 'Spring Garden' },
-  { name: 'Bliss Nail Studio', deal: '30% off mani-pedi', cat: 'Nails', addr: 'South Street' },
-  { name: 'Compadre Taqueria', deal: 'Buy 1 entree get 1 free', cat: 'Restaurant', addr: 'Passyunk' },
-  { name: 'Rally Pickleball', deal: 'Free drop-in class', cat: 'Sport', addr: 'Old City' },
+  { name: 'La Colombe', deal: 'Free drip with any pastry', cat: 'Cafe', addr: 'Fishtown' },
+  { name: 'Barpride', deal: '$10 off first cut', cat: 'Barber', addr: 'Passyunk' },
+  { name: 'Everybody Fights', deal: 'First week free', cat: 'Fitness', addr: 'Center City' },
+  { name: 'Nails by Design', deal: '20% off mani-pedi', cat: 'Nails', addr: 'Old City' },
+  { name: 'Suraya', deal: 'Free mezze with any entree', cat: 'Restaurant', addr: 'Fishtown' },
 ]
 
 const CAT_COLORS: Record<string, { bg: string; color: string }> = {
@@ -28,52 +27,20 @@ const CAT_PHOTOS: Record<string, string> = {
 }
 
 const HOW = [
-  { num: '01', title: 'Sign up for $3/month', body: 'Enter your email, pay with any card. Instant access. No contracts ever.' },
-  { num: '02', title: 'Browse Philly deals', body: 'Restaurants, cafes, barbers, gyms, nail salons — all in one place.' },
-  { num: '03', title: 'Tap, show code, save', body: 'A unique 6-letter code appears. Show it at the counter. Done in 10 seconds.' },
+  { num: '01', title: 'Sign up for $3/month',  body: 'Enter your email, pay with any card. Instant access. No contracts ever.' },
+  { num: '02', title: 'Browse Philly deals',    body: 'Restaurants, cafes, barbers, gyms, nail salons — all in one place.' },
+  { num: '03', title: 'Tap, show code, save',   body: 'A unique 6-letter code appears. Show it at the counter. Done in 10 seconds.' },
 ]
 
 export default function Home() {
   return (
     <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <style>{`
-        .deal-card {
-          background: var(--bg-2);
-          border: 1.5px solid var(--border-2);
-          border-radius: 12px;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-        }
-        .deal-card-img {
-          width: 100%;
-          height: 120px;
-          object-fit: cover;
-          display: block;
-        }
-        .deal-card-body {
-          padding: 14px 16px 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          flex: 1;
-        }
-        .quick-link {
-          background: var(--bg-2);
-          border: 1px solid var(--border-2);
-          border-radius: 8px;
-          padding: 16px 20px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          cursor: pointer;
-          text-align: left;
-          width: 100%;
-          transition: border-color 0.15s;
-        }
-        .quick-link:hover {
-          border-color: var(--green);
-        }
+        .deal-card { background: var(--bg-2); border: 1.5px solid var(--border-2); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+        .deal-card-img { width: 100%; height: 120px; object-fit: cover; display: block; }
+        .deal-card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .quick-link { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; text-align: left; width: 100%; transition: border-color 0.15s; }
+        .quick-link:hover { border-color: var(--green); }
       `}</style>
 
       {/* Nav */}
@@ -108,13 +75,11 @@ export default function Home() {
             Member login
           </Link>
         </div>
-
-        {/* Stats row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2px', borderTop: '2px solid var(--ink)', paddingTop: '32px' }}>
           {[
             { n: 'Growing', l: 'Active deals' },
-            { n: '$3', l: 'Per month' },
-            { n: '1 min', l: 'To redeem' },
+            { n: '$3',      l: 'Per month' },
+            { n: '1 min',   l: 'To redeem' },
           ].map(s => (
             <div key={s.l} style={{ paddingRight: '24px' }}>
               <div className="display" style={{ fontSize: '40px', color: 'var(--green)' }}>{s.n}</div>
@@ -124,18 +89,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Deals — card grid with photos */}
+      {/* Deals — card grid */}
       <section style={{ padding: '64px 24px', borderTop: '2px solid var(--ink)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ marginBottom: '32px' }}>
             <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)' }}>
-              What&apos;s included
+              Sneak peek for the homies
             </h2>
-            <Link href="/signup" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green)', textDecoration: 'none' }}>
-              See all deals
-            </Link>
           </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '32px' }}>
             {DEALS.map((d, i) => {
               const colors = CAT_COLORS[d.cat] || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
@@ -143,12 +104,12 @@ export default function Home() {
               return (
                 <div key={i} className="deal-card">
                   {photo && (
-                    <img
-                      src={photo}
-                      alt={d.cat}
-                      className="deal-card-img"
-                      loading="lazy"
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <img src={photo} alt={d.cat} className="deal-card-img" loading="lazy" />
+                      <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--ink)', color: 'var(--bg)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 8px', borderRadius: '3px' }}>
+                        Coming soon
+                      </span>
+                    </div>
                   )}
                   <div className="deal-card-body">
                     <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 9px', borderRadius: '4px' }}>
@@ -167,8 +128,23 @@ export default function Home() {
                 </div>
               )
             })}
+            {/* CTA tile */}
+            <Link href="/for-business" style={{ textDecoration: 'none' }}>
+              <div className="deal-card" style={{ background: 'var(--forest)', border: '1.5px solid var(--green)', minHeight: '220px', cursor: 'pointer' }}>
+                <div className="deal-card-body" style={{ justifyContent: 'center', gap: '16px' }}>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--green)' }}>
+                    Own a business?
+                  </div>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '24px', fontWeight: 900, color: '#ffffff', lineHeight: 1.05 }}>
+                    Wanna list your business? Let&apos;s do it.
+                  </div>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green)' }}>
+                    Apply free →
+                  </div>
+                </div>
+              </div>
+            </Link>
           </div>
-
           <div>
             <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px' }}>
               Unlock all deals — $3/month
@@ -224,8 +200,8 @@ export default function Home() {
         <div style={{ display: 'flex', gap: '20px' }}>
           {[
             { l: 'For businesses', h: '/for-business' },
-            { l: 'Admin', h: '/admin' },
-            { l: 'Log in', h: '/member/login' },
+            { l: 'Admin',          h: '/admin' },
+            { l: 'Log in',         h: '/member/login' },
           ].map(x => (
             <Link key={x.l} href={x.h} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-3)', textDecoration: 'none' }}>{x.l}</Link>
           ))}
