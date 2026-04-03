@@ -94,7 +94,7 @@ export default function Home() {
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <div style={{ marginBottom: '32px' }}>
             <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)' }}>
-              Sneak peek for the homies
+              Sneak peek
             </h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '32px' }}>
@@ -130,12 +130,12 @@ export default function Home() {
             })}
             {/* CTA tile */}
             <Link href="/for-business" style={{ textDecoration: 'none' }}>
-              <div className="deal-card" style={{ background: 'var(--forest)', border: '1.5px solid var(--green)', minHeight: '220px', cursor: 'pointer' }}>
+              <div className="deal-card" style={{ background: 'var(--bg)', border: '1.5px solid var(--green)', minHeight: '220px', cursor: 'pointer' }}>
                 <div className="deal-card-body" style={{ justifyContent: 'center', gap: '16px' }}>
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--green)' }}>
                     Own a business?
                   </div>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '24px', fontWeight: 900, color: '#ffffff', lineHeight: 1.05 }}>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '24px', fontWeight: 900, color: 'var(--green)', lineHeight: 1.05 }}>
                     Wanna list your business? Let&apos;s do it.
                   </div>
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green)' }}>
