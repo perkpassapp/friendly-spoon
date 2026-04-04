@@ -41,6 +41,7 @@ export async function POST(req: Request) {
     const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
     const filename = `businesses/${businessId}/photo.${ext}`
 
+    // Upload to storage (upsert replaces existing)
     const { data, error: uploadError } = await supabase.storage
       .from('business-photos')
       .upload(filename, buffer, {
@@ -54,14 +55,26 @@ export async function POST(req: Request) {
       .from('business-photos')
       .getPublicUrl(data.path)
 
-    const photoUrl = publicUrlData.publicUrl
+    // Append cache-bust so browsers always show the latest image
+    const photoUrl = publicUrlData.publicUrl + '?t=' + Date.now()
 
-    const { error: updateError } = await supabase
+    // 1. Update business_accounts so the dashboard reflects the new photo
+    const { data: accountData, error: accountError } = await supabase
       .from('business_accounts')
       .update({ photo_url: photoUrl })
       .eq('id', businessId)
+      .select('business_name')
+      .single()
 
-    if (updateError) throw updateError
+    if (accountError) throw accountError
+
+    // 2. Update ALL deals for this business so /member/deals shows the same photo
+    const { error: dealsError } = await supabase
+      .from('deals')
+      .update({ photo_url: photoUrl })
+      .eq('business_name', accountData.business_name)
+
+    if (dealsError) throw dealsError
 
     return NextResponse.json({ success: true, photo_url: photoUrl })
   } catch (err) {
