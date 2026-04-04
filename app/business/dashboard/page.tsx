@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 type BusinessAccount = {
   id: string; business_name: string; category: string; address: string
   deal_offer: string; contact_email: string; active: boolean
-  access_code: string | null; admin_disabled: boolean
+  access_code: string | null; admin_disabled: boolean; photo_url?: string | null
 }
 type Schedule = { days: number[]; start: string; end: string }
 type Deal = {
@@ -51,7 +51,10 @@ export default function BusinessDashboard() {
 
   useEffect(() => {
     const saved = localStorage.getItem('biz_session')
-    if (saved) { try { loadDashboard(JSON.parse(saved) as BusinessAccount) } catch { localStorage.removeItem('biz_session') } }
+    if (saved) {
+      try { loadDashboard(JSON.parse(saved) as BusinessAccount) }
+      catch { localStorage.removeItem('biz_session') }
+    }
   }, [])
 
   async function handleLogin() {
@@ -80,9 +83,10 @@ export default function BusinessDashboard() {
     const { data: dealsData } = await supabase.from('deals').select('*').eq('business_name', biz.business_name).order('created_at', { ascending: false })
     const { data: redemptionData } = await supabase.from('redemptions').select('*').eq('business_name', biz.business_name).order('redeemed_at', { ascending: false })
     const r = redemptionData || []
-    setDeals(dealsData || []); setRedemptions(r); setAccount(biz)
-    const firstDeal = dealsData?.[0]
-    if (firstDeal?.photo_url) setPhotoUrl(firstDeal.photo_url)
+    setDeals(dealsData || [])
+    setRedemptions(r)
+    setAccount(biz)
+    setPhotoUrl(biz.photo_url || null)
     const now = new Date()
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString()
@@ -135,12 +139,19 @@ export default function BusinessDashboard() {
   async function submitNewDeal() {
     if (!newDealOffer.trim()) { setError('Enter a deal description'); return }
     setSubmitting(true); setError('')
-    await supabase.from('business_applications').insert({ business_name: account!.business_name, category: account!.category, address: account!.address, deal_offer: newDealOffer.trim(), deal_details: newDealDetails.trim() || null, contact_name: '', contact_email: account!.contact_email, phone: '', status: 'pending' })
+    await supabase.from('business_applications').insert({
+      business_name: account!.business_name, category: account!.category,
+      address: account!.address, deal_offer: newDealOffer.trim(),
+      deal_details: newDealDetails.trim() || null, contact_name: '',
+      contact_email: account!.contact_email, phone: '', status: 'pending'
+    })
     setNewDealOffer(''); setNewDealDetails(''); setSubmitSuccess(true); setSubmitting(false)
     setTimeout(() => setSubmitSuccess(false), 5000)
   }
 
   function stagePhoto(file: File) {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowedTypes.includes(file.type)) { setPhotoError('Photo must be a JPG, PNG, or WebP image'); return }
     if (file.size > 5 * 1024 * 1024) { setPhotoError('File must be under 5MB'); return }
     setPhotoError(''); setPhotoSuccess(false); setPendingFile(file)
     const reader = new FileReader()
@@ -149,28 +160,36 @@ export default function BusinessDashboard() {
   }
 
   async function savePhoto() {
-    if (!pendingFile) return
+    if (!pendingFile || !account) return
     setPhotoUploading(true); setPhotoError(''); setPhotoSuccess(false)
-    const ext = pendingFile.name.split('.').pop()
-    const path = account!.id + '/photo.' + ext
-    const { error: uploadError } = await supabase.storage.from('business-photos').upload(path, pendingFile, { upsert: true, contentType: pendingFile.type })
-    if (uploadError) { setPhotoError('Upload failed. Please try again.'); setPhotoUploading(false); return }
-    const { data: urlData } = supabase.storage.from('business-photos').getPublicUrl(path)
-    const url = urlData.publicUrl + '?t=' + Date.now()
-    await supabase.from('deals').update({ photo_url: url }).eq('business_name', account!.business_name)
-    setPhotoUrl(url); setPendingFile(null); setPendingPreview(null); setPhotoSuccess(true); setPhotoUploading(false)
+    const formData = new FormData()
+    formData.append('photo', pendingFile)
+    formData.append('business_id', account.id)
+    try {
+      const res = await fetch('/api/update-business-photo', { method: 'POST', body: formData })
+      const json = await res.json()
+      if (!json.success) { setPhotoError(json.error || 'Upload failed. Please try again.'); setPhotoUploading(false); return }
+      setPhotoUrl(json.photo_url)
+      const updated = { ...account, photo_url: json.photo_url }
+      setAccount(updated)
+      localStorage.setItem('biz_session', JSON.stringify(updated))
+      setPendingFile(null); setPendingPreview(null); setPhotoSuccess(true)
+    } catch {
+      setPhotoError('Upload failed. Please try again.')
+    }
+    setPhotoUploading(false)
     setTimeout(() => setPhotoSuccess(false), 4000)
   }
 
-  function discardPhoto() {
-    setPendingFile(null); setPendingPreview(null); setPhotoError('')
-  }
+  function discardPhoto() { setPendingFile(null); setPendingPreview(null); setPhotoError('') }
 
   function formatDate(ts: string) {
     return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
   }
 
-  const monthChange = stats.lastMonth > 0 ? Math.round(((stats.thisMonth - stats.lastMonth) / stats.lastMonth) * 100) : stats.thisMonth > 0 ? 100 : 0
+  const monthChange = stats.lastMonth > 0
+    ? Math.round(((stats.thisMonth - stats.lastMonth) / stats.lastMonth) * 100)
+    : stats.thisMonth > 0 ? 100 : 0
 
   if (settingCode) return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
@@ -233,11 +252,13 @@ export default function BusinessDashboard() {
         <Link href="/business/dashboard" className="pp-logo">Perk<span>Pass</span></Link>
         <button onClick={() => { localStorage.removeItem('biz_session'); setAuthed(false); setAccount(null); setEmail(''); setAccessCode('') }} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>Sign out</button>
       </header>
+
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '32px 24px' }}>
         <div style={{ marginBottom: '28px' }}>
           <h1 className="display" style={{ fontSize: 'clamp(36px, 8vw, 52px)', marginBottom: '4px' }}>{account?.business_name}</h1>
           <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>PerkPass partner dashboard</p>
         </div>
+
         <div style={{ display: 'flex', gap: '4px', marginBottom: '32px', borderBottom: '2px solid var(--ink)' }}>
           {([{ key: 'overview', label: 'Overview' }, { key: 'deals', label: 'My Deals (' + deals.length + ')' }, { key: 'submit', label: 'Submit Deal' }, { key: 'photo', label: 'My Photo' }] as const).map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em', padding: '10px 12px', border: 'none', cursor: 'pointer', background: 'none', color: tab === t.key ? 'var(--ink)' : 'var(--ink-4)', borderBottom: tab === t.key ? '2px solid var(--ink)' : '2px solid transparent', marginBottom: '-2px', flexShrink: 0, whiteSpace: 'nowrap' }}>{t.label}</button>
@@ -404,28 +425,24 @@ export default function BusinessDashboard() {
           <div>
             <h2 className="display" style={{ fontSize: '36px', marginBottom: '8px' }}>Your photo.</h2>
             <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '28px' }}>
-              This photo appears on your deal cards that members browse. Upload a real photo of your space — it makes a big difference.
+              This photo appears on your deal cards that members browse. A real photo of your space, food, or storefront makes a big difference.
             </p>
-
             {photoSuccess && (
               <div style={{ background: 'var(--green-lt)', border: '1px solid var(--green)', borderRadius: '6px', padding: '10px 16px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green-dk)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--green-dk)' }}>Photo saved. Members will see it right away.</span>
               </div>
             )}
-
             {pendingPreview ? (
               <div style={{ marginBottom: '20px' }}>
                 <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '10px' }}>Preview — not saved yet</div>
-                <div style={{ borderRadius: '10px', overflow: 'hidden', border: '2px dashed var(--green)', height: '200px', position: 'relative' }}>
+                <div style={{ borderRadius: '10px', overflow: 'hidden', border: '2px dashed var(--green)', height: '220px', position: 'relative' }}>
                   <img src={pendingPreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'var(--ink)', color: 'var(--bg)', borderRadius: '4px', padding: '3px 10px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unsaved</div>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                  <button onClick={savePhoto} disabled={photoUploading} className="btn btn-primary" style={{ fontSize: '15px', padding: '12px 28px' }}>
-                    {photoUploading ? 'Saving...' : 'Save photo'}
-                  </button>
-                  <button onClick={discardPhoto} disabled={photoUploading} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em', padding: '12px 20px', background: 'none', border: '1.5px solid var(--border-2)', borderRadius: '8px', color: 'var(--ink-3)', cursor: 'pointer' }}>Remove</button>
+                  <button onClick={savePhoto} disabled={photoUploading} className="btn btn-primary" style={{ fontSize: '15px', padding: '12px 28px' }}>{photoUploading ? 'Saving...' : 'Save photo'}</button>
+                  <button onClick={discardPhoto} disabled={photoUploading} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em', padding: '12px 20px', background: 'none', border: '1.5px solid var(--border-2)', borderRadius: '8px', color: 'var(--ink-3)', cursor: 'pointer' }}>Discard</button>
                 </div>
                 {photoError && <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', marginTop: '10px' }}>{photoError}</p>}
               </div>
@@ -434,10 +451,10 @@ export default function BusinessDashboard() {
                 {photoUrl ? (
                   <div style={{ marginBottom: '24px' }}>
                     <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '10px' }}>Current photo</div>
-                    <div style={{ borderRadius: '10px', overflow: 'hidden', border: '2px solid var(--green)', height: '200px', position: 'relative' }}>
+                    <div style={{ borderRadius: '10px', overflow: 'hidden', border: '2px solid var(--green)', height: '220px', position: 'relative' }}>
                       <img src={photoUrl} alt={account?.business_name || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <div style={{ position: 'absolute', bottom: '10px', left: '12px' }}>
-                        <div className="display" style={{ fontSize: '18px', color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{account?.business_name}</div>
+                      <div style={{ position: 'absolute', bottom: '12px', left: '14px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', padding: '4px 10px' }}>
+                        <div className="display" style={{ fontSize: '16px', color: '#fff' }}>{account?.business_name}</div>
                       </div>
                     </div>
                   </div>
@@ -445,16 +462,15 @@ export default function BusinessDashboard() {
                   <div style={{ background: 'var(--bg-2)', borderRadius: '10px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border-2)', marginBottom: '24px' }}>
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '4px' }}>No photo yet</div>
-                      <div style={{ fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500 }}>Using a category stock photo for now</div>
+                      <div style={{ fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500 }}>Upload a photo so members recognize your business</div>
                     </div>
                   </div>
                 )}
                 <div style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '20px', border: '1px solid var(--border-2)' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>
-                    {photoUrl ? 'Choose a new photo' : 'Upload your photo'}
-                  </label>
+                  <label style={{ display: 'block', marginBottom: '8px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>{photoUrl ? 'Replace photo' : 'Upload your photo'}</label>
                   <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => { const f = e.target.files?.[0]; if (f) stagePhoto(f) }} className="pp-input" style={{ padding: '10px', cursor: 'pointer' }} />
-                  <p style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '8px' }}>JPG, PNG or WebP — max 5MB</p>
+                  <p style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '8px' }}>JPG, PNG or WebP — max 5MB. Shows on your deal card that members see.</p>
+                  {photoError && <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', marginTop: '8px' }}>{photoError}</p>}
                 </div>
               </>
             )}
@@ -522,4 +538,4 @@ export default function BusinessDashboard() {
       )}
     </main>
   )
-}
+                                            }
