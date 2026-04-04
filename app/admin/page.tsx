@@ -59,8 +59,16 @@ export default function AdminDashboard() {
 
   async function approveApplication(app: Application) {
     setApproving(app.id)
-    await supabase.from('deals').insert({ business_name: app.business_name, deal_description: app.deal_offer, deal_details: app.deal_details || null, category: app.category, address: app.address, emoji: '🎟️', active: true, admin_disabled: false })
-    await supabase.from('business_accounts').insert({ business_name: app.business_name, category: app.category, address: app.address, deal_offer: app.deal_offer, contact_email: app.contact_email.toLowerCase().trim(), active: true, admin_disabled: false })
+    // Carry over existing photo_url if this business already has one
+    const { data: existingAccount } = await supabase
+      .from('business_accounts')
+      .select('photo_url')
+      .eq('business_name', app.business_name)
+      .maybeSingle()
+    const photoUrl = existingAccount?.photo_url || null
+
+    await supabase.from('deals').insert({ business_name: app.business_name, deal_description: app.deal_offer, deal_details: app.deal_details || null, category: app.category, address: app.address, emoji: 'ðï¸', active: true, admin_disabled: false, photo_url: photoUrl })
+    await supabase.from('business_accounts').upsert({ business_name: app.business_name, category: app.category, address: app.address, deal_offer: app.deal_offer, contact_email: app.contact_email.toLowerCase().trim(), active: true, admin_disabled: false }, { onConflict: 'business_name' })
     await supabase.from('business_applications').update({ status: 'approved' }).eq('id', app.id)
     await loadData(); setApproving(null)
   }
@@ -184,7 +192,7 @@ export default function AdminDashboard() {
               ))}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {[{ label: 'View applications', desc: pending.length + ' pending review', action: () => setTab('applications') }, { label: 'Manage deals', desc: stats.deals + ' live deals', action: () => setTab('deals') }, { label: 'Manage businesses', desc: activeBusinesses + ' active · ' + disabledBusinesses + ' disabled', action: () => setTab('businesses') }, { label: 'Business portal', desc: 'See what businesses see', action: () => window.open('/business/dashboard', '_blank') }].map(a => (
+              {[{ label: 'View applications', desc: pending.length + ' pending review', action: () => setTab('applications') }, { label: 'Manage deals', desc: stats.deals + ' live deals', action: () => setTab('deals') }, { label: 'Manage businesses', desc: activeBusinesses + ' active Â· ' + disabledBusinesses + ' disabled', action: () => setTab('businesses') }, { label: 'Business portal', desc: 'See what businesses see', action: () => window.open('/business/dashboard', '_blank') }].map(a => (
                 <button key={a.label} onClick={a.action} style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', borderRadius: '8px', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }} onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--green)')} onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-2)')}>
                   <div><div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '17px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.02em', color: 'var(--ink)' }}>{a.label}</div><div style={{ fontSize: '13px', color: 'var(--ink-3)', fontWeight: 500, marginTop: '2px' }}>{a.desc}</div></div>
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 900, color: 'var(--ink-4)' }}>+</div>
@@ -257,7 +265,7 @@ export default function AdminDashboard() {
                             )}
                           </div>
                           {photoUploading && <p style={{ fontSize: '11px', color: 'var(--ink-4)', fontWeight: 600, marginTop: '4px' }}>Uploading...</p>}
-                          <p style={{ fontSize: '11px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '4px' }}>JPG, PNG or WebP · applies to all deals for this business</p>
+                          <p style={{ fontSize: '11px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '4px' }}>JPG, PNG or WebP Â· applies to all deals for this business</p>
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
@@ -281,13 +289,13 @@ export default function AdminDashboard() {
                           <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--green-dk)' }}>{deal.deal_description}</div>
                           {deal.featured && <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '2px 8px', borderRadius: '3px' }}>Featured</span>}
                         </div>
-                        <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '2px' }}>{deal.category} · {deal.address}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '2px' }}>{deal.category} Â· {deal.address}</div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: deal.active && !deal.admin_disabled ? 'var(--green)' : 'var(--ink-4)' }} />
                         <button onClick={() => startEdit(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
                         <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
-                        <button onClick={() => toggleFeatured(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: deal.featured ? 'var(--green-dk)' : 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>{deal.featured ? '★ Featured' : '☆ Feature'}</button>
+                        <button onClick={() => toggleFeatured(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: deal.featured ? 'var(--green-dk)' : 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>{deal.featured ? 'â Featured' : 'â Feature'}</button>
                         <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
                         <button onClick={() => adminToggleDeal(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: deal.admin_disabled ? 'var(--green-dk)' : 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>{deal.admin_disabled ? 'Re-enable' : 'Disable'}</button>
                         <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
@@ -316,7 +324,7 @@ export default function AdminDashboard() {
                         <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)' }}>{biz.business_name}</div>
                         {biz.admin_disabled && <span style={{ ...LABEL, fontSize: '10px', background: 'var(--red-lt)', color: 'var(--red)', padding: '2px 8px', borderRadius: '3px' }}>Disabled</span>}
                       </div>
-                      <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500 }}>{biz.category} · {biz.address}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500 }}>{biz.category} Â· {biz.address}</div>
                       <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500 }}>{biz.contact_email}</div>
                     </div>
                     <button onClick={() => toggleBusiness(biz)} disabled={togglingBiz === biz.id} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '10px 18px', borderRadius: '6px', border: 'none', cursor: 'pointer', flexShrink: 0, background: biz.admin_disabled ? 'var(--green-lt)' : 'var(--red-lt)', color: biz.admin_disabled ? 'var(--green-dk)' : 'var(--red)' }}>
