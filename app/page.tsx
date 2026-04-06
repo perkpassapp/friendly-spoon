@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 const DEALS = [
   { name: 'La Colombe', deal: '1335 Frankford Ave, Philadelphia, PA 19125', cat: 'Cafe', addr: 'Fishtown' },
-  { name: 'Mango Mango Dessert', deal: '1013 Cherry St, Philadelphia, PA 19107', cat: 'Cafe', addr: 'Chinatown' },
+  { name: 'Mango Mango Dessert', deal: '1013 Cherry St, Philadelphia, PA 19107', cat: 'Dessert', addr: 'Chinatown' },
   { name: 'Earn Everything Gym', deal: '2035 E Glenwood Ave, Philadelphia, PA 19124', cat: 'Fitness', addr: 'Center City' },
   { name: 'Top Design Nails And Jewelry', deal: '1459 E Luzerne St, Philadelphia, PA 19124', cat: 'Nails', addr: 'Old City' },
   { name: 'Suraya', deal: '1528 Frankford Ave, Philadelphia, PA 19125', cat: 'Restaurant', addr: 'Fishtown' },
@@ -10,6 +10,7 @@ const DEALS = [
 
 const CAT_COLORS: Record<string, { bg: string; color: string }> = {
   Cafe:       { bg: '#FFF3CD', color: '#92600A' },
+  Dessert:    { bg: '#fdf1e8', color: '#c06719' },
   Barber:     { bg: '#E8F4FD', color: '#1A6B9E' },
   Fitness:    { bg: '#E8F8EF', color: '#1A6B3E' },
   Nails:      { bg: '#FCE8F3', color: '#8B1A5E' },
@@ -18,7 +19,8 @@ const CAT_COLORS: Record<string, { bg: string; color: string }> = {
 }
 
 const CAT_PHOTOS: Record<string, string> = {
-  Cafe:       'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&q=75',
+  Cafe:       'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/Homepage/Screenshot%202026-04-06%20at%202.54.15%20PM.png',
+  Dessert:     'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/Homepage/Screenshot%202026-04-06%20at%202.55.04%20PM.png',
   Barber:     'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&q=75',
   Fitness:    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=75',
   Nails:      'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400&q=75',
