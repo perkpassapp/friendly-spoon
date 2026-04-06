@@ -116,7 +116,7 @@ export default function ForBusiness() {
 
         <div className="fade-up-2" style={{ marginBottom: '48px' }}>
           <div style={{ display: 'inline-block', background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '4px 12px', borderRadius: '4px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '16px' }}>Not listed yet?</div>
-          <h1 className="display" style={{ fontSize: 'clamp(52px, 10vw, 80px)', marginBottom: '16px' }}>Get new customers.<br /> Pay nothing.</h1>
+          <h1 className="display" style={{ fontSize: 'clamp(52px, 10vw, 80px)', marginBottom: '16px' }}>Get new customers in 2 mins or less.<br /> Pay nothing.</h1>
           <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.55, marginBottom: '32px' }}>List your business on PerkPass and we send you paying customers. You offer a small exclusive deal for the locals. We do the rest. Zero cost, zero risk.</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '2px', borderTop: '2px solid var(--ink)', paddingTop: '24px' }}>
             {[{ n: '$0', l: 'Cost to list' }, { n: '2min', l: 'To get verified' }, { n: '0%', l: 'Commission' }, { n: '100%', l: 'Your profits' }].map(s => (
