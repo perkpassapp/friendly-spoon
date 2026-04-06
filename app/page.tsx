@@ -10,7 +10,7 @@ const DEALS = [
 
 const CAT_COLORS: Record<string, { bg: string; color: string }> = {
   Cafe:       { bg: '#FFF3CD', color: '#92600A' },
-  Dessert:    { bg: '#fdf1e8', color: '#c06719' },
+  Dessert:    { bg: '#ffe5d1', color: '#ae5d17' },
   Barber:     { bg: '#E8F4FD', color: '#1A6B9E' },
   Fitness:    { bg: '#E8F8EF', color: '#1A6B3E' },
   Nails:      { bg: '#FCE8F3', color: '#8B1A5E' },
@@ -20,7 +20,7 @@ const CAT_COLORS: Record<string, { bg: string; color: string }> = {
 
 const CAT_PHOTOS: Record<string, string> = {
   Cafe:       'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/Homepage/Screenshot%202026-04-06%20at%202.54.15%20PM.png',
-  Dessert:     'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/Homepage/Screenshot%202026-04-06%20at%202.55.04%20PM.png',
+  Dessert:     'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/Homepage/Screenshot%202026-04-06%20at%203.04.06%20PM.png',
   Barber:     'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&q=75',
   Fitness:    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=75',
   Nails:      'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400&q=75',
