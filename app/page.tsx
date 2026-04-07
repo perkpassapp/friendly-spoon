@@ -63,16 +63,16 @@ export default function Home() {
             Member login
           </Link>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2px', borderTop: '2px solid var(--ink)', paddingTop: '32px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '12px', borderTop: '2px solid var(--ink)', paddingTop: '32px' }}>
           {[
             { n: 'Growing', l: 'Active deals' },
             { n: '$3',      l: 'Per month' },
             { n: '1 min',   l: 'To redeem' },
             { n: 'Loved',   l: 'By locals' },
           ].map(s => (
-            <div key={s.l} style={{ paddingRight: '24px' }}>
-              <div className="display" style={{ fontSize: '40px', color: 'var(--green)' }}>{s.n}</div>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-3)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.l}</div>
+            <div key={s.l} style={{ minWidth: 0 }}>
+              <div className="display" style={{ fontSize: 'clamp(28px, 4.6vw, 40px)', color: 'var(--green)', whiteSpace: 'nowrap' }}>{s.n}</div>
+              <div style={{ fontSize: 'clamp(11px, 1.8vw, 13px)', fontWeight: 600, color: 'var(--ink-3)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{s.l}</div>
             </div>
           ))}
         </div>
