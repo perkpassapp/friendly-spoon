@@ -2,6 +2,33 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import './globals.css'
 
+const FOOTER_GROUPS = [
+  {
+    title: 'Company',
+    links: [
+      { href: '/about', label: 'About us' },
+      { href: '/offerings', label: 'Our offerings' },
+      { href: '/newsroom', label: 'Newsroom' },
+    ],
+  },
+  {
+    title: 'Members',
+    links: [
+      { href: '/signup', label: 'Get PerkPass' },
+      { href: '/member/login', label: 'Member login' },
+      { href: '/for-business', label: 'For businesses' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { href: '/terms', label: 'Terms' },
+      { href: '/privacy', label: 'Privacy' },
+      { href: '/refund-policy', label: 'Refund policy' },
+    ],
+  },
+]
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://getperkpass.com'),
   title: {
@@ -118,57 +145,63 @@ export default function RootLayout({
         {children}
         <footer
           style={{
-            borderTop: '1px solid var(--border)',
-            padding: '20px 24px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '24px',
-            flexWrap: 'wrap',
+            borderTop: '2px solid var(--ink)',
+            background: 'var(--forest)',
+            color: '#ffffff',
+            padding: '48px 24px 28px',
           }}
         >
-          <Link
-            href="/about"
-            style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: '12px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              color: 'var(--ink-4)',
-              textDecoration: 'none',
-            }}
-          >
-            About us
-          </Link>
-          <Link
-            href="/offerings"
-            style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: '12px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              color: 'var(--ink-4)',
-              textDecoration: 'none',
-            }}
-          >
-            Our offerings
-          </Link>
-          <Link
-            href="/newsroom"
-            style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: '12px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              color: 'var(--ink-4)',
-              textDecoration: 'none',
-            }}
-          >
-            Newsroom
-          </Link>
+          <div style={{ maxWidth: '1120px', margin: '0 auto', width: '100%' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) repeat(3, minmax(140px, 1fr))', gap: '24px 40px', alignItems: 'start', marginBottom: '32px' }}>
+              <div>
+                <Link href="/" className="pp-logo" style={{ color: '#ffffff', display: 'inline-block', marginBottom: '12px' }}>
+                  Perk<span>Pass</span>
+                </Link>
+                <p style={{ fontSize: '15px', lineHeight: 1.65, color: 'rgba(255,255,255,0.68)', maxWidth: '320px', marginBottom: '14px' }}>
+                  Philadelphia&apos;s local deals membership with exclusive savings at neighborhood restaurants, cafes, gyms, barbers, nail salons, and more.
+                </p>
+                <a
+                  href="mailto:hello@getperkpass.com"
+                  style={{ fontSize: '14px', fontWeight: 600, color: 'var(--green)', textDecoration: 'none' }}
+                >
+                  hello@getperkpass.com
+                </a>
+              </div>
+
+              {FOOTER_GROUPS.map((group) => (
+                <div key={group.title}>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)', marginBottom: '12px' }}>
+                    {group.title}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {group.links.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        style={{
+                          fontSize: '15px',
+                          fontWeight: 500,
+                          color: 'rgba(255,255,255,0.82)',
+                          textDecoration: 'none',
+                        }}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', fontWeight: 500 }}>
+                2026 PerkPass. Built for local Philly discovery.
+              </p>
+              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', fontWeight: 500 }}>
+                Secure checkout powered by Stripe.
+              </p>
+            </div>
+          </div>
         </footer>
       </body>
     </html>

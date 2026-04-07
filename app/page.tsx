@@ -185,22 +185,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer style={{ padding: '24px', borderTop: '2px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-        <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
-        <div style={{ display: 'flex', gap: '20px' }}>
-          {[
-            { l: 'About us',       h: '/about' },
-            { l: 'Our offerings',  h: '/offerings' },
-            { l: 'Newsroom',       h: '/newsroom' },
-          ].map(x => (
-            <Link key={x.l} href={x.h} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-3)', textDecoration: 'none' }}>{x.l}</Link>
-          ))}
-        </div>
-        <p style={{ fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500 }}>
-          2026 PerkPass
-        </p>
-      </footer>
     </main>
   )
 }
