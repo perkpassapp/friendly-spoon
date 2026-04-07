@@ -99,7 +99,13 @@ export function getCategoryMeta(category: string | null | undefined): CategoryMe
   return CATEGORY_META[normalizeCategory(category)]
 }
 
+function parseTimestamp(timestamp: string): number {
+  const hasTimezone = /[zZ]|[+-]\d{2}:\d{2}$/.test(timestamp)
+  const normalized = hasTimezone ? timestamp : `${timestamp}Z`
+  return new Date(normalized).getTime()
+}
+
 export function getCooldownRemainingSeconds(redeemedAt: string, now = Date.now()): number {
-  const endsAt = new Date(redeemedAt).getTime() + REDEMPTION_COOLDOWN_SECONDS * 1000
+  const endsAt = parseTimestamp(redeemedAt) + REDEMPTION_COOLDOWN_SECONDS * 1000
   return Math.max(0, Math.ceil((endsAt - now) / 1000))
 }
