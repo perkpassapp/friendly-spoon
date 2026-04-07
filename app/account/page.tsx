@@ -6,10 +6,17 @@ import Link from 'next/link'
 
 export default function AccountPage() {
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(true)
   const [cancelLoading, setCancelLoading] = useState(false)
   const [active, setActive] = useState(false)
   const router = useRouter()
+
+  function formatPhone(phoneNumber: string) {
+    const digits = phoneNumber.replace(/\D/g, '').slice(0, 10)
+    if (digits.length !== 10) return phoneNumber || 'Not added'
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
 
   useEffect(() => {
     async function init() {
@@ -17,6 +24,16 @@ export default function AccountPage() {
       if (!userData.user) { router.push('/member/login'); return }
       const userEmail = userData.user.email!
       setEmail(userEmail)
+
+      const { data: memberData } = await supabase
+        .from('members')
+        .select('phone')
+        .eq('email', userEmail)
+        .maybeSingle()
+
+      if (memberData?.phone) {
+        setPhone(memberData.phone)
+      }
 
       const res = await fetch('/api/verify-subscription', {
         method: 'POST',
@@ -114,6 +131,10 @@ export default function AccountPage() {
                 <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-3)' }}>Plan</span>
                 <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)' }}>PerkPass All Access</span>
               </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-3)' }}>Phone</span>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)' }}>{formatPhone(phone)}</span>
+              </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-3)' }}>Status</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -129,25 +150,92 @@ export default function AccountPage() {
             </div>
           </div>
 
+          <div className="fade-up-3" style={{
+            background: 'linear-gradient(135deg, #f6efdc 0%, #efe2bc 100%)',
+            borderRadius: '10px',
+            padding: '22px 24px',
+            marginBottom: '16px',
+            border: '1px solid #ddc885',
+          }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '4px 10px',
+              borderRadius: '999px',
+              background: 'rgba(15,15,15,0.08)',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: '12px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              color: 'var(--ink)',
+              marginBottom: '12px',
+            }}>
+              Creator promo
+            </div>
+            <h2 style={{ fontSize: '22px', lineHeight: 1.1, marginBottom: '10px', color: 'var(--ink)' }}>
+              Share PerkPass. Get a year free.
+            </h2>
+            <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '14px', lineHeight: 1.55 }}>
+              If your Instagram account has over 2,000 followers and you post PerkPass while tagging <strong style={{ color: 'var(--ink)' }}>@GetPerkPass</strong>, you may qualify for 1 year of membership free.
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+              <a
+                href="mailto:hello@getperkpass.com?subject=PerkPass%20Creator%20Promo"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: '170px',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  background: 'var(--ink)',
+                  color: '#ffffff',
+                  textDecoration: 'none',
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: '15px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                Claim creator offer
+              </a>
+              <Link
+                href="/terms"
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'var(--ink-3)',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '2px',
+                }}
+              >
+                Terms apply
+              </Link>
+            </div>
+          </div>
+
           {/* Billing */}
           <div className="fade-up-3" style={{
             background: 'var(--bg-2)', borderRadius: '10px',
-            padding: '24px', marginBottom: '24px',
+            padding: '18px 20px', marginBottom: '24px',
             border: '1px solid var(--border-2)',
           }}>
             <div style={{
-              fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px',
+              fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px',
               fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
-              color: 'var(--ink-4)', marginBottom: '12px',
+              color: 'var(--ink-4)', marginBottom: '8px',
             }}>Billing</div>
-            <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '16px', lineHeight: 1.5 }}>
-              Manage your subscription, update payment method, or cancel through our secure billing portal.
+            <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '12px', lineHeight: 1.5 }}>
+              Update payment details or cancel from the billing portal.
             </p>
             <button
               onClick={handleManageBilling}
               disabled={cancelLoading}
               className="btn btn-outline"
-              style={{ width: '100%', fontSize: '16px', padding: '14px' }}
+              style={{ width: '100%', fontSize: '14px', padding: '11px 14px' }}
             >
               {cancelLoading ? 'Opening billing portal...' : 'Manage billing'}
             </button>
