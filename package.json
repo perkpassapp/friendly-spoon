@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "backfill:coordinates": "node scripts/backfill-business-coordinates.mjs"
+    "lint": "eslint"
   },
   "dependencies": {
     "@stripe/stripe-js": "^8.11.0",
