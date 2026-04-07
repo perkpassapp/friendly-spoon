@@ -1,7 +1,13 @@
 'use client'
 import { useEffect, useState, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import {
+  REDEMPTION_CODE_TTL_SECONDS,
+  REDEMPTION_COOLDOWN_SECONDS,
+  getCooldownRemainingSeconds,
+} from '@/lib/product'
 
 function RedeemContent() {
   const params = useSearchParams()
@@ -10,11 +16,10 @@ function RedeemContent() {
   const deal = params.get('deal') || 'your deal'
   const dealId = params.get('id') || ''
 
-  const [timeLeft, setTimeLeft] = useState(120)
+  const [timeLeft, setTimeLeft] = useState(REDEMPTION_CODE_TTL_SECONDS)
   const [code, setCode] = useState('')
   const [expired, setExpired] = useState(false)
   const [cooldown, setCooldown] = useState<number | null>(null)
-  const [cooldownType, setCooldownType] = useState<'15min' >('15min')
   const [loading, setLoading] = useState(true)
   const [confirmed, setConfirmed] = useState(false)
   const [showLeaveWarning, setShowLeaveWarning] = useState(false)
@@ -34,7 +39,7 @@ function RedeemContent() {
 
   function startTimer(newCode: string) {
     if (intervalRef.current) clearInterval(intervalRef.current)
-    setExpired(false); setTimeLeft(120); setCode(newCode)
+    setExpired(false); setTimeLeft(REDEMPTION_CODE_TTL_SECONDS); setCode(newCode)
     currentCode.current = newCode
     intervalRef.current = setInterval(() => {
       setTimeLeft(prev => {
@@ -66,8 +71,8 @@ function RedeemContent() {
     }, 2000)
   }
 
-  function startCooldownTimer(secs: number, type: '15min' | '15min') {
-    const capped = Math.min(secs, 900)
+  function startCooldownTimer(secs: number) {
+    const capped = Math.min(secs, REDEMPTION_COOLDOWN_SECONDS)
     setCooldown(capped)
     if (cooldownRef.current) clearInterval(cooldownRef.current)
     cooldownRef.current = setInterval(() => {
@@ -86,22 +91,14 @@ function RedeemContent() {
       if (!ud.user) { router.push('/member/login'); return }
       const email = ud.user.email!
 
-      const { data: d1 } = await supabase.from('redemptions').select('redeemed_at')
+      const cooldownThreshold = new Date(Date.now() - REDEMPTION_COOLDOWN_SECONDS * 1000).toISOString()
+      const { data: recentRedemptions } = await supabase.from('redemptions').select('redeemed_at')
         .eq('member_email', email).eq('deal_id', dealId)
-        .gte('redeemed_at', new Date(Date.now() - 900000).toISOString())
+        .gte('redeemed_at', cooldownThreshold)
         .order('redeemed_at', { ascending: false }).limit(1)
-      if (d1 && d1.length > 0) {
-        const s = Math.ceil((new Date(d1[0].redeemed_at).getTime() + 900000 - Date.now()) / 1000)
-        if (s > 0) { setCooldownType('15min'); startCooldownTimer(s, '15min'); setLoading(false); return }
-      }
-
-      const { data: d2 } = await supabase.from('redemptions').select('redeemed_at')
-        .eq('member_email', email).eq('deal_id', dealId)
-        .gte('redeemed_at', new Date(Date.now() - 900000).toISOString())
-        .order('redeemed_at', { ascending: false }).limit(1)
-      if (d2 && d2.length > 0) {
-        const s = Math.ceil((new Date(d2[0].redeemed_at).getTime() + 900000 - Date.now()) / 1000)
-        if (s > 0) { setCooldownType('15min'); startCooldownTimer(s, '15min'); setLoading(false); return }
+      if (recentRedemptions && recentRedemptions.length > 0) {
+        const s = getCooldownRemainingSeconds(recentRedemptions[0].redeemed_at)
+        if (s > 0) { startCooldownTimer(s); setLoading(false); return }
       }
 
       const newCode = makeCode()
@@ -123,7 +120,7 @@ function RedeemContent() {
       if (cooldownRef.current) clearInterval(cooldownRef.current)
       if (pollRef.current) clearInterval(pollRef.current)
     }
-  }, [])
+  }, [biz, deal, dealId, router])
 
   function fmtCooldown(s: number) {
     const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60
@@ -132,7 +129,7 @@ function RedeemContent() {
   }
 
   const mins = Math.floor(timeLeft / 60), secs = timeLeft % 60
-  const pct = (timeLeft / 120) * 100
+  const pct = (timeLeft / REDEMPTION_CODE_TTL_SECONDS) * 100
   const isUrgent = timeLeft <= 30
 
   // ── Loading ──
@@ -164,7 +161,7 @@ function RedeemContent() {
             {'Hold tight.'}
           </h2>
           <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px' }}>
-            {'Wait 15 minutes before using this deal again.'}
+            {`Wait ${REDEMPTION_COOLDOWN_SECONDS / 60} minutes before using this deal again.`}
           </p>
           <div style={{ background: 'var(--forest)', borderRadius: '10px', padding: '32px', marginBottom: '24px', textAlign: 'center' }}>
             <div className="display" style={{ fontSize: '64px', color: 'var(--green)', lineHeight: 1 }}>{fmtCooldown(cooldown)}</div>
@@ -172,7 +169,7 @@ function RedeemContent() {
               {'Minutes remaining'}
             </div>
             <div style={{ marginTop: '20px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', height: '4px' }}>
-              <div style={{ height: '100%', background: 'var(--green)', borderRadius: '4px', width: `${(cooldown / 900) * 100}%`, transition: 'width 1s linear' }} />
+              <div style={{ height: '100%', background: 'var(--green)', borderRadius: '4px', width: `${(cooldown / REDEMPTION_COOLDOWN_SECONDS) * 100}%`, transition: 'width 1s linear' }} />
             </div>
           </div>
           <button onClick={() => router.push('/member/deals')} className="btn btn-primary" style={{ width: '100%', fontSize: '17px', padding: '16px' }}>
@@ -231,59 +228,56 @@ function RedeemContent() {
     </main>
   )
 
-  // ── Leave warning overlay ──
-  const LeaveWarning = () => (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 100,
-      background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px'
-    }}>
-      <div style={{
-        background: 'var(--bg)', borderRadius: '16px', padding: '28px 24px',
-        width: '100%', maxWidth: '380px', border: '2px solid var(--ink)', textAlign: 'center'
-      }}>
-        <div style={{
-          width: '52px', height: '52px', borderRadius: '50%', background: 'var(--red-lt)',
-          margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-        </div>
-        <h2 className="display" style={{ fontSize: '32px', marginBottom: '8px' }}>Leave this page?</h2>
-        <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.5, marginBottom: '24px' }}>
-          If you leave now, your code <strong>expires immediately</strong> and a 24-hour cooldown begins. You won't be able to redeem this deal again today.
-        </p>
-        <button
-          onClick={() => router.push('/member/deals')}
-          style={{
-            width: '100%', marginBottom: '10px', padding: '14px',
-            background: 'var(--red-lt)', border: '1px solid var(--red)', borderRadius: '8px',
-            fontFamily: "'Barlow Condensed', sans-serif", fontSize: '16px', fontWeight: 700,
-            textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--red)', cursor: 'pointer'
-          }}
-        >
-          Leave anyway
-        </button>
-        <button
-          onClick={() => setShowLeaveWarning(false)}
-          className="btn btn-primary"
-          style={{ width: '100%', fontSize: '16px', padding: '14px' }}
-        >
-          Stay — keep my code
-        </button>
-      </div>
-    </div>
-  )
-
   // ── Main redeem screen ──
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      {showLeaveWarning && <LeaveWarning />}
+      {showLeaveWarning && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px'
+        }}>
+          <div style={{
+            background: 'var(--bg)', borderRadius: '16px', padding: '28px 24px',
+            width: '100%', maxWidth: '380px', border: '2px solid var(--ink)', textAlign: 'center'
+          }}>
+            <div style={{
+              width: '52px', height: '52px', borderRadius: '50%', background: 'var(--red-lt)',
+              margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <h2 className="display" style={{ fontSize: '32px', marginBottom: '8px' }}>Leave this page?</h2>
+            <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.5, marginBottom: '24px' }}>
+              If you leave now, your code <strong>expires immediately</strong> and the {REDEMPTION_COOLDOWN_SECONDS / 60}-minute cooldown still applies.
+            </p>
+            <button
+              onClick={() => router.push('/member/deals')}
+              style={{
+                width: '100%', marginBottom: '10px', padding: '14px',
+                background: 'var(--red-lt)', border: '1px solid var(--red)', borderRadius: '8px',
+                fontFamily: "'Barlow Condensed', sans-serif", fontSize: '16px', fontWeight: 700,
+                textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--red)', cursor: 'pointer'
+              }}
+            >
+              Leave anyway
+            </button>
+            <button
+              onClick={() => setShowLeaveWarning(false)}
+              className="btn btn-primary"
+              style={{ width: '100%', fontSize: '16px', padding: '14px' }}
+            >
+              Stay - keep my code
+            </button>
+          </div>
+        </div>
+      )}
       <div style={{ maxWidth: '400px', width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }} className="fade-up">
-          <a href="/" className="pp-logo">Perk<span>Pass</span></a>
+          <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
           <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Show cashier
           </div>
@@ -308,7 +302,7 @@ function RedeemContent() {
             {code}
           </div>
           <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>
-            Valid 2 min — single use — 15 min cooldown
+            {`Valid ${REDEMPTION_CODE_TTL_SECONDS / 60} min - single use - ${REDEMPTION_COOLDOWN_SECONDS / 60} min cooldown`}
           </div>
         </div>
 

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { normalizeCategory } from '@/lib/product'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,10 +18,11 @@ export async function POST(req: Request) {
 
     // Normalize email to lowercase so business login always works regardless of how they typed it
     const normalizedEmail = contact_email.toLowerCase().trim()
+    const normalizedCategory = normalizeCategory(category)
 
     const { error } = await supabase
       .from('business_applications')
-      .insert([{ business_name, category, address, deal_offer, deal_details: deal_details || null, contact_name, contact_email: normalizedEmail, phone }])
+      .insert([{ business_name, category: normalizedCategory, address, deal_offer, deal_details: deal_details || null, contact_name, contact_email: normalizedEmail, phone }])
 
     if (error) throw error
 

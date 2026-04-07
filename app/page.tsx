@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getCategoryMeta, normalizeCategory } from '@/lib/product'
 
 const DEALS = [
   { name: 'La Colombe', deal: '1335 Frankford Ave, Philadelphia, PA 19125', cat: 'Cafe', addr: 'Fishtown' },
@@ -9,23 +10,7 @@ const DEALS = [
 ]
 
 const CAT_COLORS: Record<string, { bg: string; color: string }> = {
-  Cafe:       { bg: '#FFF3CD', color: '#92600A' },
-  Dessert:    { bg: '#ffe5d1', color: '#ae5d17' },
-  Barber:     { bg: '#E8F4FD', color: '#1A6B9E' },
-  Fitness:    { bg: '#E8F8EF', color: '#1A6B3E' },
-  Nails:      { bg: '#FCE8F3', color: '#8B1A5E' },
-  Restaurant: { bg: '#FDE8E8', color: '#8B1A1A' },
-  Sport:      { bg: '#EDE8FD', color: '#4A1A8B' },
-}
-
-const CAT_PHOTOS: Record<string, string> = {
-  Cafe:       'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/Homepage/Screenshot%202026-04-06%20at%202.54.15%20PM.png',
-  Dessert:     'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/Homepage/Screenshot%202026-04-06%20at%203.04.06%20PM.png',
-  Barber:     'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&q=75',
-  Fitness:    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=75',
-  Nails:      'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400&q=75',
-  Restaurant: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=75',
-  Sport:      'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400&q=75',
+  Dessert: { bg: '#ffe5d1', color: '#ae5d17' },
 }
 
 const HOW = [
@@ -47,7 +32,7 @@ export default function Home() {
 
       {/* Nav */}
       <nav style={{ position: 'sticky', top: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', height: '56px', background: 'var(--bg)', borderBottom: '2px solid var(--ink)' }}>
-        <a href="/" className="pp-logo">Perk<span>Pass</span></a>
+        <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <Link href="/member/login" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.03em', color: 'var(--ink-3)', textDecoration: 'none', padding: '8px 12px' }}>
             Log in
@@ -101,8 +86,12 @@ export default function Home() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '32px' }}>
             {DEALS.map((d, i) => {
-              const colors = CAT_COLORS[d.cat] || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
-              const photo = CAT_PHOTOS[d.cat]
+              const normalizedCategory = normalizeCategory(d.cat)
+              const categoryMeta = getCategoryMeta(d.cat)
+              const colors = CAT_COLORS[d.cat] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
+              const photo = d.cat === 'Dessert'
+                ? 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/Homepage/Screenshot%202026-04-06%20at%203.04.06%20PM.png'
+                : categoryMeta.photo
               return (
                 <div key={i} className="deal-card">
                   {photo && (
@@ -115,7 +104,7 @@ export default function Home() {
                   )}
                   <div className="deal-card-body">
                     <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 9px', borderRadius: '4px' }}>
-                      {d.cat}
+                      {d.cat === 'Dessert' ? d.cat : normalizedCategory}
                     </span>
                     <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.01em' }}>
                       {d.name}
@@ -198,7 +187,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer style={{ padding: '24px', borderTop: '2px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-        <a href="/" className="pp-logo">Perk<span>Pass</span></a>
+        <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
         <div style={{ display: 'flex', gap: '20px' }}>
           {[
             { l: 'For businesses', h: '/for-business' },

@@ -1,7 +1,8 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { CATEGORY_OPTIONS, normalizeCategory } from '@/lib/product'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,7 +32,6 @@ export default function AdminDashboard() {
   const [deals, setDeals] = useState<Deal[]>([])
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [stats, setStats] = useState({ members: 0, redemptions: 0, deals: 0 })
-  const [loading, setLoading] = useState(false)
   const [approving, setApproving] = useState<string | null>(null)
   const [togglingBiz, setTogglingBiz] = useState<string | null>(null)
   const [deletingDeal, setDeletingDeal] = useState<string | null>(null)
@@ -42,7 +42,6 @@ export default function AdminDashboard() {
   const [photoUploading, setPhotoUploading] = useState(false)
 
   async function loadData() {
-    setLoading(true)
     const [appsRes, dealsRes, redemptionsRes, bizRes, membersRes] = await Promise.all([
       supabase.from('business_applications').select('*').order('created_at', { ascending: false }),
       supabase.from('deals').select('*').order('created_at', { ascending: false }),
@@ -50,15 +49,15 @@ export default function AdminDashboard() {
       supabase.from('business_accounts').select('*').order('business_name'),
       supabase.from('members').select('id'),
     ])
-    setApplications(appsRes.data || [])
-    setDeals(dealsRes.data || [])
-    setBusinesses(bizRes.data || [])
+    setApplications((appsRes.data || []).map((app) => ({ ...app, category: normalizeCategory(app.category) })))
+    setDeals((dealsRes.data || []).map((deal) => ({ ...deal, category: normalizeCategory(deal.category) })))
+    setBusinesses((bizRes.data || []).map((biz) => ({ ...biz, category: normalizeCategory(biz.category) })))
     setStats({ members: membersRes.data?.length || 0, redemptions: redemptionsRes.data?.length || 0, deals: dealsRes.data?.filter((d: Deal) => d.active && !d.admin_disabled).length || 0 })
-    setLoading(false)
   }
 
   async function approveApplication(app: Application) {
     setApproving(app.id)
+    const category = normalizeCategory(app.category)
     // Carry over existing photo_url if this business already has one
     const { data: existingAccount } = await supabase
       .from('business_accounts')
@@ -67,8 +66,8 @@ export default function AdminDashboard() {
       .maybeSingle()
     const photoUrl = existingAccount?.photo_url || null
 
-    await supabase.from('deals').insert({ business_name: app.business_name, deal_description: app.deal_offer, deal_details: app.deal_details || null, category: app.category, address: app.address, emoji: 'ðï¸', active: true, admin_disabled: false, photo_url: photoUrl })
-    await supabase.from('business_accounts').upsert({ business_name: app.business_name, category: app.category, address: app.address, deal_offer: app.deal_offer, contact_email: app.contact_email.toLowerCase().trim(), active: true, admin_disabled: false }, { onConflict: 'business_name' })
+    await supabase.from('deals').insert({ business_name: app.business_name, deal_description: app.deal_offer, deal_details: app.deal_details || null, category, emoji: '🎟️', address: app.address, active: true, admin_disabled: false, photo_url: photoUrl })
+    await supabase.from('business_accounts').upsert({ business_name: app.business_name, category, address: app.address, deal_offer: app.deal_offer, contact_email: app.contact_email.toLowerCase().trim(), active: true, admin_disabled: false }, { onConflict: 'business_name' })
     await supabase.from('business_applications').update({ status: 'approved' }).eq('id', app.id)
     await loadData(); setApproving(null)
   }
@@ -97,13 +96,13 @@ export default function AdminDashboard() {
 
   function startEdit(deal: Deal) {
     setEditingDeal(deal.id)
-    setEditFields({ deal_description: deal.deal_description, category: deal.category })
+    setEditFields({ deal_description: deal.deal_description, category: normalizeCategory(deal.category) })
     setConfirmDelete(null)
   }
 
   async function saveEdit(id: string) {
     setSavingEdit(true)
-    await supabase.from('deals').update({ deal_description: editFields.deal_description, category: editFields.category }).eq('id', id)
+    await supabase.from('deals').update({ deal_description: editFields.deal_description, category: normalizeCategory(editFields.category) }).eq('id', id)
     setEditingDeal(null); setSavingEdit(false); await loadData()
   }
 
@@ -115,7 +114,7 @@ export default function AdminDashboard() {
     const path = bizId + '/photo.' + ext
     await supabase.storage.from('business-photos').upload(path, file, { upsert: true, contentType: file.type })
     const { data: urlData } = supabase.storage.from('business-photos').getPublicUrl(path)
-    const url = urlData.publicUrl + '?t=' + Date.now()
+    const url = urlData.publicUrl
     await supabase.from('deals').update({ photo_url: url }).eq('business_name', deal.business_name)
     setPhotoUploading(false); await loadData()
   }
@@ -249,7 +248,11 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                           <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Category</label>
-                          <input style={INPUT_STYLE} value={editFields.category} onChange={e => setEditFields(f => ({ ...f, category: e.target.value }))} placeholder="e.g. Restaurant" />
+                          <select style={INPUT_STYLE} value={editFields.category} onChange={e => setEditFields(f => ({ ...f, category: e.target.value }))}>
+                            {CATEGORY_OPTIONS.map((category) => (
+                              <option key={category} value={category}>{category}</option>
+                            ))}
+                          </select>
                         </div>
                         <div>
                           <label style={{ display: 'block', marginBottom: '6px', ...LABEL }}>Business Photo</label>

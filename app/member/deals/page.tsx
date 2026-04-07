@@ -3,6 +3,14 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import {
+  CATEGORY_OPTIONS,
+  REDEMPTION_COOLDOWN_SECONDS,
+  REDEMPTION_RULES,
+  getCategoryMeta,
+  getCooldownRemainingSeconds,
+  normalizeCategory,
+} from '@/lib/product'
 
 type Schedule = {
   days: number[]
@@ -29,30 +37,6 @@ type BusinessGroup = {
   address: string
   photo_url?: string
   deals: Deal[]
-}
-
-const CAT_PHOTOS: Record<string, string> = {
-  Cafe: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&q=75',
-  Restaurant: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=75',
-  Barber: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&q=75',
-  Fitness: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=75',
-  Nails: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&q=75',
-  Sport: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&q=75',
-  Wellness: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&q=75',
-  Retail: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=75',
-  Other: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&q=75',
-}
-
-const CAT_EMOJI: Record<string, string> = {
-  Cafe: '☕',
-  Restaurant: '🍽️',
-  Barber: '✂️',
-  Fitness: '🏋️',
-  Nails: '💅',
-  Sport: '🏓',
-  Wellness: '🧘',
-  Retail: '🛍️',
-  Other: '🎟️',
 }
 
 function getMapsUrl(address: string): string {
@@ -88,16 +72,18 @@ export default function MemberDeals() {
       if (!active) { setAccessDenied(true); setLoading(false); return }
       const { data: dealsData } = await supabase
         .from('deals').select('*').eq('active', true).order('created_at')
-      if (dealsData) setDeals(dealsData)
-      const fifteenMinsAgo = new Date(Date.now() - 900000).toISOString()
+      if (dealsData) {
+        setDeals(dealsData.map((deal) => ({ ...deal, category: normalizeCategory(deal.category) })))
+      }
+      const cooldownThreshold = new Date(Date.now() - REDEMPTION_COOLDOWN_SECONDS * 1000).toISOString()
       const { data: redemptions } = await supabase
         .from('redemptions').select('deal_id, redeemed_at')
-        .eq('member_email', email).gte('redeemed_at', fifteenMinsAgo)
+        .eq('member_email', email).gte('redeemed_at', cooldownThreshold)
       if (redemptions) {
         const cdMap: Record<string, number> = {}
         redemptions.forEach(r => {
           if (!r.deal_id) return
-          const s = Math.ceil((new Date(r.redeemed_at).getTime() + 900000 - Date.now()) / 1000)
+          const s = getCooldownRemainingSeconds(r.redeemed_at)
           if (s > 0) cdMap[r.deal_id] = s
         })
         setCooldowns(cdMap)
@@ -139,7 +125,7 @@ export default function MemberDeals() {
   }
 
   function getPhoto(deal: Deal) {
-    return deal.photo_url || CAT_PHOTOS[deal.category] || CAT_PHOTOS['Other']
+    return deal.photo_url || getCategoryMeta(deal.category).photo
   }
 
   function groupDeals(dealList: Deal[]): BusinessGroup[] {
@@ -159,7 +145,7 @@ export default function MemberDeals() {
     return Array.from(map.values())
   }
 
-  const categories = ['All', ...Array.from(new Set(deals.map(d => d.category)))]
+  const categories = ['All', ...CATEGORY_OPTIONS.filter(category => deals.some((deal) => deal.category === category))]
   const filtered = filter === 'All' ? deals : deals.filter(d => d.category === filter)
   const groups = groupDeals(filtered)
   const featuredGroups = groups.filter(g => g.deals.some(d => d.featured))
@@ -325,10 +311,10 @@ export default function MemberDeals() {
                 {selectedDeal.address}
               </a>
               <div style={{ background: 'var(--bg-2)', borderRadius: '8px', padding: '14px', marginBottom: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                {[{ n: '2 min', l: 'Window' }, { n: '24 hrs', l: 'Cooldown' }, { n: '1x', l: 'Per day' }].map(r => (
-                  <div key={r.l} style={{ textAlign: 'center' }}>
-                    <div className="display" style={{ fontSize: '18px', color: 'var(--ink)' }}>{r.n}</div>
-                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)', marginTop: '2px' }}>{r.l}</div>
+                {REDEMPTION_RULES.map((rule) => (
+                  <div key={rule.label} style={{ textAlign: 'center' }}>
+                    <div className="display" style={{ fontSize: '18px', color: 'var(--ink)' }}>{rule.value}</div>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)', marginTop: '2px' }}>{rule.label}</div>
                   </div>
                 ))}
               </div>
@@ -397,7 +383,7 @@ export default function MemberDeals() {
                 color: filter === cat ? 'var(--bg)' : 'var(--ink-3)',
               }}
             >
-              {cat !== 'All' && <span style={{ marginRight: '4px' }}>{CAT_EMOJI[cat] || '🎟️'}</span>}
+              {cat !== 'All' && <span style={{ marginRight: '4px' }}>{getCategoryMeta(cat).emoji}</span>}
               {cat}
             </button>
           ))}

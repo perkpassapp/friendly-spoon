@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { normalizeCategory } from '@/lib/product'
 
 type BusinessAccount = {
   id: string; business_name: string; category: string; address: string
@@ -49,21 +50,13 @@ export default function BusinessDashboard() {
   const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [pendingPreview, setPendingPreview] = useState<string | null>(null)
 
-  useEffect(() => {
-    const saved = localStorage.getItem('biz_session')
-    if (saved) {
-      try { loadDashboard(JSON.parse(saved) as BusinessAccount) }
-      catch { localStorage.removeItem('biz_session') }
-    }
-  }, [])
-
   async function handleLogin() {
     if (!email) { setError('Enter your email'); return }
     if (!accessCode) { setError('Enter your access code'); return }
     setLoading(true); setError('')
     const { data, error: sbError } = await supabase.from('business_accounts').select('*').eq('contact_email', email.toLowerCase().trim()).limit(1)
     if (sbError || !data || data.length === 0) { setError('No active business account found for this email.'); setLoading(false); return }
-    const biz = data[0] as BusinessAccount
+    const biz = { ...data[0], category: normalizeCategory(data[0].category) } as BusinessAccount
     if (!biz.access_code) { setAccount(biz); setSettingCode(true); setLoading(false); return }
     if (biz.access_code !== accessCode) { setError('Incorrect access code.'); setLoading(false); return }
     await loadDashboard(biz)
@@ -83,7 +76,7 @@ export default function BusinessDashboard() {
     const { data: dealsData } = await supabase.from('deals').select('*').eq('business_name', biz.business_name).order('created_at', { ascending: false })
     const { data: redemptionData } = await supabase.from('redemptions').select('*').eq('business_name', biz.business_name).order('redeemed_at', { ascending: false })
     const r = redemptionData || []
-    setDeals(dealsData || [])
+    setDeals((dealsData || []).map((deal) => ({ ...deal, category: normalizeCategory(deal.category) })))
     setRedemptions(r)
     setAccount(biz)
     setPhotoUrl(biz.photo_url || null)
@@ -98,6 +91,14 @@ export default function BusinessDashboard() {
     setStats({ total: r.length, thisMonth, lastMonth, byDay })
     localStorage.setItem('biz_session', JSON.stringify(biz)); setAuthed(true); setLoading(false)
   }
+
+  useEffect(() => {
+    const saved = localStorage.getItem('biz_session')
+    if (saved) {
+      try { loadDashboard(JSON.parse(saved) as BusinessAccount) }
+      catch { localStorage.removeItem('biz_session') }
+    }
+  }, [])
 
   async function toggleDeal(deal: Deal) {
     if (deal.admin_disabled) return
@@ -140,7 +141,7 @@ export default function BusinessDashboard() {
     if (!newDealOffer.trim()) { setError('Enter a deal description'); return }
     setSubmitting(true); setError('')
     await supabase.from('business_applications').insert({
-      business_name: account!.business_name, category: account!.category,
+      business_name: account!.business_name, category: normalizeCategory(account!.category),
       address: account!.address, deal_offer: newDealOffer.trim(),
       deal_details: newDealDetails.trim() || null, contact_name: '',
       contact_email: account!.contact_email, phone: '', status: 'pending'

@@ -1,8 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
 import Link from 'next/link'
-
-const CATEGORIES = ['Cafe', 'Restaurant', 'Barber', 'Nail Salon', 'Fitness', 'Pickleball', 'Wellness', 'Retail', 'Other']
+import { CATEGORY_OPTIONS, normalizeCategory } from '@/lib/product'
 
 export default function ForBusiness() {
   const [form, setForm] = useState({
@@ -53,7 +52,7 @@ export default function ForBusiness() {
       const res = await fetch('/api/business-apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, photo_url: photoUrl }),
+        body: JSON.stringify({ ...form, category: normalizeCategory(form.category), photo_url: photoUrl }),
       })
       const data = await res.json()
       if (data.success) setSubmitted(true)
@@ -72,9 +71,9 @@ export default function ForBusiness() {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ maxWidth: '440px', width: '100%' }}>
           <div style={{ display: 'inline-block', background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '4px 12px', borderRadius: '4px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '20px' }}>Application received</div>
-          <h1 className="display" style={{ fontSize: 'clamp(48px, 12vw, 64px)', marginBottom: '16px' }}>You're on the list.</h1>
+          <h1 className="display" style={{ fontSize: 'clamp(48px, 12vw, 64px)', marginBottom: '16px' }}>You&apos;re on the list.</h1>
           <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px', lineHeight: 1.55 }}>
-            We review every application personally. You'll hear from us at <strong style={{ color: 'var(--ink)' }}>{form.contact_email}</strong> within 48 hours.
+            We review every application personally. You&apos;ll hear from us at <strong style={{ color: 'var(--ink)' }}>{form.contact_email}</strong> within 48 hours.
           </p>
           <div style={{ background: 'var(--forest)', borderRadius: '10px', padding: '24px', marginBottom: '24px', border: '2px solid var(--green)' }}>
             <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--green)', marginBottom: '12px' }}>What happens next</div>
@@ -143,7 +142,7 @@ export default function ForBusiness() {
               <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Category *</label>
               <select value={form.category} onChange={e => update('category', e.target.value)} className="pp-input" style={{ cursor: 'pointer' }}>
                 <option value="">Select a category</option>
-                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                {CATEGORY_OPTIONS.map(category => <option key={category} value={category}>{category}</option>)}
               </select>
             </div>
             <div>
