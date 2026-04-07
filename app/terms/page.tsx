@@ -45,7 +45,7 @@ export default function TermsPage() {
 
           <section>
             <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.03em', color: 'var(--ink)', marginBottom: '10px' }}>6. Limitation of Liability</h2>
-            <p>To the fullest extent permitted by law, PerkPass and Sam Lee Ventures LLC are not liable for damages arising from use of the platform or any business interaction.</p>
+            <p>To the fullest extent permitted by law, PerkPass is not liable for damages arising from use of the platform or any business interaction.</p>
           </section>
 
           <section>
