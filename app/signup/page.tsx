@@ -1,33 +1,101 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 type Step = 'method' | 'phone-only' | 'manual' | 'pay'
+type MemberStatus = {
+  exists: boolean
+  active: boolean
+  hasPhone: boolean
+  name: string
+  phone: string
+  subscriptionStatus: string | null
+}
+
+type ManualField = {
+  label: string
+  value: string
+  setter: (value: string) => void
+  type: 'text' | 'tel' | 'email'
+  placeholder: string
+  complete: string
+  mode: 'text' | 'tel' | 'email'
+}
 
 export default function SignupPage() {
   const [step, setStep] = useState<Step>('method')
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
+  const [hasActiveMembership, setHasActiveMembership] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const router = useRouter()
+
+  async function getMemberStatus(nextEmail: string): Promise<MemberStatus> {
+    const res = await fetch(`/api/member-status?email=${encodeURIComponent(nextEmail)}`)
+    if (!res.ok) {
+      throw new Error('Unable to load member status.')
+    }
+    return res.json()
+  }
+
+  async function savePhoneProfile(nextName: string, nextEmail: string, nextPhone: string) {
+    const res = await fetch('/api/update-member-profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: nextName, email: nextEmail, phone: nextPhone }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      throw new Error(data.error || 'Unable to save profile.')
+    }
+    return data
+  }
 
   // Check if returning from Google OAuth with a session
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session?.user) {
-        const user = data.session.user
-        const googleName = user.user_metadata?.full_name || user.user_metadata?.name || ''
-        const googleEmail = user.email || ''
-        if (googleName) setName(googleName)
-        if (googleEmail) setEmail(googleEmail)
-        // They came from Google — just need phone
-        setStep('phone-only')
+    async function init() {
+      const { data } = await supabase.auth.getSession()
+      const user = data.session?.user
+      if (!user?.email) {
+        setAuthChecked(true)
+        return
       }
-    })
-  }, [])
+
+      const googleName = user.user_metadata?.full_name || user.user_metadata?.name || ''
+      const googleEmail = user.email
+
+      if (googleName) setName(googleName)
+      setEmail(googleEmail)
+
+      try {
+        const status = await getMemberStatus(googleEmail)
+        const effectiveName = status.name || googleName
+
+        if (effectiveName) setName(effectiveName)
+        if (status.phone) setPhone(formatPhone(status.phone))
+        setHasActiveMembership(status.active)
+
+        if (status.active && status.hasPhone) {
+          router.replace('/member/deals')
+          return
+        }
+
+        setStep(status.hasPhone ? 'pay' : 'phone-only')
+      } catch {
+        setError('We had trouble checking your account. Please try again.')
+      } finally {
+        setAuthChecked(true)
+      }
+    }
+
+    init()
+  }, [router])
 
   function formatPhone(val: string) {
     const digits = val.replace(/\D/g, '').slice(0, 10)
@@ -64,14 +132,43 @@ export default function SignupPage() {
   async function handleContinueManual() {
     if (!validateManual()) return
     setLoading(true)
-    const res = await fetch(`/api/check-email?email=${encodeURIComponent(email)}`)
-    const { exists } = await res.json()
-    setLoading(false)
-    if (exists) {
-      setError('An account with this email already exists. Please log in instead.')
+    setError('')
+    try {
+      const status = await getMemberStatus(email)
+      setHasActiveMembership(status.active)
+      if (status.active) {
+        setError('This email already has an active membership. Please log in instead.')
+        return
+      }
+      setStep('pay')
+    } catch {
+      setError('We had trouble checking your account. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handlePhoneOnlyContinue() {
+    if (!validatePhone()) return
+    if (!email) {
+      setError('We could not find your email. Please try again.')
       return
     }
-    setStep('pay')
+
+    setLoading(true)
+    setError('')
+    try {
+      await savePhoneProfile(name, email, phone.replace(/\D/g, ''))
+      if (hasActiveMembership) {
+        router.push('/member/deals')
+        return
+      }
+      setStep('pay')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function handleCheckout() {
@@ -99,6 +196,14 @@ export default function SignupPage() {
 
   const STEPS = ['Your info', 'Payment']
   const stepIndex = step === 'method' ? 0 : step === 'phone-only' ? 0 : step === 'manual' ? 0 : 1
+
+  if (!authChecked) {
+    return (
+      <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="display pulse" style={{ fontSize: '28px', color: 'var(--green)' }}>Loading...</div>
+      </main>
+    )
+  }
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
@@ -257,7 +362,7 @@ export default function SignupPage() {
                     autoFocus
                     inputMode="tel"
                     autoComplete="tel"
-                    onKeyDown={e => e.key === 'Enter' && validatePhone() && setStep('pay')}
+                    onKeyDown={e => e.key === 'Enter' && handlePhoneOnlyContinue()}
                   />
                   <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>
                     One account per phone number.
@@ -267,11 +372,12 @@ export default function SignupPage() {
                 {error && <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)' }}>{error}</p>}
 
                 <button
-                  onClick={() => validatePhone() && setStep('pay')}
+                  onClick={handlePhoneOnlyContinue}
+                  disabled={loading}
                   className="btn btn-primary"
                   style={{ width: '100%', fontSize: '18px', padding: '16px' }}
                 >
-                  Continue to payment
+                  {loading ? 'Saving...' : hasActiveMembership ? 'Save and continue' : 'Continue to payment'}
                 </button>
               </div>
             </div>
@@ -290,11 +396,11 @@ export default function SignupPage() {
               </div>
 
               <div className="fade-up-2" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {[
+                {([
                   { label: 'Full name', value: name, setter: setName, type: 'text', placeholder: 'Jane Smith', complete: 'name', mode: 'text' },
                   { label: 'Phone number', value: phone, setter: (v: string) => setPhone(formatPhone(v)), type: 'tel', placeholder: '(215) 555-0100', complete: 'tel', mode: 'tel' },
                   { label: 'Email address', value: email, setter: setEmail, type: 'email', placeholder: 'you@email.com', complete: 'email', mode: 'email' },
-                ].map(f => (
+                ] as ManualField[]).map(f => (
                   <div key={f.label}>
                     <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>
                       {f.label}
@@ -306,7 +412,7 @@ export default function SignupPage() {
                       placeholder={f.placeholder}
                       className="pp-input"
                       autoComplete={f.complete}
-                      inputMode={f.mode as any}
+                      inputMode={f.mode}
                     />
                     {f.label === 'Phone number' && (
                       <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>One account per phone number.</p>

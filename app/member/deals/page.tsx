@@ -31,6 +31,11 @@ type Deal = {
   schedule: Schedule | null
 }
 
+type MemberProfile = {
+  name: string | null
+  phone: string | null
+}
+
 type BusinessGroup = {
   business_name: string
   category: string
@@ -61,8 +66,13 @@ export default function MemberDeals() {
       if (!userData.user) { router.push('/member/login'); return }
       const email = userData.user.email!
       const { data: memberData } = await supabase
-        .from('members').select('name').eq('email', email).limit(1)
-      if (memberData?.[0]?.name) setUserName(memberData[0].name.split(' ')[0])
+        .from('members').select('name, phone').eq('email', email).limit(1)
+      const member = memberData?.[0] as MemberProfile | undefined
+      if (member?.name) setUserName(member.name.split(' ')[0])
+      if (!member?.phone) {
+        router.push('/signup')
+        return
+      }
       const res = await fetch('/api/verify-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
