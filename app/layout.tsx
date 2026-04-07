@@ -152,12 +152,12 @@ export default function RootLayout({
           }}
         >
           <div style={{ maxWidth: '1120px', margin: '0 auto', width: '100%' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) repeat(3, minmax(140px, 1fr))', gap: '24px 40px', alignItems: 'start', marginBottom: '32px' }}>
+            <div className="site-footer-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) repeat(3, minmax(140px, 1fr))', gap: '24px 40px', alignItems: 'start', marginBottom: '32px' }}>
               <div>
                 <Link href="/" className="pp-logo" style={{ color: '#ffffff', display: 'inline-block', marginBottom: '12px' }}>
                   Perk<span>Pass</span>
                 </Link>
-                <p style={{ fontSize: '15px', lineHeight: 1.65, color: 'rgba(255,255,255,0.68)', maxWidth: '320px', marginBottom: '14px' }}>
+                <p className="site-footer-blurb" style={{ fontSize: '15px', lineHeight: 1.65, color: 'rgba(255,255,255,0.68)', maxWidth: '320px', marginBottom: '14px' }}>
                   Philadelphia&apos;s local deals membership with exclusive savings at neighborhood restaurants, cafes, gyms, barbers, nail salons, and more.
                 </p>
                 <a
@@ -193,7 +193,7 @@ export default function RootLayout({
               ))}
             </div>
 
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+            <div className="site-footer-meta" style={{ borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
               <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', fontWeight: 500 }}>
                 2026 PerkPass. Built for local Philly discovery.
               </p>

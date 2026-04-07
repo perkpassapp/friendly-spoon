@@ -135,3 +135,25 @@ body {
 
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 3px; }
+
+@media (max-width: 960px) {
+  .site-footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 28px 24px !important;
+  }
+
+  .site-footer-blurb {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .site-footer-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .site-footer-meta {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+}
