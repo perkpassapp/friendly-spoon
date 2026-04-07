@@ -68,6 +68,7 @@ export default function Home() {
             { n: 'Growing', l: 'Active deals' },
             { n: '$3',      l: 'Per month' },
             { n: '1 min',   l: 'To redeem' },
+            { n: 'Loved',   l: 'By locals' },
           ].map(s => (
             <div key={s.l} style={{ paddingRight: '24px' }}>
               <div className="display" style={{ fontSize: '40px', color: 'var(--green)' }}>{s.n}</div>
@@ -81,15 +82,11 @@ export default function Home() {
       <section style={{ padding: '64px 24px', borderTop: '2px solid var(--ink)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <div style={{ marginBottom: '32px' }}>
-            <div className="preview-kicker">Sample deal preview</div>
             <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)' }}>
               Sneak peek
             </h2>
-            <p style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ink-2)', marginTop: '10px', marginBottom: '10px', lineHeight: 1.4 }}>
-              What $3/month unlocks around Philly.
-            </p>
             <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '520px', lineHeight: 1.6 }}>
-              Preview of the member experience. Business names are shown for vibe, and deals rotate across cafes, restaurants, fitness, self-care, and more.
+              Preview of the member experience. Deals and participating businesses rotate across cafes, restaurants, fitness, self-care, and more.
             </p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '32px' }}>
@@ -106,7 +103,7 @@ export default function Home() {
                     <div style={{ position: 'relative' }}>
                       <img src={photo} alt={d.cat} className="deal-card-img" loading="lazy" />
                       <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--ink)', color: 'var(--bg)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 8px', borderRadius: '3px' }}>
-                        Sample deal
+                        Coming soon
                       </span>
                     </div>
                   )}
@@ -131,13 +128,13 @@ export default function Home() {
               <div className="deal-card" style={{ background: 'var(--bg)', border: '1.5px solid var(--forest)', minHeight: '220px', cursor: 'pointer' }}>
                 <div className="deal-card-body" style={{ justifyContent: 'center', gap: '16px' }}>
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--green)' }}>
-                    Own a business?
+                    Business owner
                   </div>
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '24px', fontWeight: 900, color: 'var(--forest)', lineHeight: 1.05 }}>
-                    Wanna list your business? Let&apos;s do it.
+                    Wanna list your juicy deals? Let&apos;s do it.
                   </div>
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green)' }}>
-                    Apply free →
+                    Apply Now →
                   </div>
                 </div>
               </div>
