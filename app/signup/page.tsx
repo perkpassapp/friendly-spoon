@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-type Step = 'method' | 'phone-only' | 'manual' | 'pay'
+type Step = 'method' | 'phone-only' | 'manual' | 'pay' | 'active-member'
 type MemberStatus = {
   exists: boolean
   active: boolean
@@ -81,8 +81,8 @@ export default function SignupPage() {
         if (status.phone) setPhone(formatPhone(status.phone))
         setHasActiveMembership(status.active)
 
-        if (status.active && status.hasPhone) {
-          router.replace('/member/deals')
+        if (status.active) {
+          setStep('active-member')
           return
         }
 
@@ -224,23 +224,63 @@ export default function SignupPage() {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ width: '100%', maxWidth: '440px' }}>
 
-          {/* Progress bar */}
-          <div style={{ display: 'flex', gap: '4px', marginBottom: '32px' }}>
-            {STEPS.map((s, i) => (
-              <div key={s} style={{ flex: 1 }}>
-                <div style={{
-                  height: '3px', borderRadius: '2px', marginBottom: '6px',
-                  background: i <= stepIndex ? 'var(--ink)' : 'var(--bg-3)',
-                  transition: 'background 0.2s',
-                }} />
-                <div style={{
-                  fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px',
-                  fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
-                  color: i <= stepIndex ? 'var(--ink-3)' : 'var(--ink-4)',
-                }}>{s}</div>
+          {step !== 'active-member' && (
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '32px' }}>
+              {STEPS.map((s, i) => (
+                <div key={s} style={{ flex: 1 }}>
+                  <div style={{
+                    height: '3px', borderRadius: '2px', marginBottom: '6px',
+                    background: i <= stepIndex ? 'var(--ink)' : 'var(--bg-3)',
+                    transition: 'background 0.2s',
+                  }} />
+                  <div style={{
+                    fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px',
+                    fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+                    color: i <= stepIndex ? 'var(--ink-3)' : 'var(--ink-4)',
+                  }}>{s}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {step === 'active-member' && (
+            <div className="fade-up">
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '4px 12px', borderRadius: '999px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '16px' }}>
+                Membership active
               </div>
-            ))}
-          </div>
+              <h1 className="display" style={{ fontSize: 'clamp(44px, 10vw, 64px)', marginBottom: '10px' }}>
+                You already have PerkPass All Access.
+              </h1>
+              <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.6, marginBottom: '24px' }}>
+                This account is already subscribed. If you&apos;d like more details about your plan, billing, or account status, head to your account page.
+              </p>
+
+              <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', borderRadius: '10px', padding: '18px 18px 16px', marginBottom: '18px' }}>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '10px' }}>
+                  Current account
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                    <span style={{ fontSize: '13px', color: 'var(--ink-3)', fontWeight: 500 }}>Email</span>
+                    <span style={{ fontSize: '13px', color: 'var(--ink)', fontWeight: 700, textAlign: 'right' }}>{email}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                    <span style={{ fontSize: '13px', color: 'var(--ink-3)', fontWeight: 500 }}>Plan</span>
+                    <span style={{ fontSize: '13px', color: 'var(--ink)', fontWeight: 700, textAlign: 'right' }}>PerkPass All Access</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <Link href="/account" className="btn btn-primary" style={{ width: '100%', fontSize: '17px', padding: '15px' }}>
+                  Go to account
+                </Link>
+                <Link href="/member/deals" className="btn btn-outline" style={{ width: '100%', fontSize: '16px', padding: '14px' }}>
+                  Back to deals
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* ── STEP: METHOD ── */}
           {step === 'method' && (

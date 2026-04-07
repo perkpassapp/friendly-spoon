@@ -2,11 +2,11 @@ import Link from 'next/link'
 import { getCategoryMeta, normalizeCategory } from '@/lib/product'
 
 const DEALS = [
-  { name: 'La Colombe', deal: '1335 Frankford Ave, Philadelphia, PA 19125', cat: 'Cafe', addr: 'Fishtown' },
-  { name: 'Mango Mango Dessert', deal: '1013 Cherry St, Philadelphia, PA 19107', cat: 'Dessert', addr: 'Chinatown' },
-  { name: 'Earn Everything Gym', deal: '2035 E Glenwood Ave, Philadelphia, PA 19124', cat: 'Fitness', addr: 'Center City' },
-  { name: 'Top Design Nails And Jewelry', deal: '1459 E Luzerne St, Philadelphia, PA 19124', cat: 'Nails', addr: 'Old City' },
-  { name: 'Suraya', deal: '1528 Frankford Ave, Philadelphia, PA 19125', cat: 'Restaurant', addr: 'Fishtown' },
+  { name: 'La Colombe', offer: '$2 off any espresso drink before 11am', cat: 'Cafe', area: 'Fishtown', tag: 'Morning favorite', featured: true },
+  { name: 'Mango Mango Dessert', offer: 'Free topping on any dessert order', cat: 'Dessert', area: 'Chinatown', tag: 'After dinner', featured: false },
+  { name: 'Earn Everything Gym', offer: '15% off your first class pack', cat: 'Fitness', area: 'Center City', tag: 'Lunch break', featured: false },
+  { name: 'Top Design Nails And Jewelry', offer: '$10 off any service over $50', cat: 'Nails', area: 'Old City', tag: 'Weekend reset', featured: false },
+  { name: 'Suraya', offer: 'Free mezze add-on with entree purchase', cat: 'Restaurant', area: 'Fishtown', tag: 'Popular dinner spot', featured: false },
 ]
 
 const CAT_COLORS: Record<string, { bg: string; color: string }> = {
@@ -28,6 +28,20 @@ export default function Home() {
         .deal-card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
         .quick-link { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; text-align: left; width: 100%; transition: border-color 0.15s; }
         .quick-link:hover { border-color: var(--green); }
+        .preview-shell { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 14px; margin-bottom: 32px; }
+        .preview-featured { min-height: 100%; }
+        .preview-featured .deal-card-img { height: 170px; }
+        .preview-side-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .preview-tag { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; background: rgba(15,15,15,0.06); color: var(--ink-3); font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 8px; border-radius: 999px; }
+        .preview-kicker { display: inline-flex; align-items: center; gap: 8px; background: var(--green-lt); color: var(--green-dk); padding: 4px 12px; border-radius: 999px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
+        .preview-note { font-size: 13px; font-weight: 600; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.05em; }
+        @media (max-width: 900px) {
+          .preview-shell { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+          .preview-side-grid { grid-template-columns: 1fr; }
+          .preview-featured .deal-card-img { height: 150px; }
+        }
       `}</style>
 
       {/* Nav */}
@@ -80,12 +94,58 @@ export default function Home() {
       <section style={{ padding: '64px 24px', borderTop: '2px solid var(--ink)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <div style={{ marginBottom: '32px' }}>
+            <div className="preview-kicker">Sample deal preview</div>
             <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)' }}>
               Sneak peek
             </h2>
+            <p style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ink-2)', marginTop: '10px', marginBottom: '10px', lineHeight: 1.4 }}>
+              What $3/month unlocks around Philly.
+            </p>
+            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '520px', lineHeight: 1.6 }}>
+              Preview of the member experience. Business names are shown for vibe, and deals rotate across cafes, restaurants, fitness, self-care, and more.
+            </p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '32px' }}>
-            {DEALS.map((d, i) => {
+          <div className="preview-shell">
+            {DEALS.filter((deal) => deal.featured).map((d, i) => {
+              const normalizedCategory = normalizeCategory(d.cat)
+              const categoryMeta = getCategoryMeta(d.cat)
+              const colors = CAT_COLORS[d.cat] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
+              const photo = d.cat === 'Dessert'
+                ? 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/Homepage/Screenshot%202026-04-06%20at%203.04.06%20PM.png'
+                : categoryMeta.photo
+              return (
+                <div key={i} className="deal-card preview-featured">
+                  {photo && (
+                    <div style={{ position: 'relative' }}>
+                      <img src={photo} alt={d.cat} className="deal-card-img" loading="lazy" />
+                      <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--ink)', color: 'var(--bg)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 8px', borderRadius: '3px' }}>
+                        Sample deal
+                      </span>
+                    </div>
+                  )}
+                  <div className="deal-card-body" style={{ padding: '18px 18px 20px', gap: '10px' }}>
+                    <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 9px', borderRadius: '4px' }}>
+                      {d.cat === 'Dessert' ? d.cat : normalizedCategory} • {d.area}
+                    </span>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '28px', fontWeight: 900, color: 'var(--ink)', lineHeight: 1.02, letterSpacing: '-0.02em' }}>
+                      {d.name}
+                    </div>
+                    <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--green-dk)', lineHeight: 1.15 }}>
+                      {d.offer}
+                    </div>
+                    <div className="preview-tag">
+                      {d.tag}
+                    </div>
+                    <div className="preview-note" style={{ marginTop: 'auto', paddingTop: '6px' }}>
+                      Preview of the member experience
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <div className="preview-side-grid">
+            {DEALS.filter((deal) => !deal.featured).map((d, i) => {
               const normalizedCategory = normalizeCategory(d.cat)
               const categoryMeta = getCategoryMeta(d.cat)
               const colors = CAT_COLORS[d.cat] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
@@ -98,28 +158,27 @@ export default function Home() {
                     <div style={{ position: 'relative' }}>
                       <img src={photo} alt={d.cat} className="deal-card-img" loading="lazy" />
                       <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--ink)', color: 'var(--bg)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 8px', borderRadius: '3px' }}>
-                        Coming soon
+                        Sample deal
                       </span>
                     </div>
                   )}
                   <div className="deal-card-body">
                     <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 9px', borderRadius: '4px' }}>
-                      {d.cat === 'Dessert' ? d.cat : normalizedCategory}
+                      {d.cat === 'Dessert' ? d.cat : normalizedCategory} • {d.area}
                     </span>
                     <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.01em' }}>
                       {d.name}
                     </div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--green-dk)', lineHeight: 1.3 }}>
-                      {d.deal}
+                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--green-dk)', lineHeight: 1.35 }}>
+                      {d.offer}
                     </div>
-                    <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--ink-4)', marginTop: 'auto', paddingTop: '4px' }}>
-                      {d.addr}
+                    <div className="preview-tag">
+                      {d.tag}
                     </div>
                   </div>
                 </div>
               )
             })}
-            {/* CTA tile */}
             <Link href="/for-business" style={{ textDecoration: 'none' }}>
               <div className="deal-card" style={{ background: 'var(--bg)', border: '1.5px solid var(--forest)', minHeight: '220px', cursor: 'pointer' }}>
                 <div className="deal-card-body" style={{ justifyContent: 'center', gap: '16px' }}>
