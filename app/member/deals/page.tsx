@@ -11,6 +11,13 @@ import {
   getCooldownRemainingSeconds,
   normalizeCategory,
 } from '@/lib/product'
+import {
+  getDistanceMiles,
+  hasCoordinates,
+  isValidUsZipCode,
+  normalizeUsZipCode,
+  type Coordinates,
+} from '@/lib/location'
 
 type Schedule = {
   days: number[]
@@ -29,6 +36,8 @@ type Deal = {
   photo_url?: string
   featured?: boolean
   schedule: Schedule | null
+  latitude?: number | null
+  longitude?: number | null
 }
 
 type BusinessGroup = {
@@ -36,8 +45,18 @@ type BusinessGroup = {
   category: string
   address: string
   photo_url?: string
+  latitude?: number | null
+  longitude?: number | null
   deals: Deal[]
 }
+
+type LocationFilter = {
+  zip: string
+  center: Coordinates
+  radiusMiles: number
+}
+
+const RADIUS_OPTIONS = [1, 3, 5, 10, 25]
 
 function getMapsUrl(address: string): string {
   const encoded = encodeURIComponent(address)
@@ -53,6 +72,11 @@ export default function MemberDeals() {
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null)
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({})
   const [userName, setUserName] = useState('')
+  const [zipCode, setZipCode] = useState('')
+  const [radiusMiles, setRadiusMiles] = useState(5)
+  const [locationFilter, setLocationFilter] = useState<LocationFilter | null>(null)
+  const [locationLoading, setLocationLoading] = useState(false)
+  const [locationError, setLocationError] = useState('')
   const router = useRouter()
 
   useEffect(() => {
@@ -137,6 +161,8 @@ export default function MemberDeals() {
           category: d.category,
           address: d.address,
           photo_url: d.photo_url,
+          latitude: d.latitude,
+          longitude: d.longitude,
           deals: []
         })
       }
@@ -145,8 +171,68 @@ export default function MemberDeals() {
     return Array.from(map.values())
   }
 
+  async function applyLocationFilter() {
+    const normalizedZip = normalizeUsZipCode(zipCode)
+    if (!isValidUsZipCode(normalizedZip)) {
+      setLocationError('Enter a valid 5-digit ZIP code.')
+      return
+    }
+
+    setLocationLoading(true)
+    setLocationError('')
+
+    try {
+      const res = await fetch('/api/zip-coordinates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ zip: normalizedZip }),
+      })
+      const data = await res.json()
+
+      if (!data.success) {
+        setLocationError(data.error || 'Location search failed.')
+        setLocationLoading(false)
+        return
+      }
+
+      setZipCode(data.zip)
+      setLocationFilter({
+        zip: data.zip,
+        center: data.coordinates,
+        radiusMiles,
+      })
+    } catch {
+      setLocationError('Location search failed. Try again.')
+    }
+
+    setLocationLoading(false)
+  }
+
+  function clearLocationFilter() {
+    setLocationFilter(null)
+    setLocationError('')
+  }
+
+  function getDealDistance(deal: Deal): number | null {
+    if (!locationFilter || !hasCoordinates(deal)) return null
+    return getDistanceMiles(locationFilter.center, {
+      latitude: deal.latitude,
+      longitude: deal.longitude,
+    })
+  }
+
+  function formatDistance(distance: number): string {
+    return distance < 10 ? `${distance.toFixed(1)} mi away` : `${Math.round(distance)} mi away`
+  }
+
   const categories = ['All', ...CATEGORY_OPTIONS.filter(category => deals.some((deal) => deal.category === category))]
-  const filtered = filter === 'All' ? deals : deals.filter(d => d.category === filter)
+  const categoryFiltered = filter === 'All' ? deals : deals.filter(d => d.category === filter)
+  const filtered = locationFilter
+    ? categoryFiltered.filter((deal) => {
+        const distance = getDealDistance(deal)
+        return distance !== null && distance <= locationFilter.radiusMiles
+      })
+    : categoryFiltered
   const groups = groupDeals(filtered)
   const featuredGroups = groups.filter(g => g.deals.some(d => d.featured))
   const restGroups = groups.filter(g => g.deals.every(d => !d.featured))
@@ -227,6 +313,14 @@ export default function MemberDeals() {
           >
             📍 {group.address}
           </a>
+          {locationFilter && hasCoordinates(group) && (
+            <div style={{ marginTop: '4px', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {formatDistance(getDistanceMiles(locationFilter.center, {
+                latitude: group.latitude,
+                longitude: group.longitude,
+              }))}
+            </div>
+          )}
         </div>
       </div>
     )
@@ -367,6 +461,85 @@ export default function MemberDeals() {
           <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)' }}>
             {groups.length} {groups.length === 1 ? 'business' : 'businesses'} · {filtered.length} deals in Philadelphia
           </p>
+        </div>
+
+        <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '18px 16px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '14px', flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '4px' }}>
+                Find Nearby
+              </div>
+              <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.5 }}>
+                Enter your ZIP code and we&apos;ll show businesses within your chosen radius.
+              </div>
+            </div>
+            {locationFilter && (
+              <div style={{ background: 'var(--green-lt)', color: 'var(--green-dk)', borderRadius: '4px', padding: '4px 10px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {locationFilter.zip} · within {locationFilter.radiusMiles} miles
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'end', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 180px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)' }}>
+                ZIP code
+              </label>
+              <input
+                type="text"
+                value={zipCode}
+                onChange={(e) => setZipCode(normalizeUsZipCode(e.target.value.replace(/\D/g, '')))}
+                placeholder="19103"
+                inputMode="numeric"
+                className="pp-input"
+                maxLength={5}
+                onKeyDown={(e) => e.key === 'Enter' && applyLocationFilter()}
+              />
+            </div>
+            <div style={{ flex: '0 1 140px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)' }}>
+                Radius
+              </label>
+              <select
+                value={radiusMiles}
+                onChange={(e) => {
+                  const nextRadius = Number(e.target.value)
+                  setRadiusMiles(nextRadius)
+                  setLocationFilter((current) => current ? { ...current, radiusMiles: nextRadius } : current)
+                }}
+                className="pp-input"
+                style={{ cursor: 'pointer' }}
+              >
+                {RADIUS_OPTIONS.map((option) => (
+                  <option key={option} value={option}>{option} miles</option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={applyLocationFilter}
+              disabled={locationLoading}
+              className="btn btn-primary"
+              style={{ minWidth: '132px', fontSize: '15px', padding: '14px 18px', height: '52px' }}
+            >
+              {locationLoading ? 'Searching...' : 'Apply'}
+            </button>
+          </div>
+
+          {(locationError || locationFilter) && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginTop: '10px', flexWrap: 'wrap' }}>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: locationError ? 'var(--red)' : 'var(--ink-4)' }}>
+                {locationError || `Showing businesses within ${locationFilter?.radiusMiles} miles of ${locationFilter?.zip}.`}
+              </div>
+              {locationFilter && (
+                <button
+                  onClick={clearLocationFilter}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)' }}
+                >
+                  Clear filter
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Category filters */}

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { CATEGORY_OPTIONS, normalizeCategory } from '@/lib/product'
+import { hasCoordinates } from '@/lib/location'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,14 +14,17 @@ type Application = {
   id: string; business_name: string; category: string; address: string
   deal_offer: string; deal_details: string | null; contact_name: string
   contact_email: string; phone: string; status: string; created_at: string
+  latitude?: number | null; longitude?: number | null
 }
 type Deal = {
   id: string; business_name: string; deal_description: string; category: string
   address: string; active: boolean; admin_disabled: boolean; photo_url?: string | null; featured: boolean
+  latitude?: number | null; longitude?: number | null
 }
 type Business = {
   id: string; business_name: string; category: string; address: string
   contact_email: string; active: boolean; admin_disabled: boolean
+  latitude?: number | null; longitude?: number | null
 }
 
 export default function AdminDashboard() {
@@ -61,13 +65,40 @@ export default function AdminDashboard() {
     // Carry over existing photo_url if this business already has one
     const { data: existingAccount } = await supabase
       .from('business_accounts')
-      .select('photo_url')
+      .select('photo_url, latitude, longitude')
       .eq('business_name', app.business_name)
       .maybeSingle()
     const photoUrl = existingAccount?.photo_url || null
+    const coordinates = hasCoordinates(app)
+      ? { latitude: app.latitude, longitude: app.longitude }
+      : hasCoordinates(existingAccount || {})
+        ? { latitude: existingAccount!.latitude, longitude: existingAccount!.longitude }
+        : null
 
-    await supabase.from('deals').insert({ business_name: app.business_name, deal_description: app.deal_offer, deal_details: app.deal_details || null, category, emoji: '🎟️', address: app.address, active: true, admin_disabled: false, photo_url: photoUrl })
-    await supabase.from('business_accounts').upsert({ business_name: app.business_name, category, address: app.address, deal_offer: app.deal_offer, contact_email: app.contact_email.toLowerCase().trim(), active: true, admin_disabled: false }, { onConflict: 'business_name' })
+    await supabase.from('deals').insert({
+      business_name: app.business_name,
+      deal_description: app.deal_offer,
+      deal_details: app.deal_details || null,
+      category,
+      emoji: '🎟️',
+      address: app.address,
+      active: true,
+      admin_disabled: false,
+      photo_url: photoUrl,
+      latitude: coordinates?.latitude ?? null,
+      longitude: coordinates?.longitude ?? null,
+    })
+    await supabase.from('business_accounts').upsert({
+      business_name: app.business_name,
+      category,
+      address: app.address,
+      deal_offer: app.deal_offer,
+      contact_email: app.contact_email.toLowerCase().trim(),
+      active: true,
+      admin_disabled: false,
+      latitude: coordinates?.latitude ?? null,
+      longitude: coordinates?.longitude ?? null,
+    }, { onConflict: 'business_name' })
     await supabase.from('business_applications').update({ status: 'approved' }).eq('id', app.id)
     await loadData(); setApproving(null)
   }

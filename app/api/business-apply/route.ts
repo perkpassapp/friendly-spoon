@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { geocodeAddress } from '@/lib/geocoding'
 import { normalizeCategory } from '@/lib/product'
 
 const supabase = createClient(
@@ -19,10 +20,28 @@ export async function POST(req: Request) {
     // Normalize email to lowercase so business login always works regardless of how they typed it
     const normalizedEmail = contact_email.toLowerCase().trim()
     const normalizedCategory = normalizeCategory(category)
+    let coordinates = null
+
+    try {
+      coordinates = await geocodeAddress(address)
+    } catch (error) {
+      console.warn('business-apply geocoding warning:', error)
+    }
 
     const { error } = await supabase
       .from('business_applications')
-      .insert([{ business_name, category: normalizedCategory, address, deal_offer, deal_details: deal_details || null, contact_name, contact_email: normalizedEmail, phone }])
+      .insert([{
+        business_name,
+        category: normalizedCategory,
+        address,
+        deal_offer,
+        deal_details: deal_details || null,
+        contact_name,
+        contact_email: normalizedEmail,
+        phone,
+        latitude: coordinates?.latitude ?? null,
+        longitude: coordinates?.longitude ?? null,
+      }])
 
     if (error) throw error
 
