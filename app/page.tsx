@@ -2,11 +2,11 @@ import Link from 'next/link'
 import { getCategoryMeta, normalizeCategory } from '@/lib/product'
 
 const DEALS = [
-  { name: 'La Colombe', offer: '$2 off any espresso drink before 11am', cat: 'Cafe', area: 'Fishtown', tag: 'Morning favorite', featured: true },
-  { name: 'Mango Mango Dessert', offer: 'Free topping on any dessert order', cat: 'Dessert', area: 'Chinatown', tag: 'After dinner', featured: false },
-  { name: 'Earn Everything Gym', offer: '15% off your first class pack', cat: 'Fitness', area: 'Center City', tag: 'Lunch break', featured: false },
-  { name: 'Top Design Nails And Jewelry', offer: '$10 off any service over $50', cat: 'Nails', area: 'Old City', tag: 'Weekend reset', featured: false },
-  { name: 'Suraya', offer: 'Free mezze add-on with entree purchase', cat: 'Restaurant', area: 'Fishtown', tag: 'Popular dinner spot', featured: false },
+  { name: 'La Colombe', offer: '$2 off any espresso drink before 11am', cat: 'Cafe', area: 'Fishtown', featured: true },
+  { name: 'Mango Mango Dessert', offer: 'Free topping on any dessert order', cat: 'Dessert', area: 'Chinatown', featured: false },
+  { name: 'Earn Everything Gym', offer: '15% off your first class pack', cat: 'Fitness', area: 'Center City', featured: false },
+  { name: 'Top Design Nails And Jewelry', offer: '$10 off any service over $50', cat: 'Nails', area: 'Old City', featured: false },
+  { name: 'Suraya', offer: 'Free mezze add-on with entree purchase', cat: 'Restaurant', area: 'Fishtown', featured: false },
 ]
 
 const CAT_COLORS: Record<string, { bg: string; color: string }> = {
@@ -116,9 +116,6 @@ export default function Home() {
                     </div>
                     <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--green-dk)', lineHeight: 1.35 }}>
                       {d.offer}
-                    </div>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', alignSelf: 'flex-start', background: 'rgba(15,15,15,0.06)', color: 'var(--ink-3)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 8px', borderRadius: '999px' }}>
-                      {d.tag}
                     </div>
                   </div>
                 </div>
