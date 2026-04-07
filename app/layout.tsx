@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -126,8 +127,8 @@ export default function RootLayout({
             flexWrap: 'wrap',
           }}
         >
-          <a
-            href="/terms"
+          <Link
+            href="/about"
             style={{
               fontFamily: "'Barlow Condensed', sans-serif",
               fontSize: '12px',
@@ -138,10 +139,10 @@ export default function RootLayout({
               textDecoration: 'none',
             }}
           >
-            Terms
-          </a>
-          <a
-            href="/privacy"
+            About us
+          </Link>
+          <Link
+            href="/offerings"
             style={{
               fontFamily: "'Barlow Condensed', sans-serif",
               fontSize: '12px',
@@ -152,10 +153,10 @@ export default function RootLayout({
               textDecoration: 'none',
             }}
           >
-            Privacy
-          </a>
-          <a
-            href="/refund-policy"
+            Our offerings
+          </Link>
+          <Link
+            href="/newsroom"
             style={{
               fontFamily: "'Barlow Condensed', sans-serif",
               fontSize: '12px',
@@ -166,8 +167,8 @@ export default function RootLayout({
               textDecoration: 'none',
             }}
           >
-            Policy
-          </a>
+            Newsroom
+          </Link>
         </footer>
       </body>
     </html>

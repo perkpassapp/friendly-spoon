@@ -190,15 +190,15 @@ export default function Home() {
         <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
         <div style={{ display: 'flex', gap: '20px' }}>
           {[
-            { l: 'For businesses', h: '/for-business' },
-            { l: 'Admin',          h: '/admin' },
-            { l: 'Log in',         h: '/member/login' },
+            { l: 'About us',       h: '/about' },
+            { l: 'Our offerings',  h: '/offerings' },
+            { l: 'Newsroom',       h: '/newsroom' },
           ].map(x => (
             <Link key={x.l} href={x.h} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-3)', textDecoration: 'none' }}>{x.l}</Link>
           ))}
         </div>
         <p style={{ fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500 }}>
-          2025 PerkPass
+          2026 PerkPass
         </p>
       </footer>
     </main>
