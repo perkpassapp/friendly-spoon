@@ -229,13 +229,23 @@ export default function AccountPage() {
               color: 'var(--ink-4)', marginBottom: '8px',
             }}>Billing</div>
             <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '12px', lineHeight: 1.5 }}>
-              Update payment details or cancel from the billing portal.
+              Update payment details.
             </p>
             <button
               onClick={handleManageBilling}
               disabled={cancelLoading}
-              className="btn btn-outline"
-              style={{ width: '100%', fontSize: '14px', padding: '11px 14px' }}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                color: 'var(--green-dk)',
+                textDecoration: 'underline',
+                textUnderlineOffset: '2px',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: cancelLoading ? 'default' : 'pointer',
+                opacity: cancelLoading ? 0.6 : 1,
+              }}
             >
               {cancelLoading ? 'Opening billing portal...' : 'Manage billing'}
             </button>
