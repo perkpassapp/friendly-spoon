@@ -8,10 +8,11 @@ export const metadata: Metadata = {
 }
 
 const PERKS = [
-  'Lifetime PerkPass membership',
+  'Life time PerkPass membership',
   'Exclusive direct access to participating businesses',
   'Free PerkPass merch',
   'Featured on our site and app (coming soon)',
+  'Marketing support and promotion for your content',
 ]
 
 const FIT = [
