@@ -166,6 +166,9 @@ export default function Home() {
               </div>
             </Link>
           </div>
+          <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-4)', marginBottom: '20px', lineHeight: 1.6 }}>
+            And this is just a preview. More deals, neighborhoods, and local favorites are waiting inside the membership.
+          </p>
           <div>
             <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px' }}>
               Unlock all deals — $3/month
