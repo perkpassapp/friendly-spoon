@@ -53,7 +53,7 @@ export default function Home() {
           Your city.<br />Your spots.<br />Hooked up.
         </h1>
         <p className="fade-up-3" style={{ fontSize: '18px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '480px', marginBottom: '36px', lineHeight: 1.6 }}>
-          From your lowkey favorites to your everyday go-to&apos;s — one membership unlocks UNLIMITED exclusive deals at the Philly spots that actually matter to you.
+          From your lowkey favorites to your everyday go-to&apos;s — one membership unlocks UNLIMITED exclusive deals at the spots that actually matter to you.
         </p>
         <div className="fade-up-4" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '48px' }}>
           <Link href="/signup" className="btn btn-primary" style={{ fontSize: '18px', padding: '16px 32px' }}>
@@ -85,7 +85,7 @@ export default function Home() {
             <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)' }}>
               Sneak peek
             </h2>
-            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '520px', lineHeight: 1.6 }}>
+            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '520px', lineHeight: 1.6, padding: '10px 0px 0px 0px' }}>
               Preview of the member experience. Deals and participating businesses rotate across cafes, restaurants, fitness, self-care, and more.
             </p>
           </div>
