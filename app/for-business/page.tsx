@@ -14,12 +14,6 @@ export default function ForBusiness() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const OFFER_EXAMPLES = [
-    '10% off any order',
-    '$5 off your first visit',
-    'Free drink with entree',
-    '15% off first class pack',
-  ]
 
   function update(field: string, value: string) {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -136,11 +130,7 @@ export default function ForBusiness() {
         <div className="fade-up-2">
           <div style={{ borderTop: '2px solid var(--ink)', paddingTop: '32px', marginBottom: '32px' }}>
             <h2 className="display" style={{ fontSize: '40px', marginBottom: '8px' }}>Apply now.</h2>
-            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '14px' }}>Takes about 2 minutes. Start with the basics and we&apos;ll follow up if we need anything else.</p>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--bg-2)', border: '1px solid var(--border-2)', borderRadius: '999px', padding: '6px 12px' }}>
-              <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink)' }}>Required to apply</span>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-3)' }}>Business name, category, address, deal, name, email</span>
-            </div>
+            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)' }}>Takes 2 minutes to apply. We review every application and will contact you with any questions.</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -163,27 +153,6 @@ export default function ForBusiness() {
               <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Your deal offer *</label>
               <input type="text" value={form.deal_offer} onChange={e => update('deal_offer', e.target.value)} placeholder="e.g. 10% off any drink, $5 off first haircut" className="pp-input" />
               <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>Keep it simple. The best deals are specific and easy to apply at the register.</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
-                {OFFER_EXAMPLES.map((example) => (
-                  <button
-                    key={example}
-                    type="button"
-                    onClick={() => update('deal_offer', example)}
-                    style={{
-                      border: '1px solid var(--border-2)',
-                      background: 'var(--bg-2)',
-                      color: 'var(--ink-3)',
-                      borderRadius: '999px',
-                      padding: '7px 10px',
-                      cursor: 'pointer',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {example}
-                  </button>
-                ))}
-              </div>
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>
@@ -213,7 +182,7 @@ export default function ForBusiness() {
                   <span style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500 }}>JPG, PNG or WebP, up to 5MB</span>
                 </button>
               )}
-              <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>This is what members see on the deals page. A photo of your storefront, food, or space works great, but you can skip this for now.</p>
+              <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>This is what members see on the deals page. A photo of your storefront, food, or space works great.</p>
             </div>
 
             <div style={{ borderTop: '1px solid var(--border-2)', paddingTop: '8px' }}>
@@ -226,14 +195,10 @@ export default function ForBusiness() {
             <div>
               <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Email address *</label>
               <input type="email" value={form.contact_email} onChange={e => update('contact_email', e.target.value)} placeholder="you@yourbusiness.com" className="pp-input" />
-              <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>This is where we send your approval and dashboard access.</p>
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>
-                Phone number <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0, color: 'var(--ink-4)', fontSize: '12px' }}>(optional)</span>
-              </label>
+              <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Phone number *</label>
               <input type="tel" value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="(215) 555-0100" className="pp-input" />
-              <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>Helpful if you want us to reach out faster, but not required to apply.</p>
             </div>
 
             {error && <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)' }}>{error}</p>}
