@@ -9,6 +9,7 @@ const FOOTER_GROUPS = [
       { href: '/about', label: 'About us' },
       { href: '/offerings', label: 'Our offerings' },
       { href: '/newsroom', label: 'Newsroom' },
+      { href: '/influencer-creator-opportunity', label: 'Influencer creator opportunity' },
     ],
   },
   {
