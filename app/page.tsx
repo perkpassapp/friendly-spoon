@@ -40,6 +40,8 @@ const CREATORS = [
   },
 ]
 
+const SHOW_CREATOR_COLLABS = false
+
 export default function Home() {
   return (
     <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -172,75 +174,76 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Creator Collabs */}
-      <section style={{ padding: '64px 24px', borderTop: '2px solid var(--ink)' }}>
-        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-          <div style={{ marginBottom: '32px' }}>
-            <div className="preview-kicker">Creator collabs</div>
-            <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)', marginBottom: '10px' }}>
-              The local voices we love.
-            </h2>
-            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '560px', lineHeight: 1.6 }}>
-              We want to feature our favorite IG foodies and community-driven creators who hype up great local businesses, bring real eyes to neighborhood gems, and do good for the city.
-            </p>
-          </div>
-
-          <div className="creator-grid" style={{ marginBottom: '24px' }}>
-            <div className="creator-card" style={{ background: 'var(--forest)', color: '#ffffff', borderColor: 'var(--forest)' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.08)', color: 'var(--green)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '16px' }}>
-                Community spotlight
-              </div>
-              <div className="display" style={{ fontSize: 'clamp(34px, 7vw, 52px)', color: '#ffffff', marginBottom: '14px' }}>
-                Creator Collab
-              </div>
-              <p style={{ fontSize: '16px', lineHeight: 1.6, color: 'rgba(255,255,255,0.76)', marginBottom: '20px' }}>
-                PerkPass is built for the people already putting the city on. Foodies, storytellers, and neighborhood champions who help locals discover where to eat, shop, and show up.
+      {SHOW_CREATOR_COLLABS && (
+        <section style={{ padding: '64px 24px', borderTop: '2px solid var(--ink)' }}>
+          <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+            <div style={{ marginBottom: '32px' }}>
+              <div className="preview-kicker">Creator collabs</div>
+              <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)', marginBottom: '10px' }}>
+                The local voices we love.
+              </h2>
+              <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '560px', lineHeight: 1.6 }}>
+                We want to feature our favorite IG foodies and community-driven creators who hype up great local businesses, bring real eyes to neighborhood gems, and do good for the city.
               </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
-                {['Local businesses', 'Community impact', 'Neighborhood culture'].map((item) => (
-                  <span
-                    key={item}
-                    style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.08)', color: '#ffffff', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}
-                  >
-                    {item}
-                  </span>
+            </div>
+
+            <div className="creator-grid" style={{ marginBottom: '24px' }}>
+              <div className="creator-card" style={{ background: 'var(--forest)', color: '#ffffff', borderColor: 'var(--forest)' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.08)', color: 'var(--green)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '16px' }}>
+                  Community spotlight
+                </div>
+                <div className="display" style={{ fontSize: 'clamp(34px, 7vw, 52px)', color: '#ffffff', marginBottom: '14px' }}>
+                  Creator Collab
+                </div>
+                <p style={{ fontSize: '16px', lineHeight: 1.6, color: 'rgba(255,255,255,0.76)', marginBottom: '20px' }}>
+                  PerkPass is built for the people already putting the city on. Foodies, storytellers, and neighborhood champions who help locals discover where to eat, shop, and show up.
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
+                  {['Local businesses', 'Community impact', 'Neighborhood culture'].map((item) => (
+                    <span
+                      key={item}
+                      style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.08)', color: '#ffffff', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+                <a
+                  href="mailto:hello@getperkpass.com?subject=PerkPass%20Creator%20Collab"
+                  className="btn"
+                  style={{ background: '#ffffff', color: 'var(--forest)', fontSize: '15px', padding: '12px 18px' }}
+                >
+                  Pitch a creator
+                </a>
+              </div>
+
+              <div className="creator-stack">
+                {CREATORS.map((creator) => (
+                  <div key={creator.handle} className="creator-card">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '22px', fontWeight: 800, color: 'var(--ink)', letterSpacing: '-0.01em' }}>
+                        {creator.handle}
+                      </div>
+                      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--green-dk)', background: 'var(--green-lt)', padding: '4px 8px', borderRadius: '999px' }}>
+                        Creator vibe
+                      </div>
+                    </div>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '24px', fontWeight: 900, color: 'var(--ink)', lineHeight: 1.05, marginBottom: '10px' }}>
+                      {creator.title}
+                    </div>
+                    <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.6, marginBottom: '14px' }}>
+                      {creator.body}
+                    </p>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {creator.stats}
+                    </div>
+                  </div>
                 ))}
               </div>
-              <a
-                href="mailto:hello@getperkpass.com?subject=PerkPass%20Creator%20Collab"
-                className="btn"
-                style={{ background: '#ffffff', color: 'var(--forest)', fontSize: '15px', padding: '12px 18px' }}
-              >
-                Pitch a creator
-              </a>
-            </div>
-
-            <div className="creator-stack">
-              {CREATORS.map((creator) => (
-                <div key={creator.handle} className="creator-card">
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
-                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '22px', fontWeight: 800, color: 'var(--ink)', letterSpacing: '-0.01em' }}>
-                      {creator.handle}
-                    </div>
-                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--green-dk)', background: 'var(--green-lt)', padding: '4px 8px', borderRadius: '999px' }}>
-                      Creator vibe
-                    </div>
-                  </div>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '24px', fontWeight: 900, color: 'var(--ink)', lineHeight: 1.05, marginBottom: '10px' }}>
-                    {creator.title}
-                  </div>
-                  <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.6, marginBottom: '14px' }}>
-                    {creator.body}
-                  </p>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {creator.stats}
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* How it works */}
       <section style={{ padding: '64px 24px', background: 'var(--forest)', borderTop: '2px solid var(--ink)' }}>
