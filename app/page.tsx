@@ -47,13 +47,13 @@ export default function Home() {
       {/* Hero */}
       <section style={{ padding: '72px 24px 64px', maxWidth: '720px', margin: '0 auto' }}>
         <div className="fade-up" style={{ display: 'inline-block', background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '4px 12px', borderRadius: '4px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '24px' }}>
-          Now live in Philadelphia
+          Unlimited local deals in your favorite city
         </div>
         <h1 className="display fade-up-2" style={{ fontSize: 'clamp(56px, 13vw, 104px)', marginBottom: '24px', lineHeight: 0.95 }}>
           Your city.<br />Your spots.<br />Hooked up.
         </h1>
         <p className="fade-up-3" style={{ fontSize: '18px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '480px', marginBottom: '36px', lineHeight: 1.6 }}>
-          From your lowkey favorites to your everyday go-to&apos;s — one membership unlocks exclusive deals at the Philly spots that actually matter to you.
+          From your lowkey favorites to your everyday go-to&apos;s — one membership unlocks UNLIMITED exclusive deals at the Philly spots that actually matter to you.
         </p>
         <div className="fade-up-4" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '48px' }}>
           <Link href="/signup" className="btn btn-primary" style={{ fontSize: '18px', padding: '16px 32px' }}>
