@@ -52,10 +52,17 @@ export default function Home() {
         .quick-link { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; text-align: left; width: 100%; transition: border-color 0.15s; }
         .quick-link:hover { border-color: var(--green); }
         .preview-kicker { display: inline-flex; align-items: center; gap: 8px; background: var(--green-lt); color: var(--green-dk); padding: 4px 12px; border-radius: 999px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
+        .preview-chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+        .preview-chip { display: inline-flex; align-items: center; padding: 7px 10px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--border-2); color: var(--ink-3); font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .preview-meta-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+        .preview-meta-card { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 10px; padding: 14px 14px 12px; }
+        .preview-meta-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-4); margin-bottom: 6px; }
+        .preview-meta-value { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.3; }
         .creator-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 14px; }
         .creator-card { background: var(--bg-2); border: 1.5px solid var(--border-2); border-radius: 14px; padding: 22px; }
         .creator-stack { display: grid; grid-template-columns: 1fr; gap: 14px; }
         @media (max-width: 900px) {
+          .preview-meta-grid { grid-template-columns: 1fr; }
           .creator-grid { grid-template-columns: 1fr; }
         }
       `}</style>
@@ -111,13 +118,39 @@ export default function Home() {
       <section style={{ padding: '64px 24px', borderTop: '2px solid var(--ink)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <div style={{ marginBottom: '32px' }}>
+            <div className="preview-kicker">Inside the app</div>
             <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)' }}>
               Sneak peek
             </h2>
-            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '520px', lineHeight: 1.6, padding: '10px 0px 0px 0px' }}>
-              Preview of the member experience. Deals and participating businesses rotate across cafes, restaurants, fitness, self-care, and more.
+            <p style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ink-2)', maxWidth: '560px', lineHeight: 1.45, paddingTop: '10px', marginBottom: '10px' }}>
+              What $3/month unlocks around Philly.
+            </p>
+            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '560px', lineHeight: 1.6 }}>
+              Preview of the member experience. Business names are shown for vibe, and deals rotate across cafes, restaurants, fitness, self-care, and more.
             </p>
           </div>
+
+          <div className="preview-chip-row">
+            {['Fishtown', 'Center City', 'Chinatown', 'Restaurants', 'Cafes', 'Fitness', 'Nails'].map((chip) => (
+              <div key={chip} className="preview-chip">{chip}</div>
+            ))}
+          </div>
+
+          <div className="preview-meta-grid">
+            <div className="preview-meta-card">
+              <div className="preview-meta-label">Browse</div>
+              <div className="preview-meta-value">Neighborhood favorites across categories</div>
+            </div>
+            <div className="preview-meta-card">
+              <div className="preview-meta-label">Discover</div>
+              <div className="preview-meta-value">New spots, casual go-tos, and hidden gems</div>
+            </div>
+            <div className="preview-meta-card">
+              <div className="preview-meta-label">Redeem</div>
+              <div className="preview-meta-value">Fast, simple codes right from your phone</div>
+            </div>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '32px' }}>
             {DEALS.map((d, i) => {
               const normalizedCategory = normalizeCategory(d.cat)
@@ -132,7 +165,7 @@ export default function Home() {
                     <div style={{ position: 'relative' }}>
                       <img src={photo} alt={d.cat} className="deal-card-img" loading="lazy" />
                       <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--ink)', color: 'var(--bg)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 8px', borderRadius: '3px' }}>
-                        Coming soon
+                        Member preview
                       </span>
                     </div>
                   )}
@@ -167,7 +200,7 @@ export default function Home() {
             </Link>
           </div>
           <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-4)', marginBottom: '20px', lineHeight: 1.6 }}>
-            And this is just a preview. More deals, neighborhoods, and local favorites are waiting inside the membership.
+            And this is just a preview. More deals, neighborhoods, categories, and local favorites are waiting inside the membership.
           </p>
           <div>
             <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px' }}>
