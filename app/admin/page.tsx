@@ -16,13 +16,15 @@ type Application = {
 }
 type Deal = {
   id: string; business_name: string; deal_description: string; category: string
-  address: string; active: boolean; admin_disabled: boolean; photo_url?: string | null; featured: boolean
+  address: string; active: boolean; admin_disabled: boolean; photo_url?: string | null; featured: boolean; schedule?: Schedule | null
 }
 type Business = {
   id: string; business_name: string; category: string; address: string
   contact_email: string; active: boolean; admin_disabled: boolean
   deal_offer?: string | null; access_code?: string | null; photo_url?: string | null
 }
+
+type Schedule = { days: number[]; start: string; end: string }
 
 type BusinessEditFields = {
   business_name: string
@@ -60,6 +62,11 @@ export default function AdminDashboard() {
   const [editFields, setEditFields] = useState<{ deal_description: string; category: string }>({ deal_description: '', category: '' })
   const [savingEdit, setSavingEdit] = useState(false)
   const [photoUploading, setPhotoUploading] = useState(false)
+  const [editingSchedule, setEditingSchedule] = useState<Deal | null>(null)
+  const [schedDays, setSchedDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6])
+  const [schedStart, setSchedStart] = useState('09:00')
+  const [schedEnd, setSchedEnd] = useState('21:00')
+  const [savingSchedule, setSavingSchedule] = useState(false)
   const [editingBusiness, setEditingBusiness] = useState<string | null>(null)
   const [businessEditFields, setBusinessEditFields] = useState<BusinessEditFields>({
     business_name: '',
@@ -163,6 +170,38 @@ export default function AdminDashboard() {
   async function removePhoto(deal: Deal) {
     await supabase.from('deals').update({ photo_url: null }).eq('business_name', deal.business_name)
     await loadData()
+  }
+
+  function openScheduleEditor(deal: Deal) {
+    setEditingSchedule(deal)
+    if (deal.schedule) {
+      setSchedDays(deal.schedule.days)
+      setSchedStart(deal.schedule.start)
+      setSchedEnd(deal.schedule.end)
+    } else {
+      setSchedDays([0, 1, 2, 3, 4, 5, 6])
+      setSchedStart('09:00')
+      setSchedEnd('21:00')
+    }
+  }
+
+  async function saveSchedule() {
+    if (!editingSchedule) return
+    setSavingSchedule(true)
+    const schedule: Schedule = { days: schedDays, start: schedStart, end: schedEnd }
+    await supabase.from('deals').update({ schedule }).eq('id', editingSchedule.id)
+    setDeals(prev => prev.map(d => d.id === editingSchedule.id ? { ...d, schedule } : d))
+    setEditingSchedule(null)
+    setSavingSchedule(false)
+  }
+
+  async function clearSchedule() {
+    if (!editingSchedule) return
+    setSavingSchedule(true)
+    await supabase.from('deals').update({ schedule: null }).eq('id', editingSchedule.id)
+    setDeals(prev => prev.map(d => d.id === editingSchedule.id ? { ...d, schedule: null } : d))
+    setEditingSchedule(null)
+    setSavingSchedule(false)
   }
 
   async function toggleBusiness(biz: Business) {
@@ -479,10 +518,19 @@ export default function AdminDashboard() {
                           {deal.featured && <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '2px 8px', borderRadius: '3px' }}>Featured</span>}
                         </div>
                         <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '2px' }}>{deal.category} Â· {deal.address}</div>
+                        {deal.schedule && (
+                          <div style={{ fontSize: '11px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '3px' }}>
+                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].filter((_, i) => deal.schedule!.days.includes(i)).join(', ')} {deal.schedule.start}-{deal.schedule.end}
+                          </div>
+                        )}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: deal.active && !deal.admin_disabled ? 'var(--green)' : 'var(--ink-4)' }} />
                         <button onClick={() => startEdit(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>Edit</button>
+                        <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
+                        <button onClick={() => openScheduleEditor(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green-dk)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                          {deal.schedule ? 'Edit hours' : 'Set hours'}
+                        </button>
                         <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
                         <button onClick={() => toggleFeatured(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: deal.featured ? 'var(--green-dk)' : 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>{deal.featured ? 'â Featured' : 'â Feature'}</button>
                         <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
@@ -627,6 +675,78 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {editingSchedule && (() => {
+        const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        const TIMES: string[] = []
+        for (let h = 0; h < 24; h++) {
+          TIMES.push(String(h).padStart(2, '0') + ':00')
+          TIMES.push(String(h).padStart(2, '0') + ':30')
+        }
+        function fmt(t: string) {
+          const [hh, mm] = t.split(':').map(Number)
+          const ampm = hh >= 12 ? 'PM' : 'AM'
+          return (hh % 12 || 12) + ':' + String(mm).padStart(2, '0') + ' ' + ampm
+        }
+        return (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+            <div style={{ background: 'var(--bg)', borderRadius: '16px', padding: '28px 24px', width: '100%', maxWidth: '420px', border: '2px solid var(--ink)' }}>
+              <h2 className="display" style={{ fontSize: '28px', marginBottom: '4px' }}>Set Hours</h2>
+              <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '24px' }}>{editingSchedule.deal_description}</p>
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '10px' }}>Active days</div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {DAY_LABELS.map((d, i) => (
+                    <button key={i} onClick={() => setSchedDays(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i].sort())} style={{ flex: 1, padding: '10px 0', borderRadius: '6px', border: 'none', cursor: 'pointer', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, background: schedDays.includes(i) ? 'var(--forest)' : 'var(--bg-2)', color: schedDays.includes(i) ? 'var(--green)' : 'var(--ink-4)', outline: schedDays.includes(i) ? '2px solid var(--green)' : '1px solid var(--border)' }}>
+                      {d.slice(0, 1)}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                  {[['Weekdays', [1, 2, 3, 4, 5]], ['Weekends', [0, 6]], ['Every day', [0, 1, 2, 3, 4, 5, 6]]].map(([label, days]) => (
+                    <button key={label as string} onClick={() => setSchedDays(days as number[])} style={{ flex: 1, padding: '6px', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--bg-2)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-3)', cursor: 'pointer' }}>
+                      {label as string}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '10px' }}>Hours</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <select value={schedStart} onChange={e => setSchedStart(e.target.value)} className="pp-input" style={{ flex: 1, padding: '10px 12px', fontSize: '15px', fontWeight: 600 }}>
+                    {TIMES.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
+                  </select>
+                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, color: 'var(--ink-4)' }}>to</span>
+                  <select value={schedEnd} onChange={e => setSchedEnd(e.target.value)} className="pp-input" style={{ flex: 1, padding: '10px 12px', fontSize: '15px', fontWeight: 600 }}>
+                    {TIMES.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{ background: 'var(--bg-2)', borderRadius: '8px', padding: '12px 14px', marginBottom: '20px', border: '1px solid var(--border)' }}>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '4px' }}>Members will see</div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>
+                  {schedDays.length === 0
+                    ? 'No days selected'
+                    : schedDays.length === 7
+                      ? 'Every day, ' + fmt(schedStart) + '-' + fmt(schedEnd)
+                      : DAY_LABELS.filter((_, i) => schedDays.includes(i)).join(', ') + ', ' + fmt(schedStart) + '-' + fmt(schedEnd)}
+                </div>
+              </div>
+              <button onClick={saveSchedule} disabled={savingSchedule || schedDays.length === 0} className="btn btn-primary" style={{ width: '100%', fontSize: '16px', padding: '14px', marginBottom: '8px' }}>
+                {savingSchedule ? 'Saving...' : 'Save schedule'}
+              </button>
+              {editingSchedule.schedule && (
+                <button onClick={clearSchedule} disabled={savingSchedule} style={{ width: '100%', marginBottom: '8px', padding: '12px', background: 'none', border: '1px solid var(--border)', borderRadius: '8px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-4)', cursor: 'pointer' }}>
+                  Remove schedule (always available)
+                </button>
+              )}
+              <button onClick={() => setEditingSchedule(null)} style={{ width: '100%', padding: '12px', background: 'none', border: 'none', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-4)', cursor: 'pointer' }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )
+      })()}
     </main>
   )
 }
