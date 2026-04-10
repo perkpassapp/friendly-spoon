@@ -55,6 +55,8 @@ export default function MemberDeals() {
   const [loading, setLoading] = useState(true)
   const [accessDenied, setAccessDenied] = useState(false)
   const [filter, setFilter] = useState('All')
+  const [scheduleView, setScheduleView] = useState<'active' | 'today' | 'week'>('active')
+  const [selectedWeekday, setSelectedWeekday] = useState<number>(new Date().getDay())
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null)
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({})
   const [userName, setUserName] = useState('')
@@ -108,6 +110,12 @@ export default function MemberDeals() {
     return h > 0 ? `${h}h ${m}m` : `${m}m`
   }
 
+  function formatScheduleTime(t: string) {
+    const [hh, mm] = t.split(':').map(Number)
+    const ampm = hh >= 12 ? 'PM' : 'AM'
+    return `${hh % 12 || 12}${mm ? ':' + String(mm).padStart(2,'0') : ''}${ampm}`
+  }
+
   function isScheduleActive(deal: Deal): boolean {
     if (!deal.schedule) return true
     const now = new Date()
@@ -121,17 +129,58 @@ export default function MemberDeals() {
     return nowMins >= startMins && nowMins < endMins
   }
 
+  function isDealAvailableOnDay(deal: Deal, day: number): boolean {
+    if (!deal.schedule) return true
+    return deal.schedule.days.includes(day)
+  }
+
+  function getNextAvailableDay(deal: Deal): number | null {
+    if (!deal.schedule || deal.schedule.days.length === 0) return null
+    const today = new Date().getDay()
+    for (let offset = 0; offset < 7; offset += 1) {
+      const day = (today + offset) % 7
+      if (!deal.schedule.days.includes(day)) continue
+      if (offset > 0) return day
+      const now = new Date()
+      const [sh, sm] = deal.schedule.start.split(':').map(Number)
+      const nowMins = now.getHours() * 60 + now.getMinutes()
+      const startMins = sh * 60 + sm
+      if (nowMins < startMins) return day
+    }
+    return deal.schedule.days[0] ?? null
+  }
+
+  function getAvailabilityBadge(deal: Deal): { label: string; bg: string; color: string } {
+    const now = new Date()
+    const today = now.getDay()
+    if (!deal.schedule) {
+      return { label: 'Available anytime', bg: 'var(--bg-3)', color: 'var(--ink-3)' }
+    }
+    if (isScheduleActive(deal)) {
+      return { label: 'Available now', bg: '#E8F8EF', color: 'var(--green-dk)' }
+    }
+    if (deal.schedule.days.includes(today)) {
+      return {
+        label: `Today ${formatScheduleTime(deal.schedule.start)}-${formatScheduleTime(deal.schedule.end)}`,
+        bg: '#FFF3CD',
+        color: '#92600A',
+      }
+    }
+    const nextDay = getNextAvailableDay(deal)
+    const dayLabel = nextDay === null ? 'Later this week' : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][nextDay]
+    return {
+      label: `Next ${dayLabel} ${formatScheduleTime(deal.schedule.start)}`,
+      bg: '#F2F4F7',
+      color: 'var(--ink-3)',
+    }
+  }
+
   function scheduleLabel(deal: Deal): string {
     if (!deal.schedule) return ''
     const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
     const days = deal.schedule.days.map(d => DAY_LABELS[d])
-    function fmt(t: string) {
-      const [hh, mm] = t.split(':').map(Number)
-      const ampm = hh >= 12 ? 'PM' : 'AM'
-      return `${hh % 12 || 12}${mm ? ':' + String(mm).padStart(2,'0') : ''}${ampm}`
-    }
     const dayStr = deal.schedule.days.length === 7 ? 'Daily' : days.join(', ')
-    return `${dayStr} ${fmt(deal.schedule.start)}–${fmt(deal.schedule.end)}`
+    return `${dayStr} ${formatScheduleTime(deal.schedule.start)}–${formatScheduleTime(deal.schedule.end)}`
   }
 
   function getPhoto(deal: Deal) {
@@ -156,10 +205,24 @@ export default function MemberDeals() {
   }
 
   const categories = ['All', ...CATEGORY_OPTIONS.filter(category => deals.some((deal) => deal.category === category))]
-  const filtered = filter === 'All' ? deals : deals.filter(d => d.category === filter)
-  const groups = groupDeals(filtered)
-  const featuredGroups = groups.filter(g => g.deals.some(d => d.featured))
-  const restGroups = groups.filter(g => g.deals.every(d => !d.featured))
+  const now = new Date()
+  const currentDay = now.getDay()
+  const currentDayLabel = now.toLocaleDateString('en-US', { weekday: 'long' })
+  const dayTabs = Array.from({ length: 7 }, (_, index) => {
+    const day = (currentDay + index) % 7
+    return {
+      day,
+      label: index === 0 ? 'Today' : new Date(now.getFullYear(), now.getMonth(), now.getDate() + index).toLocaleDateString('en-US', { weekday: 'short' }),
+      fullLabel: new Date(now.getFullYear(), now.getMonth(), now.getDate() + index).toLocaleDateString('en-US', { weekday: 'long' }),
+    }
+  })
+  const categoryFiltered = filter === 'All' ? deals : deals.filter(d => d.category === filter)
+  const activeNowDeals = categoryFiltered.filter((deal) => isScheduleActive(deal))
+  const laterTodayDeals = categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, currentDay) && !isScheduleActive(deal))
+  const weekDeals = categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, selectedWeekday))
+  const totalAvailableToday = categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, currentDay)).length
+  const totalLiveNow = activeNowDeals.length
+  const selectedWeekdayLabel = dayTabs.find(tab => tab.day === selectedWeekday)?.fullLabel ?? currentDayLabel
 
   // Reusable photo block with Option C frosted footer bar
   function BusinessPhotoBlock({
@@ -239,6 +302,114 @@ export default function MemberDeals() {
           </a>
         </div>
       </div>
+    )
+  }
+
+  function renderDealGroupCard(group: BusinessGroup) {
+    const firstDeal = group.deals[0]
+    const hasMultiple = group.deals.length > 1
+    const allOnCooldown = group.deals.every(d => cooldowns[d.id] !== undefined)
+
+    return (
+      <div key={group.business_name} style={{ background: 'var(--bg-2)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)', opacity: allOnCooldown ? 0.6 : 1 }}>
+        <BusinessPhotoBlock
+          group={group}
+          firstDeal={firstDeal}
+          hasMultiple={hasMultiple}
+          allOnCooldown={allOnCooldown}
+          onClick={() => !allOnCooldown && !hasMultiple && setSelectedDeal(firstDeal)}
+        />
+        <div style={{ padding: hasMultiple ? '0' : '14px 16px' }}>
+          {hasMultiple ? (
+            <div>
+              {group.deals.map((deal, i) => {
+                const onCooldown = cooldowns[deal.id] !== undefined
+                const availability = getAvailabilityBadge(deal)
+                return (
+                  <div
+                    key={deal.id}
+                    onClick={() => !onCooldown && setSelectedDeal(deal)}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', cursor: onCooldown ? 'not-allowed' : 'pointer', borderBottom: i < group.deals.length - 1 ? '1px solid var(--border)' : 'none', opacity: onCooldown ? 0.5 : 1, transition: 'background 0.1s' }}
+                    onMouseEnter={e => { if (!onCooldown) e.currentTarget.style.background = 'var(--bg-3)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '1px' }}>{deal.deal_description}</div>
+                      {!onCooldown && (
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 8px', borderRadius: '999px', background: availability.bg, color: availability.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: '4px', marginBottom: '4px' }}>
+                          {availability.label}
+                        </div>
+                      )}
+                      {!onCooldown && deal.schedule && (
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-4)' }}>
+                          When: {scheduleLabel(deal)}
+                        </div>
+                      )}
+                      {onCooldown && <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Back in {formatCooldown(cooldowns[deal.id])}</div>}
+                    </div>
+                    {!onCooldown && isScheduleActive(deal) && (
+                      <div className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '13px', flexShrink: 0, borderRadius: '4px' }}>Redeem</div>
+                    )}
+                    {!onCooldown && !isScheduleActive(deal) && (
+                      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0 }}>View</div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '3px' }}>{firstDeal.deal_description}</p>
+                {cooldowns[firstDeal.id] === undefined && (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 8px', borderRadius: '999px', background: getAvailabilityBadge(firstDeal).bg, color: getAvailabilityBadge(firstDeal).color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>
+                    {getAvailabilityBadge(firstDeal).label}
+                  </div>
+                )}
+                {firstDeal.schedule && (
+                  <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-4)', marginBottom: '3px' }}>When: {scheduleLabel(firstDeal)}</p>
+                )}
+                {cooldowns[firstDeal.id] !== undefined && (
+                  <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase' }}>Back in {formatCooldown(cooldowns[firstDeal.id])}</p>
+                )}
+              </div>
+              {cooldowns[firstDeal.id] === undefined && (
+                <div className="btn btn-primary" style={{ padding: '10px 18px', fontSize: '14px', flexShrink: 0, borderRadius: '4px', cursor: 'pointer' }} onClick={() => setSelectedDeal(firstDeal)}>
+                  {isScheduleActive(firstDeal) ? 'Redeem' : 'View'}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  function renderSection(title: string, subtitle: string, sectionDeals: Deal[]) {
+    if (sectionDeals.length === 0) return null
+    const groups = groupDeals(sectionDeals)
+    const featuredGroups = groups.filter(g => g.deals.some(d => d.featured))
+    const restGroups = groups.filter(g => g.deals.every(d => !d.featured))
+
+    return (
+      <section style={{ marginBottom: '32px' }}>
+        <div style={{ marginBottom: '12px' }}>
+          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '4px' }}>
+            {title}
+          </div>
+          <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500 }}>{subtitle}</p>
+        </div>
+        {featuredGroups.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: restGroups.length > 0 ? '12px' : 0 }}>
+            {featuredGroups.map(renderDealGroupCard)}
+          </div>
+        )}
+        {restGroups.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {restGroups.map(renderDealGroupCard)}
+          </div>
+        )}
+      </section>
     )
   }
 
@@ -375,9 +546,113 @@ export default function MemberDeals() {
             {userName ? `Hey ${userName}.` : 'Your deals.'}
           </h1>
           <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)' }}>
-            {groups.length} {groups.length === 1 ? 'business' : 'businesses'} · {filtered.length} deals in Philadelphia
+            {groupDeals(categoryFiltered).length} {groupDeals(categoryFiltered).length === 1 ? 'business' : 'businesses'} · {categoryFiltered.length} deals in Philadelphia
           </p>
         </div>
+
+        <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '6px' }}>
+            Browse by timing
+          </div>
+          <div className="display" style={{ fontSize: '24px', marginBottom: '6px' }}>
+            {scheduleView === 'active' ? 'Live right now' : scheduleView === 'today' ? `Good for ${currentDayLabel}` : `${selectedWeekdayLabel} deals`}
+          </div>
+          <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500 }}>
+            {scheduleView === 'active'
+              ? `Start with the deals you can redeem right away. ${totalLiveNow} deals are live at this moment.`
+              : scheduleView === 'today'
+                ? `${totalAvailableToday} deals run at some point today. Use this view to see what is live now and what opens later.`
+                : `Plan ahead by browsing what is scheduled for each day of the week.`}
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 0 18px', scrollbarWidth: 'none' }}>
+          <button
+            onClick={() => setScheduleView('active')}
+            style={{
+              flexShrink: 0,
+              padding: '10px 16px',
+              borderRadius: '999px',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: '13px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              background: scheduleView === 'active' ? 'var(--ink)' : 'var(--bg-2)',
+              color: scheduleView === 'active' ? 'var(--bg)' : 'var(--ink-3)',
+            }}
+          >
+            Active now
+          </button>
+          <button
+            onClick={() => setScheduleView('today')}
+            style={{
+              flexShrink: 0,
+              padding: '10px 16px',
+              borderRadius: '999px',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: '13px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              background: scheduleView === 'today' ? 'var(--ink)' : 'var(--bg-2)',
+              color: scheduleView === 'today' ? 'var(--bg)' : 'var(--ink-3)',
+            }}
+          >
+            Today
+          </button>
+          <button
+            onClick={() => setScheduleView('week')}
+            style={{
+              flexShrink: 0,
+              padding: '10px 16px',
+              borderRadius: '999px',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: '13px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              background: scheduleView === 'week' ? 'var(--ink)' : 'var(--bg-2)',
+              color: scheduleView === 'week' ? 'var(--bg)' : 'var(--ink-3)',
+            }}
+          >
+            This week
+          </button>
+        </div>
+
+        {scheduleView === 'week' && (
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 0 18px', scrollbarWidth: 'none' }}>
+            {dayTabs.map(tab => (
+              <button
+                key={tab.day}
+                onClick={() => setSelectedWeekday(tab.day)}
+                style={{
+                  flexShrink: 0,
+                  minWidth: '74px',
+                  padding: '10px 14px',
+                  borderRadius: '12px',
+                  border: selectedWeekday === tab.day ? '2px solid var(--ink)' : '1px solid var(--border)',
+                  cursor: 'pointer',
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  background: selectedWeekday === tab.day ? 'var(--bg)' : 'var(--bg-2)',
+                  color: selectedWeekday === tab.day ? 'var(--ink)' : 'var(--ink-3)',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Category filters */}
         <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '16px 0 20px', scrollbarWidth: 'none' }}>
@@ -399,149 +674,27 @@ export default function MemberDeals() {
           ))}
         </div>
 
-        {/* Featured — large grouped cards */}
-        {featuredGroups.length > 0 && (
-          <div style={{ marginBottom: '32px' }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '12px' }}>
-              Featured
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {featuredGroups.map(group => {
-                const firstDeal = group.deals[0]
-                const hasMultiple = group.deals.length > 1
-                const allOnCooldown = group.deals.every(d => cooldowns[d.id] !== undefined)
-                return (
-                  <div key={group.business_name} style={{ background: 'var(--bg-2)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)', opacity: allOnCooldown ? 0.6 : 1 }}>
-                    <BusinessPhotoBlock
-                      group={group}
-                      firstDeal={firstDeal}
-                      hasMultiple={hasMultiple}
-                      allOnCooldown={allOnCooldown}
-                      onClick={() => !allOnCooldown && !hasMultiple && setSelectedDeal(firstDeal)}
-                    />
-                    {/* Deals list */}
-                    <div style={{ padding: hasMultiple ? '0' : '14px 16px' }}>
-                      {hasMultiple ? (
-                        <div>
-                          {group.deals.map((deal, i) => {
-                            const onCooldown = cooldowns[deal.id] !== undefined
-                            return (
-                              <div
-                                key={deal.id}
-                                onClick={() => !onCooldown && setSelectedDeal(deal)}
-                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', cursor: onCooldown ? 'not-allowed' : 'pointer', borderBottom: i < group.deals.length - 1 ? '1px solid var(--border)' : 'none', opacity: onCooldown ? 0.5 : 1, transition: 'background 0.1s' }}
-                                onMouseEnter={e => { if (!onCooldown) e.currentTarget.style.background = 'var(--bg-3)' }}
-                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                              >
-                                <div>
-                                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '1px' }}>{deal.deal_description}</div>
-                                  {onCooldown && <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Back in {formatCooldown(cooldowns[deal.id])}</div>}
-                                  {!onCooldown && deal.schedule && !isScheduleActive(deal) && <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Available: {scheduleLabel(deal)}</div>}
-                                </div>
-                                {!onCooldown && isScheduleActive(deal) && (
-                                  <div className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '13px', flexShrink: 0, borderRadius: '4px' }}>Redeem</div>
-                                )}
-                                {!onCooldown && !isScheduleActive(deal) && (
-                                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0 }}>Later</div>
-                                )}
-                              </div>
-                            )
-                          })}
-                        </div>
-                      ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '3px' }}>{firstDeal.deal_description}</p>
-                            {cooldowns[firstDeal.id] !== undefined && (
-                              <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase' }}>Back in {formatCooldown(cooldowns[firstDeal.id])}</p>
-                            )}
-                            {firstDeal.schedule && !isScheduleActive(firstDeal) && cooldowns[firstDeal.id] === undefined && (
-                              <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase' }}>Available: {scheduleLabel(firstDeal)}</p>
-                            )}
-                          </div>
-                          {cooldowns[firstDeal.id] === undefined && (
-                            <div className="btn btn-primary" style={{ padding: '10px 18px', fontSize: '14px', flexShrink: 0, borderRadius: '4px', cursor: 'pointer' }} onClick={() => setSelectedDeal(firstDeal)}>Redeem</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+        {scheduleView === 'active' && renderSection('Available now', 'Use these deals right away.', activeNowDeals)}
+        {scheduleView === 'today' && (
+          <>
+            {renderSection('Available now', 'Live at this moment.', activeNowDeals)}
+            {renderSection('Later today', `Deals opening later on ${currentDayLabel}.`, laterTodayDeals)}
+          </>
         )}
+        {scheduleView === 'week' && renderSection('This week', `Browse what is scheduled for ${selectedWeekdayLabel}.`, weekDeals)}
 
-        {/* Rest — card layout matching featured */}
-        {restGroups.length > 0 && (
-          <div>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '12px' }}>
-              More deals
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {restGroups.map(group => {
-                const firstDeal = group.deals[0]
-                const hasMultiple = group.deals.length > 1
-                const allOnCooldown = group.deals.every(d => cooldowns[d.id] !== undefined)
-                return (
-                  <div key={group.business_name} style={{ background: 'var(--bg-2)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)', opacity: allOnCooldown ? 0.6 : 1 }}>
-                    <BusinessPhotoBlock
-                      group={group}
-                      firstDeal={firstDeal}
-                      hasMultiple={hasMultiple}
-                      allOnCooldown={allOnCooldown}
-                      onClick={() => !allOnCooldown && !hasMultiple && setSelectedDeal(firstDeal)}
-                    />
-                    {/* Deals */}
-                    <div style={{ padding: hasMultiple ? '0' : '14px 16px' }}>
-                      {hasMultiple ? (
-                        <div>
-                          {group.deals.map((deal, i) => {
-                            const onCooldown = cooldowns[deal.id] !== undefined
-                            return (
-                              <div
-                                key={deal.id}
-                                onClick={() => !onCooldown && setSelectedDeal(deal)}
-                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', cursor: onCooldown ? 'not-allowed' : 'pointer', borderBottom: i < group.deals.length - 1 ? '1px solid var(--border)' : 'none', opacity: onCooldown ? 0.5 : 1, transition: 'background 0.1s' }}
-                                onMouseEnter={e => { if (!onCooldown) e.currentTarget.style.background = 'var(--bg-3)' }}
-                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                              >
-                                <div>
-                                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '1px' }}>{deal.deal_description}</div>
-                                  {onCooldown && <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Back in {formatCooldown(cooldowns[deal.id])}</div>}
-                                </div>
-                                {!onCooldown && (
-                                  <div className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '13px', flexShrink: 0, borderRadius: '4px' }}>Redeem</div>
-                                )}
-                              </div>
-                            )
-                          })}
-                        </div>
-                      ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--green-dk)', marginBottom: '3px' }}>{firstDeal.deal_description}</p>
-                            {cooldowns[firstDeal.id] !== undefined && (
-                              <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase' }}>Back in {formatCooldown(cooldowns[firstDeal.id])}</p>
-                            )}
-                          </div>
-                          {cooldowns[firstDeal.id] === undefined && (
-                            <div className="btn btn-primary" style={{ padding: '10px 18px', fontSize: '14px', flexShrink: 0, borderRadius: '4px', cursor: 'pointer' }} onClick={() => setSelectedDeal(firstDeal)}>Redeem</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {filtered.length === 0 && (
+        {((scheduleView === 'active' && activeNowDeals.length === 0) ||
+          (scheduleView === 'today' && activeNowDeals.length === 0 && laterTodayDeals.length === 0) ||
+          (scheduleView === 'week' && weekDeals.length === 0)) && (
           <div style={{ textAlign: 'center', padding: '64px 0' }}>
-            <div className="display" style={{ fontSize: '32px', marginBottom: '8px' }}>No deals yet.</div>
-            <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontWeight: 500 }}>More coming soon in this category.</p>
+            <div className="display" style={{ fontSize: '32px', marginBottom: '8px' }}>Nothing in this window yet.</div>
+            <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontWeight: 500 }}>
+              {scheduleView === 'active'
+                ? 'Switch to Today or This week to see what is coming up next.'
+                : scheduleView === 'today'
+                  ? 'Try another category or check This week to plan ahead.'
+                  : 'Try another day or category to see more active deals.'}
+            </p>
           </div>
         )}
       </div>
