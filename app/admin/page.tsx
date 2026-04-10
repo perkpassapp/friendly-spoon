@@ -243,12 +243,16 @@ export default function AdminDashboard() {
     try {
       const normalizedCategory = normalizeCategory(directForm.category)
       const normalizedEmail = directForm.contact_email.trim().toLowerCase()
+      const trimmedBusinessName = directForm.business_name.trim()
+      const trimmedAddress = directForm.address.trim()
+      const trimmedDealOffer = directForm.deal_offer.trim()
+      const trimmedDealDetails = directForm.deal_details.trim()
 
       const { data: existingDeal } = await supabase
         .from('deals')
         .select('id')
-        .eq('business_name', directForm.business_name.trim())
-        .eq('deal_description', directForm.deal_offer.trim())
+        .eq('business_name', trimmedBusinessName)
+        .eq('deal_description', trimmedDealOffer)
         .maybeSingle()
 
       if (existingDeal) {
@@ -259,31 +263,35 @@ export default function AdminDashboard() {
 
       const { data: existingAccount } = await supabase
         .from('business_accounts')
-        .select('photo_url')
-        .eq('business_name', directForm.business_name.trim())
+        .select('id, photo_url')
+        .eq('business_name', trimmedBusinessName)
         .maybeSingle()
 
       const photoUrl = existingAccount?.photo_url || null
 
-      const { error: businessError } = await supabase.from('business_accounts').upsert({
-        business_name: directForm.business_name.trim(),
+      const businessPayload = {
+        business_name: trimmedBusinessName,
         category: normalizedCategory,
-        address: directForm.address.trim(),
-        deal_offer: directForm.deal_offer.trim(),
+        address: trimmedAddress,
+        deal_offer: trimmedDealOffer,
         contact_email: normalizedEmail,
         active: true,
         admin_disabled: false,
-      }, { onConflict: 'business_name' })
+      }
+
+      const businessError = existingAccount?.id
+        ? (await supabase.from('business_accounts').update(businessPayload).eq('id', existingAccount.id)).error
+        : (await supabase.from('business_accounts').insert(businessPayload)).error
 
       if (businessError) throw businessError
 
       const { error: dealError } = await supabase.from('deals').insert({
-        business_name: directForm.business_name.trim(),
-        deal_description: directForm.deal_offer.trim(),
-        deal_details: directForm.deal_details.trim() || null,
+        business_name: trimmedBusinessName,
+        deal_description: trimmedDealOffer,
+        deal_details: trimmedDealDetails || null,
         category: normalizedCategory,
         emoji: '🎟️',
-        address: directForm.address.trim(),
+        address: trimmedAddress,
         active: true,
         admin_disabled: false,
         photo_url: photoUrl,
@@ -305,7 +313,7 @@ export default function AdminDashboard() {
       setTab('businesses')
     } catch (error) {
       console.error('direct add business error:', error)
-      setDirectError('Could not add this business right now. Try again.')
+      setDirectError(error instanceof Error ? error.message : 'Could not add this business right now. Try again.')
     } finally {
       setAddingBusiness(false)
     }
