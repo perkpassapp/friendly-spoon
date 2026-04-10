@@ -21,6 +21,26 @@ type Deal = {
 type Business = {
   id: string; business_name: string; category: string; address: string
   contact_email: string; active: boolean; admin_disabled: boolean
+  deal_offer?: string | null; access_code?: string | null; photo_url?: string | null
+}
+
+type BusinessEditFields = {
+  business_name: string
+  category: string
+  address: string
+  contact_email: string
+  deal_offer: string
+}
+
+type DirectBusinessForm = {
+  business_name: string
+  category: string
+  address: string
+  deal_offer: string
+  deal_details: string
+  contact_name: string
+  contact_email: string
+  phone: string
 }
 
 export default function AdminDashboard() {
@@ -40,6 +60,27 @@ export default function AdminDashboard() {
   const [editFields, setEditFields] = useState<{ deal_description: string; category: string }>({ deal_description: '', category: '' })
   const [savingEdit, setSavingEdit] = useState(false)
   const [photoUploading, setPhotoUploading] = useState(false)
+  const [editingBusiness, setEditingBusiness] = useState<string | null>(null)
+  const [businessEditFields, setBusinessEditFields] = useState<BusinessEditFields>({
+    business_name: '',
+    category: '',
+    address: '',
+    contact_email: '',
+    deal_offer: '',
+  })
+  const [savingBusinessEdit, setSavingBusinessEdit] = useState(false)
+  const [directForm, setDirectForm] = useState<DirectBusinessForm>({
+    business_name: '',
+    category: '',
+    address: '',
+    deal_offer: '',
+    deal_details: '',
+    contact_name: '',
+    contact_email: '',
+    phone: '',
+  })
+  const [addingBusiness, setAddingBusiness] = useState(false)
+  const [directError, setDirectError] = useState('')
 
   async function loadData() {
     const [appsRes, dealsRes, redemptionsRes, bizRes, membersRes] = await Promise.all([
@@ -131,6 +172,143 @@ export default function AdminDashboard() {
     if (disabling) { await supabase.from('deals').update({ admin_disabled: true, active: false }).eq('business_name', biz.business_name) }
     else { await supabase.from('deals').update({ admin_disabled: false }).eq('business_name', biz.business_name) }
     await loadData(); setTogglingBiz(null)
+  }
+
+  function startBusinessEdit(biz: Business) {
+    setEditingBusiness(biz.id)
+    setBusinessEditFields({
+      business_name: biz.business_name,
+      category: normalizeCategory(biz.category),
+      address: biz.address,
+      contact_email: biz.contact_email,
+      deal_offer: biz.deal_offer || '',
+    })
+  }
+
+  async function saveBusinessEdit(biz: Business) {
+    if (!businessEditFields.business_name || !businessEditFields.category || !businessEditFields.address || !businessEditFields.contact_email) return
+
+    setSavingBusinessEdit(true)
+    const oldBusinessName = biz.business_name
+    const newBusinessName = businessEditFields.business_name.trim()
+    const normalizedCategory = normalizeCategory(businessEditFields.category)
+    const normalizedEmail = businessEditFields.contact_email.trim().toLowerCase()
+    const trimmedAddress = businessEditFields.address.trim()
+    const trimmedDealOffer = businessEditFields.deal_offer.trim()
+
+    await supabase.from('business_accounts').update({
+      business_name: newBusinessName,
+      category: normalizedCategory,
+      address: trimmedAddress,
+      contact_email: normalizedEmail,
+      deal_offer: trimmedDealOffer || null,
+    }).eq('id', biz.id)
+
+    await supabase.from('deals').update({
+      business_name: newBusinessName,
+      category: normalizedCategory,
+      address: trimmedAddress,
+    }).eq('business_name', oldBusinessName)
+
+    await supabase.from('redemptions').update({
+      business_name: newBusinessName,
+    }).eq('business_name', oldBusinessName)
+
+    await supabase.from('business_applications').update({
+      business_name: newBusinessName,
+      category: normalizedCategory,
+      address: trimmedAddress,
+      contact_email: normalizedEmail,
+      deal_offer: trimmedDealOffer || null,
+    }).eq('business_name', oldBusinessName)
+
+    setEditingBusiness(null)
+    setSavingBusinessEdit(false)
+    await loadData()
+  }
+
+  function updateDirectField(field: keyof DirectBusinessForm, value: string) {
+    setDirectForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  async function addBusinessDirectly() {
+    if (!directForm.business_name || !directForm.category || !directForm.address || !directForm.deal_offer || !directForm.contact_email) {
+      setDirectError('Business name, category, address, deal, and contact email are required.')
+      return
+    }
+
+    setAddingBusiness(true)
+    setDirectError('')
+
+    try {
+      const normalizedCategory = normalizeCategory(directForm.category)
+      const normalizedEmail = directForm.contact_email.trim().toLowerCase()
+
+      const { data: existingDeal } = await supabase
+        .from('deals')
+        .select('id')
+        .eq('business_name', directForm.business_name.trim())
+        .eq('deal_description', directForm.deal_offer.trim())
+        .maybeSingle()
+
+      if (existingDeal) {
+        setDirectError('That business and deal combination already exists.')
+        setAddingBusiness(false)
+        return
+      }
+
+      const { data: existingAccount } = await supabase
+        .from('business_accounts')
+        .select('photo_url')
+        .eq('business_name', directForm.business_name.trim())
+        .maybeSingle()
+
+      const photoUrl = existingAccount?.photo_url || null
+
+      const { error: businessError } = await supabase.from('business_accounts').upsert({
+        business_name: directForm.business_name.trim(),
+        category: normalizedCategory,
+        address: directForm.address.trim(),
+        deal_offer: directForm.deal_offer.trim(),
+        contact_email: normalizedEmail,
+        active: true,
+        admin_disabled: false,
+      }, { onConflict: 'business_name' })
+
+      if (businessError) throw businessError
+
+      const { error: dealError } = await supabase.from('deals').insert({
+        business_name: directForm.business_name.trim(),
+        deal_description: directForm.deal_offer.trim(),
+        deal_details: directForm.deal_details.trim() || null,
+        category: normalizedCategory,
+        emoji: '🎟️',
+        address: directForm.address.trim(),
+        active: true,
+        admin_disabled: false,
+        photo_url: photoUrl,
+      })
+
+      if (dealError) throw dealError
+
+      setDirectForm({
+        business_name: '',
+        category: '',
+        address: '',
+        deal_offer: '',
+        deal_details: '',
+        contact_name: '',
+        contact_email: '',
+        phone: '',
+      })
+      await loadData()
+      setTab('businesses')
+    } catch (error) {
+      console.error('direct add business error:', error)
+      setDirectError('Could not add this business right now. Try again.')
+    } finally {
+      setAddingBusiness(false)
+    }
   }
 
   function login() {
@@ -316,23 +494,124 @@ export default function AdminDashboard() {
           <div>
             <h2 className="display" style={{ fontSize: '40px', marginBottom: '4px' }}>Businesses</h2>
             <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '20px' }}>Disabling a business removes them from the platform and deactivates all their deals.</p>
+            <div style={{ background: 'var(--bg-2)', borderRadius: '12px', padding: '18px', border: '1px solid var(--border-2)', marginBottom: '20px' }}>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+                Add business directly
+              </div>
+              <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '14px' }}>
+                Use this when a business already gave you permission and you want to list them without waiting for a public application.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Business Name</label>
+                  <input style={INPUT_STYLE} value={directForm.business_name} onChange={e => updateDirectField('business_name', e.target.value)} placeholder="La Colombe" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Category</label>
+                  <select style={INPUT_STYLE} value={directForm.category} onChange={e => updateDirectField('category', e.target.value)}>
+                    <option value="">Select category</option>
+                    {CATEGORY_OPTIONS.map((category) => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Address</label>
+                  <input style={INPUT_STYLE} value={directForm.address} onChange={e => updateDirectField('address', e.target.value)} placeholder="1335 Frankford Ave, Philadelphia, PA 19125" />
+                </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Deal Offer</label>
+                  <input style={INPUT_STYLE} value={directForm.deal_offer} onChange={e => updateDirectField('deal_offer', e.target.value)} placeholder="$2 off any espresso drink before 11am" />
+                </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Deal Details</label>
+                  <textarea style={{ ...INPUT_STYLE, resize: 'vertical', minHeight: '78px' }} value={directForm.deal_details} onChange={e => updateDirectField('deal_details', e.target.value)} placeholder="Optional fine print, restrictions, or redemption notes" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Contact Name</label>
+                  <input style={INPUT_STYLE} value={directForm.contact_name} onChange={e => updateDirectField('contact_name', e.target.value)} placeholder="Optional" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Contact Email</label>
+                  <input style={INPUT_STYLE} value={directForm.contact_email} onChange={e => updateDirectField('contact_email', e.target.value)} placeholder="partner@business.com" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Phone</label>
+                  <input style={INPUT_STYLE} value={directForm.phone} onChange={e => updateDirectField('phone', e.target.value)} placeholder="Optional" />
+                </div>
+              </div>
+              {directError && <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', marginBottom: '10px' }}>{directError}</p>}
+              <button onClick={addBusinessDirectly} disabled={addingBusiness} className="btn btn-primary" style={{ fontSize: '14px', padding: '12px 18px' }}>
+                {addingBusiness ? 'Adding...' : 'Add business + first deal'}
+              </button>
+            </div>
             {businesses.length === 0 ? (
               <div style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '32px', textAlign: 'center', border: '1px solid var(--border-2)' }}><p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink-3)' }}>No businesses yet.</p></div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {businesses.map((biz: Business) => (
-                  <div key={biz.id} style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '18px 20px', border: '1px solid ' + (biz.admin_disabled ? 'var(--red)' : 'var(--border-2)'), display: 'flex', alignItems: 'center', gap: '16px', opacity: biz.admin_disabled ? 0.6 : 1 }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
-                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)' }}>{biz.business_name}</div>
-                        {biz.admin_disabled && <span style={{ ...LABEL, fontSize: '10px', background: 'var(--red-lt)', color: 'var(--red)', padding: '2px 8px', borderRadius: '3px' }}>Disabled</span>}
+                  <div key={biz.id} style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '18px 20px', border: '1px solid ' + (biz.admin_disabled ? 'var(--red)' : 'var(--border-2)'), opacity: biz.admin_disabled && editingBusiness !== biz.id ? 0.6 : 1 }}>
+                    {editingBusiness === biz.id ? (
+                      <div>
+                        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '12px' }}>
+                          Edit business
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                          <div style={{ gridColumn: '1 / -1' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Business Name</label>
+                            <input style={INPUT_STYLE} value={businessEditFields.business_name} onChange={e => setBusinessEditFields(f => ({ ...f, business_name: e.target.value }))} />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Category</label>
+                            <select style={INPUT_STYLE} value={businessEditFields.category} onChange={e => setBusinessEditFields(f => ({ ...f, category: e.target.value }))}>
+                              {CATEGORY_OPTIONS.map((category) => (
+                                <option key={category} value={category}>{category}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Contact Email</label>
+                            <input style={INPUT_STYLE} value={businessEditFields.contact_email} onChange={e => setBusinessEditFields(f => ({ ...f, contact_email: e.target.value }))} />
+                          </div>
+                          <div style={{ gridColumn: '1 / -1' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Address</label>
+                            <input style={INPUT_STYLE} value={businessEditFields.address} onChange={e => setBusinessEditFields(f => ({ ...f, address: e.target.value }))} />
+                          </div>
+                          <div style={{ gridColumn: '1 / -1' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Primary Deal Offer</label>
+                            <input style={INPUT_STYLE} value={businessEditFields.deal_offer} onChange={e => setBusinessEditFields(f => ({ ...f, deal_offer: e.target.value }))} placeholder="Optional business-level offer summary" />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <button onClick={() => saveBusinessEdit(biz)} disabled={savingBusinessEdit} className="btn btn-primary" style={{ fontSize: '14px', padding: '10px 18px' }}>
+                            {savingBusinessEdit ? 'Saving...' : 'Save changes'}
+                          </button>
+                          <button onClick={() => setEditingBusiness(null)} className="btn btn-outline" style={{ fontSize: '14px', padding: '10px 18px' }}>
+                            Cancel
+                          </button>
+                        </div>
                       </div>
-                      <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500 }}>{biz.category} Â· {biz.address}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500 }}>{biz.contact_email}</div>
-                    </div>
-                    <button onClick={() => toggleBusiness(biz)} disabled={togglingBiz === biz.id} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '10px 18px', borderRadius: '6px', border: 'none', cursor: 'pointer', flexShrink: 0, background: biz.admin_disabled ? 'var(--green-lt)' : 'var(--red-lt)', color: biz.admin_disabled ? 'var(--green-dk)' : 'var(--red)' }}>
-                      {togglingBiz === biz.id ? '...' : biz.admin_disabled ? 'Re-enable' : 'Remove'}
-                    </button>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)' }}>{biz.business_name}</div>
+                            {biz.admin_disabled && <span style={{ ...LABEL, fontSize: '10px', background: 'var(--red-lt)', color: 'var(--red)', padding: '2px 8px', borderRadius: '3px' }}>Disabled</span>}
+                          </div>
+                          <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500 }}>{biz.category} Â· {biz.address}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500 }}>{biz.contact_email}</div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                          <button onClick={() => startBusinessEdit(biz)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                            Edit
+                          </button>
+                          <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
+                          <button onClick={() => toggleBusiness(biz)} disabled={togglingBiz === biz.id} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '10px 18px', borderRadius: '6px', border: 'none', cursor: 'pointer', flexShrink: 0, background: biz.admin_disabled ? 'var(--green-lt)' : 'var(--red-lt)', color: biz.admin_disabled ? 'var(--green-dk)' : 'var(--red)' }}>
+                            {togglingBiz === biz.id ? '...' : biz.admin_disabled ? 'Re-enable' : 'Remove'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
