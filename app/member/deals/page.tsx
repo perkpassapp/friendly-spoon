@@ -55,7 +55,6 @@ export default function MemberDeals() {
   const [loading, setLoading] = useState(true)
   const [accessDenied, setAccessDenied] = useState(false)
   const [filter, setFilter] = useState('All')
-  const [scheduleView, setScheduleView] = useState<'active' | 'today' | 'week'>('active')
   const [selectedWeekday, setSelectedWeekday] = useState<number>(new Date().getDay())
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null)
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({})
@@ -208,20 +207,16 @@ export default function MemberDeals() {
   const now = new Date()
   const currentDay = now.getDay()
   const currentDayLabel = now.toLocaleDateString('en-US', { weekday: 'long' })
-  const dayTabs = Array.from({ length: 7 }, (_, index) => {
-    const day = (currentDay + index) % 7
+  const dayTabs = Array.from({ length: 7 }, (_, day) => {
+    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (day - currentDay))
     return {
       day,
-      label: index === 0 ? 'Today' : new Date(now.getFullYear(), now.getMonth(), now.getDate() + index).toLocaleDateString('en-US', { weekday: 'short' }),
-      fullLabel: new Date(now.getFullYear(), now.getMonth(), now.getDate() + index).toLocaleDateString('en-US', { weekday: 'long' }),
+      label: date.toLocaleDateString('en-US', { weekday: 'short' }),
+      fullLabel: date.toLocaleDateString('en-US', { weekday: 'long' }),
     }
   })
   const categoryFiltered = filter === 'All' ? deals : deals.filter(d => d.category === filter)
-  const activeNowDeals = categoryFiltered.filter((deal) => isScheduleActive(deal))
-  const laterTodayDeals = categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, currentDay) && !isScheduleActive(deal))
   const weekDeals = categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, selectedWeekday))
-  const totalAvailableToday = categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, currentDay)).length
-  const totalLiveNow = activeNowDeals.length
   const selectedWeekdayLabel = dayTabs.find(tab => tab.day === selectedWeekday)?.fullLabel ?? currentDayLabel
 
   // Reusable photo block with Option C frosted footer bar
@@ -550,84 +545,8 @@ export default function MemberDeals() {
           </p>
         </div>
 
-        <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '6px' }}>
-            Browse by timing
-          </div>
-          <div className="display" style={{ fontSize: '24px', marginBottom: '6px' }}>
-            {scheduleView === 'active' ? 'Live right now' : scheduleView === 'today' ? `Good for ${currentDayLabel}` : `${selectedWeekdayLabel} deals`}
-          </div>
-          <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500 }}>
-            {scheduleView === 'active'
-              ? `Start with the deals you can redeem right away. ${totalLiveNow} deals are live at this moment.`
-              : scheduleView === 'today'
-                ? `${totalAvailableToday} deals run at some point today. Use this view to see what is live now and what opens later.`
-                : `Plan ahead by browsing what is scheduled for each day of the week.`}
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 0 18px', scrollbarWidth: 'none' }}>
-          <button
-            onClick={() => setScheduleView('active')}
-            style={{
-              flexShrink: 0,
-              padding: '10px 16px',
-              borderRadius: '999px',
-              border: 'none',
-              cursor: 'pointer',
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: '13px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              background: scheduleView === 'active' ? 'var(--ink)' : 'var(--bg-2)',
-              color: scheduleView === 'active' ? 'var(--bg)' : 'var(--ink-3)',
-            }}
-          >
-            Active now
-          </button>
-          <button
-            onClick={() => setScheduleView('today')}
-            style={{
-              flexShrink: 0,
-              padding: '10px 16px',
-              borderRadius: '999px',
-              border: 'none',
-              cursor: 'pointer',
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: '13px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              background: scheduleView === 'today' ? 'var(--ink)' : 'var(--bg-2)',
-              color: scheduleView === 'today' ? 'var(--bg)' : 'var(--ink-3)',
-            }}
-          >
-            Today
-          </button>
-          <button
-            onClick={() => setScheduleView('week')}
-            style={{
-              flexShrink: 0,
-              padding: '10px 16px',
-              borderRadius: '999px',
-              border: 'none',
-              cursor: 'pointer',
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: '13px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              background: scheduleView === 'week' ? 'var(--ink)' : 'var(--bg-2)',
-              color: scheduleView === 'week' ? 'var(--bg)' : 'var(--ink-3)',
-            }}
-          >
-            This week
-          </button>
-        </div>
-
-        {scheduleView === 'week' && (
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 0 18px', scrollbarWidth: 'none' }}>
+        <div style={{ marginBottom: '18px' }}>
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 0 10px', scrollbarWidth: 'none' }}>
             {dayTabs.map(tab => (
               <button
                 key={tab.day}
@@ -652,7 +571,10 @@ export default function MemberDeals() {
               </button>
             ))}
           </div>
-        )}
+          <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500 }}>
+            Showing deals scheduled for {selectedWeekdayLabel}.
+          </p>
+        </div>
 
         {/* Category filters */}
         <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '16px 0 20px', scrollbarWidth: 'none' }}>
@@ -674,26 +596,13 @@ export default function MemberDeals() {
           ))}
         </div>
 
-        {scheduleView === 'active' && renderSection('Available now', 'Use these deals right away.', activeNowDeals)}
-        {scheduleView === 'today' && (
-          <>
-            {renderSection('Available now', 'Live at this moment.', activeNowDeals)}
-            {renderSection('Later today', `Deals opening later on ${currentDayLabel}.`, laterTodayDeals)}
-          </>
-        )}
-        {scheduleView === 'week' && renderSection('This week', `Browse what is scheduled for ${selectedWeekdayLabel}.`, weekDeals)}
+        {renderSection(selectedWeekday === currentDay ? 'Today' : selectedWeekdayLabel, `Browse what is scheduled for ${selectedWeekdayLabel}.`, weekDeals)}
 
-        {((scheduleView === 'active' && activeNowDeals.length === 0) ||
-          (scheduleView === 'today' && activeNowDeals.length === 0 && laterTodayDeals.length === 0) ||
-          (scheduleView === 'week' && weekDeals.length === 0)) && (
+        {weekDeals.length === 0 && (
           <div style={{ textAlign: 'center', padding: '64px 0' }}>
             <div className="display" style={{ fontSize: '32px', marginBottom: '8px' }}>Nothing in this window yet.</div>
             <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontWeight: 500 }}>
-              {scheduleView === 'active'
-                ? 'Switch to Today or This week to see what is coming up next.'
-                : scheduleView === 'today'
-                  ? 'Try another category or check This week to plan ahead.'
-                  : 'Try another day or category to see more active deals.'}
+              Try another day or category to see more active deals.
             </p>
           </div>
         )}
