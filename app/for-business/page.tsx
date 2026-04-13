@@ -131,13 +131,13 @@ export default function ForBusiness() {
           <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '12px' }}>
             How it works
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
             {[
               { step: '01', title: 'Your business', body: 'Tell us who you are, where you are, and the best email to reach you.' },
               { step: '02', title: 'Your first deal', body: 'Add the first offer you want members to see when you go live.' },
               { step: '03', title: 'We review + launch', body: 'We confirm the details, send your dashboard access, and get you listed.' },
             ].map((item) => (
-              <div key={item.step} style={{ background: 'var(--bg)', borderRadius: '10px', padding: '16px', border: '1px solid var(--border)' }}>
+              <div key={item.step} style={{ background: 'var(--bg)', borderRadius: '10px', padding: '16px', border: '1px solid var(--border)', minWidth: 0 }}>
                 <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--green-dk)', marginBottom: '8px' }}>{item.step}</div>
                 <div className="display" style={{ fontSize: '24px', marginBottom: '6px' }}>{item.title}</div>
                 <p style={{ fontSize: '13px', color: 'var(--ink-3)', fontWeight: 500, lineHeight: 1.5 }}>{item.body}</p>
