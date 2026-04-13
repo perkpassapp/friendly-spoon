@@ -16,7 +16,7 @@ type Application = {
 }
 type Deal = {
   id: string; business_name: string; deal_description: string; category: string
-  address: string; active: boolean; admin_disabled: boolean; photo_url?: string | null; featured: boolean; schedule?: Schedule | null
+  address: string; active: boolean; admin_disabled: boolean; photo_url?: string | null; featured: boolean; schedule?: Schedule | null; deal_details?: string | null
 }
 type Business = {
   id: string; business_name: string; category: string; address: string
@@ -32,6 +32,7 @@ type BusinessEditFields = {
   address: string
   contact_email: string
   deal_offer: string
+  deal_description: string
 }
 
 type DirectBusinessForm = {
@@ -43,6 +44,12 @@ type DirectBusinessForm = {
   contact_name: string
   contact_email: string
   phone: string
+}
+
+type ExistingBusinessDealForm = {
+  business_id: string
+  deal_description: string
+  deal_details: string
 }
 
 export default function AdminDashboard() {
@@ -74,6 +81,7 @@ export default function AdminDashboard() {
     address: '',
     contact_email: '',
     deal_offer: '',
+    deal_description: '',
   })
   const [savingBusinessEdit, setSavingBusinessEdit] = useState(false)
   const [directForm, setDirectForm] = useState<DirectBusinessForm>({
@@ -88,6 +96,14 @@ export default function AdminDashboard() {
   })
   const [addingBusiness, setAddingBusiness] = useState(false)
   const [directError, setDirectError] = useState('')
+  const [existingDealForm, setExistingDealForm] = useState<ExistingBusinessDealForm>({
+    business_id: '',
+    deal_description: '',
+    deal_details: '',
+  })
+  const [addingExistingDeal, setAddingExistingDeal] = useState(false)
+  const [existingDealError, setExistingDealError] = useState('')
+  const [dealBusinessFilter, setDealBusinessFilter] = useState<string>('all')
 
   async function loadData() {
     const [appsRes, dealsRes, redemptionsRes, bizRes, membersRes] = await Promise.all([
@@ -214,6 +230,8 @@ export default function AdminDashboard() {
   }
 
   function startBusinessEdit(biz: Business) {
+    const primaryDeal = deals.find((deal) => deal.business_name === biz.business_name && deal.deal_description === biz.deal_offer)
+      || deals.find((deal) => deal.business_name === biz.business_name)
     setEditingBusiness(biz.id)
     setBusinessEditFields({
       business_name: biz.business_name,
@@ -221,6 +239,7 @@ export default function AdminDashboard() {
       address: biz.address,
       contact_email: biz.contact_email,
       deal_offer: biz.deal_offer || '',
+      deal_description: primaryDeal?.deal_description || biz.deal_offer || '',
     })
   }
 
@@ -234,6 +253,9 @@ export default function AdminDashboard() {
     const normalizedEmail = businessEditFields.contact_email.trim().toLowerCase()
     const trimmedAddress = businessEditFields.address.trim()
     const trimmedDealOffer = businessEditFields.deal_offer.trim()
+    const trimmedDealDescription = businessEditFields.deal_description.trim()
+    const primaryDeal = deals.find((deal) => deal.business_name === oldBusinessName && deal.deal_description === (biz.deal_offer || ''))
+      || deals.find((deal) => deal.business_name === oldBusinessName)
 
     await supabase.from('business_accounts').update({
       business_name: newBusinessName,
@@ -248,6 +270,12 @@ export default function AdminDashboard() {
       category: normalizedCategory,
       address: trimmedAddress,
     }).eq('business_name', oldBusinessName)
+
+    if (primaryDeal?.id && trimmedDealDescription) {
+      await supabase.from('deals').update({
+        deal_description: trimmedDealDescription,
+      }).eq('id', primaryDeal.id)
+    }
 
     await supabase.from('redemptions').update({
       business_name: newBusinessName,
@@ -268,6 +296,10 @@ export default function AdminDashboard() {
 
   function updateDirectField(field: keyof DirectBusinessForm, value: string) {
     setDirectForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  function updateExistingDealField(field: keyof ExistingBusinessDealForm, value: string) {
+    setExistingDealForm((prev) => ({ ...prev, [field]: value }))
   }
 
   async function addBusinessDirectly() {
@@ -358,6 +390,67 @@ export default function AdminDashboard() {
     }
   }
 
+  async function addDealForExistingBusiness() {
+    if (!existingDealForm.business_id || !existingDealForm.deal_description.trim()) {
+      setExistingDealError('Choose a business and enter the deal description.')
+      return
+    }
+
+    setAddingExistingDeal(true)
+    setExistingDealError('')
+
+    try {
+      const business = businesses.find((biz) => biz.id === existingDealForm.business_id)
+      if (!business) {
+        setExistingDealError('Choose a valid business.')
+        setAddingExistingDeal(false)
+        return
+      }
+
+      const trimmedDescription = existingDealForm.deal_description.trim()
+      const trimmedDetails = existingDealForm.deal_details.trim()
+
+      const { data: existingDeal } = await supabase
+        .from('deals')
+        .select('id')
+        .eq('business_name', business.business_name)
+        .eq('deal_description', trimmedDescription)
+        .maybeSingle()
+
+      if (existingDeal) {
+        setExistingDealError('That deal already exists for this business.')
+        setAddingExistingDeal(false)
+        return
+      }
+
+      const { error: insertError } = await supabase.from('deals').insert({
+        business_name: business.business_name,
+        deal_description: trimmedDescription,
+        deal_details: trimmedDetails || null,
+        category: normalizeCategory(business.category),
+        emoji: '🎟️',
+        address: business.address,
+        active: true,
+        admin_disabled: false,
+        photo_url: business.photo_url || null,
+      })
+
+      if (insertError) throw insertError
+
+      setExistingDealForm({
+        business_id: '',
+        deal_description: '',
+        deal_details: '',
+      })
+      await loadData()
+    } catch (error) {
+      console.error('add existing business deal error:', error)
+      setExistingDealError(error instanceof Error ? error.message : 'Could not add this deal right now. Try again.')
+    } finally {
+      setAddingExistingDeal(false)
+    }
+  }
+
   function login() {
     if (password === 'perkpassadmin') { setAuthed(true); loadData() } else setError('Wrong password')
   }
@@ -365,6 +458,13 @@ export default function AdminDashboard() {
   const pending = applications.filter(a => a.status === 'pending')
   const activeBusinesses = businesses.filter(b => !b.admin_disabled).length
   const disabledBusinesses = businesses.filter(b => b.admin_disabled).length
+  const dealCountsByBusiness = deals.reduce<Record<string, number>>((acc, deal) => {
+    acc[deal.business_name] = (acc[deal.business_name] || 0) + 1
+    return acc
+  }, {})
+  const visibleDeals = dealBusinessFilter === 'all'
+    ? deals
+    : deals.filter((deal) => deal.business_name === dealBusinessFilter)
   const LABEL = { fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--ink-4)' }
   const INPUT_STYLE = { fontFamily: "'Inter', sans-serif", fontSize: '13px', fontWeight: 500, color: 'var(--ink)', background: 'var(--bg)', border: '1.5px solid var(--ink)', borderRadius: '6px', padding: '8px 10px', width: '100%', outline: 'none' }
 
@@ -454,8 +554,59 @@ export default function AdminDashboard() {
           <div>
             <h2 className="display" style={{ fontSize: '40px', marginBottom: '4px' }}>Live Deals</h2>
             <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '20px' }}>Deals you disable here cannot be re-activated by the business. Delete removes permanently.</p>
+            <div style={{ background: 'var(--bg-2)', borderRadius: '12px', padding: '18px', border: '1px solid var(--border-2)', marginBottom: '20px' }}>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+                Add deal for existing business
+              </div>
+              <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '14px' }}>
+                Publish a new deal directly under a business that is already on PerkPass.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Business</label>
+                  <select style={INPUT_STYLE} value={existingDealForm.business_id} onChange={e => updateExistingDealField('business_id', e.target.value)}>
+                    <option value="">Select business</option>
+                    {businesses
+                      .filter((biz) => !biz.admin_disabled)
+                      .map((biz) => (
+                        <option key={biz.id} value={biz.id}>
+                          {biz.business_name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Deal Description</label>
+                  <input style={INPUT_STYLE} value={existingDealForm.deal_description} onChange={e => updateExistingDealField('deal_description', e.target.value)} placeholder="$10 off any service on Tuesdays" />
+                </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Deal Details</label>
+                  <textarea style={{ ...INPUT_STYLE, resize: 'vertical', minHeight: '78px' }} value={existingDealForm.deal_details} onChange={e => updateExistingDealField('deal_details', e.target.value)} placeholder="Optional fine print, restrictions, or redemption notes" />
+                </div>
+              </div>
+              {existingDealError && <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', marginBottom: '10px' }}>{existingDealError}</p>}
+              <button onClick={addDealForExistingBusiness} disabled={addingExistingDeal} className="btn btn-primary" style={{ fontSize: '14px', padding: '12px 18px' }}>
+                {addingExistingDeal ? 'Adding...' : 'Add deal'}
+              </button>
+            </div>
+            <div style={{ background: 'var(--bg-2)', borderRadius: '12px', padding: '16px 18px', border: '1px solid var(--border-2)', marginBottom: '18px', display: 'flex', alignItems: 'end', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ minWidth: '220px', flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Filter by business</label>
+                <select style={INPUT_STYLE} value={dealBusinessFilter} onChange={e => setDealBusinessFilter(e.target.value)}>
+                  <option value="all">All businesses</option>
+                  {businesses.map((biz) => (
+                    <option key={biz.id} value={biz.business_name}>
+                      {biz.business_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)', paddingBottom: '8px' }}>
+                Showing {visibleDeals.length} {visibleDeals.length === 1 ? 'deal' : 'deals'}
+              </div>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {deals.map((deal: Deal) => (
+              {visibleDeals.map((deal: Deal) => (
                 <div key={deal.id} style={{ padding: '16px 0', borderBottom: '1px solid var(--border)', opacity: deal.admin_disabled && editingDeal !== deal.id ? 0.5 : 1 }}>
                   {confirmDelete === deal.id ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--red-lt)', borderRadius: '8px', padding: '14px 16px' }}>
@@ -517,6 +668,9 @@ export default function AdminDashboard() {
                           <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--green-dk)' }}>{deal.deal_description}</div>
                           {deal.featured && <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '2px 8px', borderRadius: '3px' }}>Featured</span>}
                         </div>
+                        {deal.deal_details && (
+                          <div style={{ fontSize: '12px', color: 'var(--ink-3)', fontWeight: 500, marginTop: '3px', lineHeight: 1.45 }}>{deal.deal_details}</div>
+                        )}
                         <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '2px' }}>{deal.category} Â· {deal.address}</div>
                         {deal.schedule && (
                           <div style={{ fontSize: '11px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '3px' }}>
@@ -637,6 +791,10 @@ export default function AdminDashboard() {
                             <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Primary Deal Offer</label>
                             <input style={INPUT_STYLE} value={businessEditFields.deal_offer} onChange={e => setBusinessEditFields(f => ({ ...f, deal_offer: e.target.value }))} placeholder="Optional business-level offer summary" />
                           </div>
+                          <div style={{ gridColumn: '1 / -1' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Primary Deal Description</label>
+                            <input style={INPUT_STYLE} value={businessEditFields.deal_description} onChange={e => setBusinessEditFields(f => ({ ...f, deal_description: e.target.value }))} placeholder="The live deal members will see first" />
+                          </div>
                         </div>
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                           <button onClick={() => saveBusinessEdit(biz)} disabled={savingBusinessEdit} className="btn btn-primary" style={{ fontSize: '14px', padding: '10px 18px' }}>
@@ -656,8 +814,13 @@ export default function AdminDashboard() {
                           </div>
                           <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500 }}>{biz.category} Â· {biz.address}</div>
                           <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500 }}>{biz.contact_email}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 600, marginTop: '4px' }}>{dealCountsByBusiness[biz.business_name] || 0} live deals</div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                          <button onClick={() => { setDealBusinessFilter(biz.business_name); setTab('deals') }} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green-dk)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                            Manage deals
+                          </button>
+                          <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
                           <button onClick={() => startBusinessEdit(biz)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-3)', background: 'none', border: 'none', cursor: 'pointer' }}>
                             Edit
                           </button>
