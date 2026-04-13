@@ -66,7 +66,7 @@ export default function AdminDashboard() {
   const [deletingDeal, setDeletingDeal] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [editingDeal, setEditingDeal] = useState<string | null>(null)
-  const [editFields, setEditFields] = useState<{ deal_description: string; category: string }>({ deal_description: '', category: '' })
+  const [editFields, setEditFields] = useState<{ deal_description: string; deal_details: string; category: string }>({ deal_description: '', deal_details: '', category: '' })
   const [savingEdit, setSavingEdit] = useState(false)
   const [photoUploading, setPhotoUploading] = useState(false)
   const [editingSchedule, setEditingSchedule] = useState<Deal | null>(null)
@@ -148,7 +148,14 @@ export default function AdminDashboard() {
   }
 
   async function toggleFeatured(deal: Deal) {
-    await supabase.from('deals').update({ featured: !deal.featured }).eq('id', deal.id)
+    if (deal.admin_disabled || !deal.active) return
+    if (deal.featured) {
+      await supabase.from('deals').update({ featured: false }).eq('id', deal.id)
+      await loadData()
+      return
+    }
+    await supabase.from('deals').update({ featured: false }).eq('business_name', deal.business_name)
+    await supabase.from('deals').update({ featured: true }).eq('id', deal.id)
     await loadData()
   }
 
@@ -160,13 +167,17 @@ export default function AdminDashboard() {
 
   function startEdit(deal: Deal) {
     setEditingDeal(deal.id)
-    setEditFields({ deal_description: deal.deal_description, category: normalizeCategory(deal.category) })
+    setEditFields({ deal_description: deal.deal_description, deal_details: deal.deal_details || '', category: normalizeCategory(deal.category) })
     setConfirmDelete(null)
   }
 
   async function saveEdit(id: string) {
     setSavingEdit(true)
-    await supabase.from('deals').update({ deal_description: editFields.deal_description, category: normalizeCategory(editFields.category) }).eq('id', id)
+    await supabase.from('deals').update({
+      deal_description: editFields.deal_description.trim(),
+      deal_details: editFields.deal_details.trim() || null,
+      category: normalizeCategory(editFields.category),
+    }).eq('id', id)
     setEditingDeal(null); setSavingEdit(false); await loadData()
   }
 
@@ -553,7 +564,7 @@ export default function AdminDashboard() {
         {tab === 'deals' && (
           <div>
             <h2 className="display" style={{ fontSize: '40px', marginBottom: '4px' }}>Live Deals</h2>
-            <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '20px' }}>Deals you disable here cannot be re-activated by the business. Delete removes permanently.</p>
+            <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '20px' }}>Deals you disable here cannot be re-activated by the business. Delete removes permanently. Featured is handled one deal per business.</p>
             <div style={{ background: 'var(--bg-2)', borderRadius: '12px', padding: '18px', border: '1px solid var(--border-2)', marginBottom: '20px' }}>
               <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
                 Add deal for existing business
@@ -623,6 +634,10 @@ export default function AdminDashboard() {
                           <input style={INPUT_STYLE} value={editFields.deal_description} onChange={e => setEditFields(f => ({ ...f, deal_description: e.target.value }))} placeholder="e.g. 10% off any order" />
                         </div>
                         <div>
+                          <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Deal Details</label>
+                          <textarea style={{ ...INPUT_STYLE, resize: 'vertical', minHeight: '78px' }} value={editFields.deal_details} onChange={e => setEditFields(f => ({ ...f, deal_details: e.target.value }))} placeholder="Optional fine print, restrictions, or redemption notes" />
+                        </div>
+                        <div>
                           <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Category</label>
                           <select style={INPUT_STYLE} value={editFields.category} onChange={e => setEditFields(f => ({ ...f, category: e.target.value }))}>
                             {CATEGORY_OPTIONS.map((category) => (
@@ -686,7 +701,9 @@ export default function AdminDashboard() {
                           {deal.schedule ? 'Edit hours' : 'Set hours'}
                         </button>
                         <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
-                        <button onClick={() => toggleFeatured(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: deal.featured ? 'var(--green-dk)' : 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>{deal.featured ? 'â Featured' : 'â Feature'}</button>
+                        <button onClick={() => toggleFeatured(deal)} disabled={deal.admin_disabled || !deal.active} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: deal.featured ? 'var(--green-dk)' : deal.admin_disabled || !deal.active ? 'var(--border)' : 'var(--ink-4)', background: 'none', border: 'none', cursor: deal.admin_disabled || !deal.active ? 'not-allowed' : 'pointer' }}>
+                          {deal.featured ? 'Unfeature' : 'Feature'}
+                        </button>
                         <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
                         <button onClick={() => adminToggleDeal(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: deal.admin_disabled ? 'var(--green-dk)' : 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>{deal.admin_disabled ? 'Re-enable' : 'Disable'}</button>
                         <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
