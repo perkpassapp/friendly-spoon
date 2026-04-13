@@ -127,6 +127,25 @@ export default function ForBusiness() {
           </div>
         </div>
 
+        <div className="fade-up-2" style={{ background: 'var(--bg-2)', borderRadius: '12px', padding: '22px 20px', border: '1px solid var(--border-2)', marginBottom: '32px' }}>
+          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '12px' }}>
+            How it works
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+            {[
+              { step: '01', title: 'Your business', body: 'Tell us who you are, where you are, and the best email to reach you.' },
+              { step: '02', title: 'Your first deal', body: 'Add the first offer you want members to see when you go live.' },
+              { step: '03', title: 'We review + launch', body: 'We confirm the details, send your dashboard access, and get you listed.' },
+            ].map((item) => (
+              <div key={item.step} style={{ background: 'var(--bg)', borderRadius: '10px', padding: '16px', border: '1px solid var(--border)' }}>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--green-dk)', marginBottom: '8px' }}>{item.step}</div>
+                <div className="display" style={{ fontSize: '24px', marginBottom: '6px' }}>{item.title}</div>
+                <p style={{ fontSize: '13px', color: 'var(--ink-3)', fontWeight: 500, lineHeight: 1.5 }}>{item.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="fade-up-2">
           <div style={{ borderTop: '2px solid var(--ink)', paddingTop: '32px', marginBottom: '32px' }}>
             <h2 className="display" style={{ fontSize: '40px', marginBottom: '8px' }}>Apply now.</h2>
@@ -134,32 +153,63 @@ export default function ForBusiness() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Business name *</label>
-              <input type="text" value={form.business_name} onChange={e => update('business_name', e.target.value)} placeholder="Fishtown Coffee Co." className="pp-input" />
+            <div style={{ background: 'var(--bg-2)', borderRadius: '12px', padding: '20px', border: '1px solid var(--border-2)' }}>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '6px' }}>
+                Section 1
+              </div>
+              <div className="display" style={{ fontSize: '30px', marginBottom: '8px' }}>Business info.</div>
+              <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500, marginBottom: '16px' }}>This only needs the basics we need to review and list your business.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Business name *</label>
+                  <input type="text" value={form.business_name} onChange={e => update('business_name', e.target.value)} placeholder="Fishtown Coffee Co." className="pp-input" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Category *</label>
+                  <select value={form.category} onChange={e => update('category', e.target.value)} className="pp-input" style={{ cursor: 'pointer' }}>
+                    <option value="">Select a category</option>
+                    {CATEGORY_OPTIONS.map(category => <option key={category} value={category}>{category}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Business address *</label>
+                  <input type="text" value={form.address} onChange={e => update('address', e.target.value)} placeholder="1234 Frankford Ave, Philadelphia PA" className="pp-input" />
+                </div>
+              </div>
             </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Category *</label>
-              <select value={form.category} onChange={e => update('category', e.target.value)} className="pp-input" style={{ cursor: 'pointer' }}>
-                <option value="">Select a category</option>
-                {CATEGORY_OPTIONS.map(category => <option key={category} value={category}>{category}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Business address *</label>
-              <input type="text" value={form.address} onChange={e => update('address', e.target.value)} placeholder="1234 Frankford Ave, Philadelphia PA" className="pp-input" />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Your deal offer *</label>
-              <input type="text" value={form.deal_offer} onChange={e => update('deal_offer', e.target.value)} placeholder="e.g. 10% off any drink, $5 off first haircut" className="pp-input" />
-              <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>Keep it simple. The best deals are specific and easy to apply at the register.</p>
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>
-                Deal details <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0, color: 'var(--ink-4)', fontSize: '12px' }}>(optional)</span>
-              </label>
-              <textarea value={form.deal_details} onChange={e => update('deal_details', e.target.value)} placeholder="e.g. Valid on orders over $10. One per visit. Cannot be combined with other offers." rows={3} className="pp-input" style={{ resize: 'vertical', fontFamily: 'inherit', fontSize: '15px', lineHeight: 1.5 }} />
-              <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>Any fine print, restrictions, or extra context members should know. Shown under your deal on the deals page.</p>
+
+            <div style={{ background: 'var(--bg-2)', borderRadius: '12px', padding: '20px', border: '1px solid var(--border-2)' }}>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '6px' }}>
+                Section 2
+              </div>
+              <div className="display" style={{ fontSize: '30px', marginBottom: '8px' }}>Your first deal.</div>
+              <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500, marginBottom: '16px' }}>This same format is what you’ll use later any time you submit another deal for review.</p>
+              <div style={{ background: 'var(--bg)', borderRadius: '10px', padding: '14px 16px', border: '1px solid var(--border)', marginBottom: '16px' }}>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '8px' }}>Best format</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {[
+                    'Deal offer: what the member gets',
+                    'Deal details: any fine print or limits',
+                    'Business photo: optional, but helps a lot',
+                  ].map((item) => (
+                    <div key={item} style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)' }}>{item}</div>
+                  ))}
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Deal offer *</label>
+                  <input type="text" value={form.deal_offer} onChange={e => update('deal_offer', e.target.value)} placeholder="e.g. 10% off any drink, $5 off first haircut" className="pp-input" />
+                  <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>Keep it short and specific. Members will see this line first.</p>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>
+                    Deal details <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0, color: 'var(--ink-4)', fontSize: '12px' }}>(optional)</span>
+                  </label>
+                  <textarea value={form.deal_details} onChange={e => update('deal_details', e.target.value)} placeholder="e.g. Valid on orders over $10. One per visit. Cannot be combined with other offers." rows={3} className="pp-input" style={{ resize: 'vertical', fontFamily: 'inherit', fontSize: '15px', lineHeight: 1.5 }} />
+                  <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>Use this for restrictions, exclusions, or anything your staff should know.</p>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -185,20 +235,26 @@ export default function ForBusiness() {
               <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>This is what members see on the deals page. A photo of your storefront, food, or space works great.</p>
             </div>
 
-            <div style={{ borderTop: '1px solid var(--border-2)', paddingTop: '8px' }}>
-              <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)' }}>Your contact info</p>
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Your name *</label>
-              <input type="text" value={form.contact_name} onChange={e => update('contact_name', e.target.value)} placeholder="Jane Smith" className="pp-input" />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Email address *</label>
-              <input type="email" value={form.contact_email} onChange={e => update('contact_email', e.target.value)} placeholder="you@yourbusiness.com" className="pp-input" />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Phone number *</label>
-              <input type="tel" value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="(215) 555-0100" className="pp-input" />
+            <div style={{ background: 'var(--bg-2)', borderRadius: '12px', padding: '20px', border: '1px solid var(--border-2)' }}>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '6px' }}>
+                Section 3
+              </div>
+              <div className="display" style={{ fontSize: '30px', marginBottom: '8px' }}>Contact info.</div>
+              <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500, marginBottom: '16px' }}>We use this to review your listing and send your business dashboard access.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Your name *</label>
+                  <input type="text" value={form.contact_name} onChange={e => update('contact_name', e.target.value)} placeholder="Jane Smith" className="pp-input" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Email address *</label>
+                  <input type="email" value={form.contact_email} onChange={e => update('contact_email', e.target.value)} placeholder="you@yourbusiness.com" className="pp-input" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Phone number <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0, color: 'var(--ink-4)', fontSize: '12px' }}>(optional)</span></label>
+                  <input type="tel" value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="(215) 555-0100" className="pp-input" />
+                </div>
+              </div>
             </div>
 
             {error && <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)' }}>{error}</p>}

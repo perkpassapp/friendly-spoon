@@ -401,19 +401,40 @@ export default function BusinessDashboard() {
               </div>
             ) : (
               <div>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Deal offer</label>
-                  <input type="text" value={newDealOffer} onChange={e => setNewDealOffer(e.target.value)} placeholder="e.g. 20% off any service, Free coffee with any purchase" className="pp-input" onKeyDown={e => e.key === 'Enter' && submitNewDeal()} />
-                  <p style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '6px' }}>Keep it short and clear. Members will see exactly this text.</p>
+                <div style={{ background: 'var(--bg-2)', borderRadius: '12px', padding: '20px', border: '1px solid var(--border-2)', marginBottom: '18px' }}>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '6px' }}>
+                    Business on file
+                  </div>
+                  <div className="display" style={{ fontSize: '28px', marginBottom: '6px' }}>{account?.business_name}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--ink-3)', fontWeight: 500, marginBottom: '4px' }}>{account?.category} · {account?.address}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500 }}>You only need to add the deal information below. Your business profile stays the same.</div>
                 </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Deal Details <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0, color: 'var(--ink-4)' }}>(optional)</span></label>
-                  <textarea value={newDealDetails} onChange={e => setNewDealDetails(e.target.value)} placeholder="e.g. Combo meal comes with your choice of side and a drink." rows={3} className="pp-input" style={{ resize: 'vertical', fontFamily: 'inherit', fontSize: '15px', lineHeight: 1.5 }} />
-                </div>
-                <div style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '16px', marginBottom: '20px', border: '1px solid var(--border-2)' }}>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '8px' }}>Submitting for</div>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '17px', fontWeight: 800, color: 'var(--ink)' }}>{account?.business_name}</div>
-                  <div style={{ fontSize: '13px', color: 'var(--ink-3)', fontWeight: 500 }}>{account?.category} - {account?.address}</div>
+                <div style={{ background: 'var(--bg-2)', borderRadius: '12px', padding: '20px', border: '1px solid var(--border-2)', marginBottom: '18px' }}>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '6px' }}>
+                    Deal structure
+                  </div>
+                  <div className="display" style={{ fontSize: '28px', marginBottom: '8px' }}>What members will see.</div>
+                  <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '14px' }}>Keep the offer simple, then use details for any fine print or staff notes.</p>
+                  <div style={{ background: 'var(--bg)', borderRadius: '10px', padding: '14px 16px', border: '1px solid var(--border)', marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {[
+                        'Deal offer: the main savings line members see first',
+                        'Deal details: restrictions, exclusions, or extra context',
+                      ].map((item) => (
+                        <div key={item} style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)' }}>{item}</div>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Deal offer</label>
+                    <input type="text" value={newDealOffer} onChange={e => setNewDealOffer(e.target.value)} placeholder="e.g. 20% off any service, Free coffee with any purchase" className="pp-input" onKeyDown={e => e.key === 'Enter' && submitNewDeal()} />
+                    <p style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '6px' }}>Keep it short and clear. Members will see exactly this text.</p>
+                  </div>
+                  <div style={{ marginBottom: '4px' }}>
+                    <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Deal details <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0, color: 'var(--ink-4)' }}>(optional)</span></label>
+                    <textarea value={newDealDetails} onChange={e => setNewDealDetails(e.target.value)} placeholder="e.g. Combo meal comes with your choice of side and a drink." rows={3} className="pp-input" style={{ resize: 'vertical', fontFamily: 'inherit', fontSize: '15px', lineHeight: 1.5 }} />
+                    <p style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500, marginTop: '6px' }}>Use this for any limits, exclusions, or staff-facing instructions.</p>
+                  </div>
                 </div>
                 {error && <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', marginBottom: '12px' }}>{error}</p>}
                 <button onClick={submitNewDeal} disabled={submitting || !newDealOffer.trim()} className="btn btn-primary" style={{ width: '100%', fontSize: '17px', padding: '16px' }}>{submitting ? 'Submitting...' : 'Submit for review'}</button>
