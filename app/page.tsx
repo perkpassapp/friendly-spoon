@@ -52,8 +52,6 @@ export default function Home() {
         .quick-link { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; text-align: left; width: 100%; transition: border-color 0.15s; }
         .quick-link:hover { border-color: var(--green); }
         .preview-kicker { display: inline-flex; align-items: center; gap: 8px; background: var(--green-lt); color: var(--green-dk); padding: 4px 12px; border-radius: 999px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
-        .preview-chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
-        .preview-chip { display: inline-flex; align-items: center; padding: 7px 10px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--border-2); color: var(--ink-3); font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
         .preview-meta-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
         .preview-meta-card { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 10px; padding: 14px 14px 12px; }
         .preview-meta-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-4); margin-bottom: 6px; }
@@ -61,7 +59,7 @@ export default function Home() {
         .creator-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 14px; }
         .creator-card { background: var(--bg-2); border: 1.5px solid var(--border-2); border-radius: 14px; padding: 22px; }
         .creator-stack { display: grid; grid-template-columns: 1fr; gap: 14px; }
-        .home-hero { position: relative; overflow: hidden; padding: 64px 24px 56px; border-bottom: 2px solid var(--ink); background: radial-gradient(circle at 82% 18%, rgba(126, 184, 111, 0.24), transparent 28%), linear-gradient(135deg, #f7f1df 0%, #fffaf0 48%, #e7f2df 100%); }
+        .home-hero { position: relative; overflow: hidden; padding: 64px 24px 56px; border-bottom: 2px solid var(--ink); background: var(--bg); }
         .home-hero-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.82fr); gap: 42px; align-items: center; }
         .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: var(--bg); padding: 6px 11px; border-radius: 999px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 20px; }
         .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
@@ -203,12 +201,6 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="preview-chip-row">
-            {['Fishtown', 'Center City', 'Chinatown', 'Restaurants', 'Cafes', 'Fitness', 'Nails'].map((chip) => (
-              <div key={chip} className="preview-chip">{chip}</div>
-            ))}
-          </div>
-
           <div className="preview-meta-grid">
             <div className="preview-meta-card">
               <div className="preview-meta-label">Browse</div>
@@ -244,7 +236,7 @@ export default function Home() {
                   )}
                   <div className="deal-card-body">
                     <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 9px', borderRadius: '4px' }}>
-                      {d.cat === 'Dessert' ? d.cat : normalizedCategory} • {d.area}
+                      {d.cat === 'Dessert' ? d.cat : normalizedCategory}
                     </span>
                     <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.01em' }}>
                       {d.name}
