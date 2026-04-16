@@ -59,6 +59,8 @@ export default function MemberDeals() {
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null)
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({})
   const [userName, setUserName] = useState('')
+  const [memberEmail, setMemberEmail] = useState('')
+  const [favoriteBusinesses, setFavoriteBusinesses] = useState<string[]>([])
   const router = useRouter()
 
   useEffect(() => {
@@ -66,6 +68,18 @@ export default function MemberDeals() {
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) { router.push('/member/login'); return }
       const email = userData.user.email!
+      setMemberEmail(email)
+      const storedFavorites = window.localStorage.getItem(`perkpass:favorites:${email}`)
+      if (storedFavorites) {
+        try {
+          const parsed = JSON.parse(storedFavorites)
+          if (Array.isArray(parsed)) {
+            setFavoriteBusinesses(parsed.filter((name): name is string => typeof name === 'string'))
+          }
+        } catch {
+          window.localStorage.removeItem(`perkpass:favorites:${email}`)
+        }
+      }
       const { data: memberData } = await supabase
         .from('members').select('name, phone').eq('email', email).limit(1)
       const member = memberData?.[0] as MemberProfile | undefined
@@ -107,6 +121,17 @@ export default function MemberDeals() {
   function formatCooldown(secs: number) {
     const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60)
     return h > 0 ? `${h}h ${m}m` : `${m}m`
+  }
+
+  function toggleFavoriteBusiness(businessName: string) {
+    if (!memberEmail) return
+    setFavoriteBusinesses((current) => {
+      const next = current.includes(businessName)
+        ? current.filter((name) => name !== businessName)
+        : [...current, businessName]
+      window.localStorage.setItem(`perkpass:favorites:${memberEmail}`, JSON.stringify(next))
+      return next
+    })
   }
 
   function formatScheduleTime(t: string) {
@@ -203,7 +228,12 @@ export default function MemberDeals() {
     return Array.from(map.values())
   }
 
-  const categories = ['All', ...CATEGORY_OPTIONS.filter(category => deals.some((deal) => deal.category === category))]
+  const favoriteDealCount = deals.filter((deal) => favoriteBusinesses.includes(deal.business_name)).length
+  const categories = [
+    'All',
+    ...(favoriteDealCount > 0 ? ['Favorites'] : []),
+    ...CATEGORY_OPTIONS.filter(category => deals.some((deal) => deal.category === category)),
+  ]
   const now = new Date()
   const currentDay = now.getDay()
   const currentDayLabel = now.toLocaleDateString('en-US', { weekday: 'long' })
@@ -215,7 +245,11 @@ export default function MemberDeals() {
       fullLabel: date.toLocaleDateString('en-US', { weekday: 'long' }),
     }
   })
-  const categoryFiltered = filter === 'All' ? deals : deals.filter(d => d.category === filter)
+  const categoryFiltered = filter === 'All'
+    ? deals
+    : filter === 'Favorites'
+      ? deals.filter(d => favoriteBusinesses.includes(d.business_name))
+      : deals.filter(d => d.category === filter)
   const weekDeals = categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, selectedWeekday))
   const selectedWeekdayLabel = dayTabs.find(tab => tab.day === selectedWeekday)?.fullLabel ?? currentDayLabel
 
@@ -225,12 +259,16 @@ export default function MemberDeals() {
     firstDeal,
     hasMultiple,
     allOnCooldown,
+    isFavorite,
+    onToggleFavorite,
     onClick,
   }: {
     group: BusinessGroup
     firstDeal: Deal
     hasMultiple: boolean
     allOnCooldown: boolean
+    isFavorite: boolean
+    onToggleFavorite: () => void
     onClick: () => void
   }) {
     return (
@@ -255,10 +293,41 @@ export default function MemberDeals() {
         }}>
           {group.category}
         </div>
+        <button
+          type="button"
+          aria-label={isFavorite ? `Remove ${group.business_name} from favorites` : `Add ${group.business_name} to favorites`}
+          onClick={(event) => {
+            event.stopPropagation()
+            onToggleFavorite()
+          }}
+          style={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+            border: 'none',
+            borderRadius: '999px',
+            background: isFavorite ? 'var(--green)' : 'rgba(15,15,15,0.78)',
+            color: '#ffffff',
+            padding: '7px 10px',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: '11px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+          }}
+        >
+          <span style={{ fontSize: '13px', lineHeight: 1 }}>{isFavorite ? '♥' : '♡'}</span>
+          {isFavorite ? 'Saved' : 'Save'}
+        </button>
         {/* Multi-deal badge — top right */}
         {hasMultiple && (
           <div style={{
-            position: 'absolute', top: '12px', right: '12px',
+            position: 'absolute', top: '50px', right: '12px',
             background: 'var(--green)', color: '#fff',
             padding: '4px 10px', borderRadius: '3px',
             fontFamily: "'Barlow Condensed', sans-serif",
@@ -304,6 +373,7 @@ export default function MemberDeals() {
     const firstDeal = group.deals[0]
     const hasMultiple = group.deals.length > 1
     const allOnCooldown = group.deals.every(d => cooldowns[d.id] !== undefined)
+    const isFavorite = favoriteBusinesses.includes(group.business_name)
 
     return (
       <div key={group.business_name} style={{ background: 'var(--bg-2)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)', opacity: allOnCooldown ? 0.6 : 1 }}>
@@ -312,6 +382,8 @@ export default function MemberDeals() {
           firstDeal={firstDeal}
           hasMultiple={hasMultiple}
           allOnCooldown={allOnCooldown}
+          isFavorite={isFavorite}
+          onToggleFavorite={() => toggleFavoriteBusiness(group.business_name)}
           onClick={() => !allOnCooldown && !hasMultiple && setSelectedDeal(firstDeal)}
         />
         <div style={{ padding: hasMultiple ? '0' : '14px 16px' }}>
@@ -590,7 +662,8 @@ export default function MemberDeals() {
                 color: filter === cat ? 'var(--bg)' : 'var(--ink-3)',
               }}
             >
-              {cat !== 'All' && <span style={{ marginRight: '4px' }}>{getCategoryMeta(cat).emoji}</span>}
+              {cat === 'Favorites' && <span style={{ marginRight: '4px' }}>♥</span>}
+              {cat !== 'All' && cat !== 'Favorites' && <span style={{ marginRight: '4px' }}>{getCategoryMeta(cat).emoji}</span>}
               {cat}
             </button>
           ))}

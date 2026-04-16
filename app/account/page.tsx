@@ -4,18 +4,36 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+type RedemptionHistory = {
+  id: string
+  business_name: string
+  deal_description: string
+  redeemed_at: string
+  validated_at: string | null
+}
+
 export default function AccountPage() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(true)
   const [cancelLoading, setCancelLoading] = useState(false)
   const [active, setActive] = useState(false)
+  const [redemptions, setRedemptions] = useState<RedemptionHistory[]>([])
   const router = useRouter()
 
   function formatPhone(phoneNumber: string) {
     const digits = phoneNumber.replace(/\D/g, '').slice(0, 10)
     if (digits.length !== 10) return phoneNumber || 'Not added'
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
+
+  function formatRedemptionDate(dateString: string) {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    })
   }
 
   useEffect(() => {
@@ -33,6 +51,17 @@ export default function AccountPage() {
 
       if (memberData?.phone) {
         setPhone(memberData.phone)
+      }
+
+      const { data: redemptionData } = await supabase
+        .from('redemptions')
+        .select('id, business_name, deal_description, redeemed_at, validated_at')
+        .eq('member_email', userEmail)
+        .order('redeemed_at', { ascending: false })
+        .limit(10)
+
+      if (redemptionData) {
+        setRedemptions(redemptionData as RedemptionHistory[])
       }
 
       const res = await fetch('/api/verify-subscription', {
@@ -148,6 +177,57 @@ export default function AccountPage() {
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="fade-up-3" style={{
+            background: 'var(--bg-2)', borderRadius: '10px',
+            padding: '24px', marginBottom: '16px',
+            border: '1px solid var(--border-2)',
+          }}>
+            <div style={{
+              fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px',
+              fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+              color: 'var(--ink-4)', marginBottom: '16px',
+            }}>Redemption history</div>
+
+            {redemptions.length === 0 ? (
+              <div style={{ background: 'var(--bg)', borderRadius: '8px', padding: '16px', border: '1px dashed var(--border-2)' }}>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)', marginBottom: '4px' }}>No redemptions yet.</div>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', lineHeight: 1.5 }}>
+                  Once you redeem a deal, your recent activity will show up here.
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {redemptions.map((redemption) => (
+                  <div key={redemption.id} style={{ background: 'var(--bg)', borderRadius: '8px', padding: '14px', border: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '6px' }}>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)', marginBottom: '2px' }}>{redemption.business_name}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--green-dk)', lineHeight: 1.35 }}>{redemption.deal_description}</div>
+                      </div>
+                      <span style={{
+                        flexShrink: 0,
+                        borderRadius: '999px',
+                        padding: '4px 8px',
+                        background: redemption.validated_at ? '#E8F8EF' : 'var(--bg-3)',
+                        color: redemption.validated_at ? 'var(--green-dk)' : 'var(--ink-4)',
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                      }}>
+                        {redemption.validated_at ? 'Confirmed' : 'Code generated'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-4)' }}>
+                      {formatRedemptionDate(redemption.redeemed_at)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="fade-up-3" style={{

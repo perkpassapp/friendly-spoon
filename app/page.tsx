@@ -19,6 +19,25 @@ const HOW = [
   { num: '03', title: 'Tap, show code, save',   body: 'A unique 6-letter code appears. Show it at the counter. Done in 10 seconds.' },
 ]
 
+const FAQS = [
+  {
+    question: 'How does PerkPass work?',
+    answer: 'Join for $3/month, browse member-only local deals, then show a short redemption code when you visit a participating business.',
+  },
+  {
+    question: 'Can I cancel anytime?',
+    answer: 'Yes. PerkPass is month-to-month, and billing is managed securely through Stripe.',
+  },
+  {
+    question: 'Are these real local businesses?',
+    answer: 'Yes. PerkPass is built around participating neighborhood businesses. Preview names on this page are shown for vibe while the member experience grows.',
+  },
+  {
+    question: 'How do I redeem a deal?',
+    answer: 'Tap a deal in the member app, confirm you are at the business, then show your unique code to staff.',
+  },
+]
+
 const CREATORS = [
   {
     handle: '@citybitesdaily',
@@ -56,6 +75,12 @@ export default function Home() {
         .preview-meta-card { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 10px; padding: 14px 14px 12px; }
         .preview-meta-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-4); margin-bottom: 6px; }
         .preview-meta-value { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+        .trust-strip { border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); background: var(--bg-2); padding: 18px 24px; }
+        .trust-strip-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+        .trust-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--ink-3); }
+        .trust-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+        .faq-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .faq-card { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 12px; padding: 20px; }
         .creator-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 14px; }
         .creator-card { background: var(--bg-2); border: 1.5px solid var(--border-2); border-radius: 14px; padding: 22px; }
         .creator-stack { display: grid; grid-template-columns: 1fr; gap: 14px; }
@@ -78,6 +103,8 @@ export default function Home() {
         .hero-shape-two { width: 110px; height: 110px; left: 34px; bottom: 50px; background: #f0bd57; }
         @media (max-width: 900px) {
           .preview-meta-grid { grid-template-columns: 1fr; }
+          .trust-strip-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .faq-grid { grid-template-columns: 1fr; }
           .creator-grid { grid-template-columns: 1fr; }
           .home-hero { padding: 48px 20px 42px; }
           .home-hero-inner { grid-template-columns: 1fr; gap: 36px; }
@@ -90,6 +117,7 @@ export default function Home() {
           .hero-actions .btn { width: 100%; justify-content: center; }
           .hero-proof { grid-template-columns: 1fr 1fr; }
           .hero-proof-card { padding: 12px; }
+          .trust-strip-inner { grid-template-columns: 1fr; }
           .hero-phone { border-radius: 26px; padding: 12px; }
           .hero-phone-screen { border-radius: 18px; }
         }
@@ -185,6 +213,17 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="trust-strip">
+        <div className="trust-strip-inner">
+          {['Secure checkout by Stripe', 'Cancel anytime', 'No hidden fees', 'Built for Philly locals'].map((item) => (
+            <div key={item} className="trust-item">
+              <span className="trust-dot" />
+              <span>{item}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Deals — card grid */}
       <section id="sneak-peek" style={{ padding: '64px 24px' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
@@ -271,6 +310,33 @@ export default function Home() {
             <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px' }}>
               Unlock all deals — $3/month
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section style={{ padding: '64px 24px', borderTop: '2px solid var(--ink)' }}>
+        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+          <div style={{ marginBottom: '28px' }}>
+            <div className="preview-kicker">Quick answers</div>
+            <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)', marginBottom: '10px' }}>
+              FAQ
+            </h2>
+            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '520px', lineHeight: 1.6 }}>
+              PerkPass is designed to be simple: join, browse, redeem, save.
+            </p>
+          </div>
+          <div className="faq-grid">
+            {FAQS.map((faq) => (
+              <div key={faq.question} className="faq-card">
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.1, marginBottom: '8px' }}>
+                  {faq.question}
+                </div>
+                <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.55 }}>
+                  {faq.answer}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

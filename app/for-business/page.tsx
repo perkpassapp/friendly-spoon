@@ -3,6 +3,15 @@ import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { CATEGORY_OPTIONS, normalizeCategory } from '@/lib/product'
 
+const OFFER_IDEAS = [
+  '$2 off any coffee before 11am',
+  '10% off lunch Monday-Friday',
+  'Free side with any entree',
+  '$10 off services over $50',
+  '15% off first class pack',
+  'Free topping with dessert order',
+]
+
 export default function ForBusiness() {
   const [form, setForm] = useState({
     business_name: '', category: '', address: '',
@@ -201,6 +210,34 @@ export default function ForBusiness() {
                   <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>Deal offer *</label>
                   <input type="text" value={form.deal_offer} onChange={e => update('deal_offer', e.target.value)} placeholder="e.g. 10% off any drink, $5 off first haircut" className="pp-input" />
                   <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '6px', fontWeight: 500 }}>Keep it short and specific. Members will see this line first.</p>
+                </div>
+                <div>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-4)', marginBottom: '8px' }}>Offer ideas</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {OFFER_IDEAS.map((idea) => (
+                      <button
+                        key={idea}
+                        type="button"
+                        onClick={() => update('deal_offer', idea)}
+                        style={{
+                          border: '1px solid var(--border-2)',
+                          borderRadius: '999px',
+                          background: form.deal_offer === idea ? 'var(--ink)' : 'var(--bg)',
+                          color: form.deal_offer === idea ? 'var(--bg)' : 'var(--ink-3)',
+                          padding: '7px 10px',
+                          cursor: 'pointer',
+                          fontFamily: "'Barlow Condensed', sans-serif",
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
+                        }}
+                      >
+                        {idea}
+                      </button>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: '12px', color: 'var(--ink-4)', marginTop: '8px', fontWeight: 500 }}>Tap one to use it, then customize it for your business.</p>
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '6px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)' }}>
