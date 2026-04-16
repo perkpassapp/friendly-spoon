@@ -196,6 +196,12 @@ export default function AdminDashboard() {
     setConfirmDelete(null); await loadData(); setDeletingDeal(null)
   }
 
+  async function archiveDeal(id: string) {
+    setDeletingDeal(id)
+    await supabase.from('deals').update({ active: false, admin_disabled: true, featured: false }).eq('id', id)
+    setConfirmDelete(null); await loadData(); setDeletingDeal(null)
+  }
+
   function startEdit(deal: Deal) {
     setEditingDeal(deal.id)
     setEditFields({ deal_description: deal.deal_description, deal_details: deal.deal_details || '', category: normalizeCategory(deal.category) })
@@ -639,7 +645,7 @@ export default function AdminDashboard() {
         {tab === 'deals' && (
           <div>
             <h2 className="display" style={{ fontSize: '40px', marginBottom: '4px' }}>Live Deals</h2>
-            <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '20px' }}>Deals you disable here cannot be re-activated by the business. Delete removes permanently. Featured is handled one deal per business.</p>
+            <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '20px' }}>Archive hides a deal but keeps it available for admin re-enable later. Delete forever removes it permanently. Featured is handled one deal per business.</p>
             <div style={{ background: 'var(--bg-2)', borderRadius: '12px', padding: '18px', border: '1px solid var(--border-2)', marginBottom: '20px' }}>
               <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
                 Add deal for existing business
@@ -696,8 +702,9 @@ export default function AdminDashboard() {
                 <div key={deal.id} style={{ padding: '16px 0', borderBottom: '1px solid var(--border)', opacity: deal.admin_disabled && editingDeal !== deal.id ? 0.5 : 1 }}>
                   {confirmDelete === deal.id ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--red-lt)', borderRadius: '8px', padding: '14px 16px' }}>
-                      <div style={{ flex: 1 }}><div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '15px', fontWeight: 800, color: 'var(--red)', textTransform: 'uppercase' }}>Delete {deal.business_name}?</div><div style={{ fontSize: '12px', color: 'var(--red)', fontWeight: 500, opacity: 0.8, marginTop: '2px' }}>This cannot be undone.</div></div>
-                      <button onClick={() => deleteDeal(deal.id)} disabled={deletingDeal === deal.id} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: 'var(--red)', color: '#fff', flexShrink: 0 }}>{deletingDeal === deal.id ? '...' : 'Confirm'}</button>
+                      <div style={{ flex: 1 }}><div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '15px', fontWeight: 800, color: 'var(--red)', textTransform: 'uppercase' }}>Archive or delete?</div><div style={{ fontSize: '12px', color: 'var(--red)', fontWeight: 500, opacity: 0.8, marginTop: '2px' }}>Archive keeps the deal in admin. Delete forever cannot be undone.</div></div>
+                      <button onClick={() => archiveDeal(deal.id)} disabled={deletingDeal === deal.id} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: 'var(--ink)', color: 'var(--bg)', flexShrink: 0 }}>{deletingDeal === deal.id ? '...' : 'Archive'}</button>
+                      <button onClick={() => deleteDeal(deal.id)} disabled={deletingDeal === deal.id} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: 'var(--red)', color: '#fff', flexShrink: 0 }}>{deletingDeal === deal.id ? '...' : 'Delete forever'}</button>
                       <button onClick={() => setConfirmDelete(null)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '8px 16px', borderRadius: '6px', border: '1px solid var(--red)', cursor: 'pointer', background: 'none', color: 'var(--red)', flexShrink: 0 }}>Cancel</button>
                     </div>
                   ) : editingDeal === deal.id ? (
@@ -752,7 +759,7 @@ export default function AdminDashboard() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
                           <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)' }}>{deal.business_name}</div>
-                          {deal.admin_disabled && <span style={{ ...LABEL, fontSize: '10px', background: 'var(--red-lt)', color: 'var(--red)', padding: '2px 8px', borderRadius: '3px' }}>Admin disabled</span>}
+                          {deal.admin_disabled && <span style={{ ...LABEL, fontSize: '10px', background: 'var(--red-lt)', color: 'var(--red)', padding: '2px 8px', borderRadius: '3px' }}>Archived</span>}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--green-dk)' }}>{deal.deal_description}</div>
@@ -782,7 +789,7 @@ export default function AdminDashboard() {
                         <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
                         <button onClick={() => adminToggleDeal(deal)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: deal.admin_disabled ? 'var(--green-dk)' : 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>{deal.admin_disabled ? 'Re-enable' : 'Disable'}</button>
                         <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
-                        <button onClick={() => { setConfirmDelete(deal.id); setEditingDeal(null) }} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>Delete</button>
+                        <button onClick={() => { setConfirmDelete(deal.id); setEditingDeal(null) }} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>Archive/Delete</button>
                       </div>
                     </div>
                   )}
