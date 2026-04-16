@@ -22,6 +22,8 @@ type Business = {
   id: string; business_name: string; category: string; address: string
   contact_email: string; active: boolean; admin_disabled: boolean
   deal_offer?: string | null; access_code?: string | null; photo_url?: string | null
+  source?: 'account' | 'approved_application'
+  application_id?: string
 }
 
 type Schedule = { days: number[]; start: string; end: string }
@@ -63,6 +65,8 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({ members: 0, redemptions: 0, deals: 0 })
   const [approving, setApproving] = useState<string | null>(null)
   const [togglingBiz, setTogglingBiz] = useState<string | null>(null)
+  const [deletingBusiness, setDeletingBusiness] = useState<string | null>(null)
+  const [confirmBusinessDelete, setConfirmBusinessDelete] = useState<string | null>(null)
   const [deletingDeal, setDeletingDeal] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [editingDeal, setEditingDeal] = useState<string | null>(null)
@@ -113,9 +117,36 @@ export default function AdminDashboard() {
       supabase.from('business_accounts').select('*').order('business_name'),
       supabase.from('members').select('id'),
     ])
-    setApplications((appsRes.data || []).map((app) => ({ ...app, category: normalizeCategory(app.category) })))
-    setDeals((dealsRes.data || []).map((deal) => ({ ...deal, category: normalizeCategory(deal.category) })))
-    setBusinesses((bizRes.data || []).map((biz) => ({ ...biz, category: normalizeCategory(biz.category) })))
+    const normalizedApplications = (appsRes.data || []).map((app) => ({ ...app, category: normalizeCategory(app.category) }))
+    const normalizedDeals = (dealsRes.data || []).map((deal) => ({ ...deal, category: normalizeCategory(deal.category) }))
+    const businessMap = new Map<string, Business>()
+    ;(bizRes.data || []).forEach((biz) => {
+      const normalizedBiz = { ...biz, category: normalizeCategory(biz.category), source: 'account' as const }
+      businessMap.set(normalizedBiz.business_name.trim().toLowerCase(), normalizedBiz)
+    })
+    normalizedApplications
+      .filter((app) => app.status === 'approved')
+      .forEach((app) => {
+        const key = app.business_name.trim().toLowerCase()
+        if (businessMap.has(key)) return
+        businessMap.set(key, {
+          id: `application:${app.id}`,
+          application_id: app.id,
+          source: 'approved_application',
+          business_name: app.business_name,
+          category: normalizeCategory(app.category),
+          address: app.address,
+          contact_email: app.contact_email,
+          active: true,
+          admin_disabled: false,
+          deal_offer: app.deal_offer,
+          access_code: null,
+          photo_url: null,
+        })
+      })
+    setApplications(normalizedApplications)
+    setDeals(normalizedDeals)
+    setBusinesses(Array.from(businessMap.values()).sort((a, b) => a.business_name.localeCompare(b.business_name)))
     setStats({ members: membersRes.data?.length || 0, redemptions: redemptionsRes.data?.length || 0, deals: dealsRes.data?.filter((d: Deal) => d.active && !d.admin_disabled).length || 0 })
   }
 
@@ -234,10 +265,40 @@ export default function AdminDashboard() {
   async function toggleBusiness(biz: Business) {
     setTogglingBiz(biz.id)
     const disabling = !biz.admin_disabled
-    await supabase.from('business_accounts').update({ admin_disabled: disabling }).eq('id', biz.id)
+    const accountId = await ensureBusinessAccount(biz)
+    await supabase.from('business_accounts').update({ admin_disabled: disabling }).eq('id', accountId)
     if (disabling) { await supabase.from('deals').update({ admin_disabled: true, active: false }).eq('business_name', biz.business_name) }
     else { await supabase.from('deals').update({ admin_disabled: false }).eq('business_name', biz.business_name) }
     await loadData(); setTogglingBiz(null)
+  }
+
+  async function ensureBusinessAccount(biz: Business): Promise<string> {
+    if (biz.source !== 'approved_application' && !biz.id.startsWith('application:')) return biz.id
+
+    const { data: existingAccount } = await supabase
+      .from('business_accounts')
+      .select('id')
+      .eq('business_name', biz.business_name)
+      .maybeSingle()
+
+    if (existingAccount?.id) return existingAccount.id
+
+    const { data: insertedAccount, error: insertError } = await supabase
+      .from('business_accounts')
+      .insert({
+        business_name: biz.business_name,
+        category: normalizeCategory(biz.category),
+        address: biz.address,
+        deal_offer: biz.deal_offer || null,
+        contact_email: biz.contact_email.toLowerCase().trim(),
+        active: true,
+        admin_disabled: false,
+      })
+      .select('id')
+      .single()
+
+    if (insertError) throw insertError
+    return insertedAccount.id
   }
 
   function startBusinessEdit(biz: Business) {
@@ -259,6 +320,7 @@ export default function AdminDashboard() {
 
     setSavingBusinessEdit(true)
     const oldBusinessName = biz.business_name
+    const accountId = await ensureBusinessAccount(biz)
     const newBusinessName = businessEditFields.business_name.trim()
     const normalizedCategory = normalizeCategory(businessEditFields.category)
     const normalizedEmail = businessEditFields.contact_email.trim().toLowerCase()
@@ -274,7 +336,7 @@ export default function AdminDashboard() {
       address: trimmedAddress,
       contact_email: normalizedEmail,
       deal_offer: trimmedDealOffer || null,
-    }).eq('id', biz.id)
+    }).eq('id', accountId)
 
     await supabase.from('deals').update({
       business_name: newBusinessName,
@@ -303,6 +365,19 @@ export default function AdminDashboard() {
     setEditingBusiness(null)
     setSavingBusinessEdit(false)
     await loadData()
+  }
+
+  async function deleteBusiness(biz: Business) {
+    setDeletingBusiness(biz.id)
+    const businessName = biz.business_name
+    await supabase.from('deals').delete().eq('business_name', businessName)
+    await supabase.from('business_accounts').delete().eq('business_name', businessName)
+    await supabase.from('business_applications').update({ status: 'rejected' }).eq('business_name', businessName)
+    if (dealBusinessFilter === businessName) setDealBusinessFilter('all')
+    setConfirmBusinessDelete(null)
+    setEditingBusiness(null)
+    await loadData()
+    setDeletingBusiness(null)
   }
 
   function updateDirectField(field: keyof DirectBusinessForm, value: string) {
@@ -720,7 +795,7 @@ export default function AdminDashboard() {
         {tab === 'businesses' && (
           <div>
             <h2 className="display" style={{ fontSize: '40px', marginBottom: '4px' }}>Businesses</h2>
-            <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '20px' }}>Disabling a business removes them from the platform and deactivates all their deals.</p>
+            <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '20px' }}>Approved businesses all live here. Disable hides a business and pauses its deals. Delete removes the business listing and its deals.</p>
             <div style={{ background: 'var(--bg-2)', borderRadius: '12px', padding: '18px', border: '1px solid var(--border-2)', marginBottom: '20px' }}>
               <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
                 Add business directly
@@ -778,7 +853,16 @@ export default function AdminDashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {businesses.map((biz: Business) => (
                   <div key={biz.id} style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '18px 20px', border: '1px solid ' + (biz.admin_disabled ? 'var(--red)' : 'var(--border-2)'), opacity: biz.admin_disabled && editingBusiness !== biz.id ? 0.6 : 1 }}>
-                    {editingBusiness === biz.id ? (
+                    {confirmBusinessDelete === biz.id ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--red-lt)', borderRadius: '8px', padding: '14px 16px' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '15px', fontWeight: 800, color: 'var(--red)', textTransform: 'uppercase' }}>Delete {biz.business_name}?</div>
+                          <div style={{ fontSize: '12px', color: 'var(--red)', fontWeight: 500, opacity: 0.8, marginTop: '2px' }}>This removes the business listing and deletes its deals. Redemption history is kept.</div>
+                        </div>
+                        <button onClick={() => deleteBusiness(biz)} disabled={deletingBusiness === biz.id} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: 'var(--red)', color: '#fff', flexShrink: 0 }}>{deletingBusiness === biz.id ? '...' : 'Confirm'}</button>
+                        <button onClick={() => setConfirmBusinessDelete(null)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '8px 16px', borderRadius: '6px', border: '1px solid var(--red)', cursor: 'pointer', background: 'none', color: 'var(--red)', flexShrink: 0 }}>Cancel</button>
+                      </div>
+                    ) : editingBusiness === biz.id ? (
                       <div>
                         <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '12px' }}>
                           Edit business
@@ -828,6 +912,7 @@ export default function AdminDashboard() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
                             <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)' }}>{biz.business_name}</div>
                             {biz.admin_disabled && <span style={{ ...LABEL, fontSize: '10px', background: 'var(--red-lt)', color: 'var(--red)', padding: '2px 8px', borderRadius: '3px' }}>Disabled</span>}
+                            {biz.source === 'approved_application' && <span style={{ ...LABEL, fontSize: '10px', background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '2px 8px', borderRadius: '3px' }}>Approved app</span>}
                           </div>
                           <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500 }}>{biz.category} Â· {biz.address}</div>
                           <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 500 }}>{biz.contact_email}</div>
@@ -843,7 +928,10 @@ export default function AdminDashboard() {
                           </button>
                           <span style={{ color: 'var(--border)', fontSize: '14px' }}>|</span>
                           <button onClick={() => toggleBusiness(biz)} disabled={togglingBiz === biz.id} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '10px 18px', borderRadius: '6px', border: 'none', cursor: 'pointer', flexShrink: 0, background: biz.admin_disabled ? 'var(--green-lt)' : 'var(--red-lt)', color: biz.admin_disabled ? 'var(--green-dk)' : 'var(--red)' }}>
-                            {togglingBiz === biz.id ? '...' : biz.admin_disabled ? 'Re-enable' : 'Remove'}
+                            {togglingBiz === biz.id ? '...' : biz.admin_disabled ? 'Re-enable' : 'Disable'}
+                          </button>
+                          <button onClick={() => { setConfirmBusinessDelete(biz.id); setEditingBusiness(null) }} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                            Delete
                           </button>
                         </div>
                       </div>
