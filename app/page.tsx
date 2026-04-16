@@ -61,31 +61,31 @@ export default function Home() {
         .creator-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 14px; }
         .creator-card { background: var(--bg-2); border: 1.5px solid var(--border-2); border-radius: 14px; padding: 22px; }
         .creator-stack { display: grid; grid-template-columns: 1fr; gap: 14px; }
-        .home-hero { position: relative; overflow: hidden; padding: 84px 24px 72px; border-bottom: 2px solid var(--ink); background: radial-gradient(circle at 82% 18%, rgba(126, 184, 111, 0.35), transparent 28%), linear-gradient(135deg, #f7f1df 0%, #fffaf0 48%, #e7f2df 100%); }
-        .home-hero-inner { max-width: 1160px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr); gap: 48px; align-items: center; }
-        .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: var(--bg); padding: 7px 12px; border-radius: 999px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 24px; }
-        .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 34px; }
+        .home-hero { position: relative; overflow: hidden; padding: 64px 24px 56px; border-bottom: 2px solid var(--ink); background: radial-gradient(circle at 82% 18%, rgba(126, 184, 111, 0.24), transparent 28%), linear-gradient(135deg, #f7f1df 0%, #fffaf0 48%, #e7f2df 100%); }
+        .home-hero-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.82fr); gap: 42px; align-items: center; }
+        .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: var(--bg); padding: 6px 11px; border-radius: 999px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 20px; }
+        .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
         .hero-proof { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; max-width: 620px; }
         .hero-proof-card { background: rgba(255,255,255,0.62); border: 1px solid rgba(15,15,15,0.12); border-radius: 12px; padding: 14px 14px 12px; backdrop-filter: blur(10px); }
-        .hero-visual { position: relative; min-height: 520px; }
-        .hero-phone { position: relative; z-index: 2; width: min(100%, 390px); margin-left: auto; background: var(--forest); border: 2px solid var(--ink); border-radius: 34px; padding: 18px; box-shadow: 14px 18px 0 rgba(15,15,15,0.12); }
-        .hero-phone-screen { background: #fffaf0; border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.18); }
-        .hero-phone-top { padding: 18px 18px 12px; background: var(--forest); color: #fff; }
-        .hero-mini-card { background: var(--bg); border: 1px solid var(--border-2); border-radius: 14px; padding: 14px; margin: 10px; }
-        .hero-float { position: absolute; z-index: 3; background: var(--bg); border: 2px solid var(--ink); border-radius: 16px; padding: 16px; box-shadow: 8px 10px 0 rgba(15,15,15,0.14); }
-        .hero-float-left { left: 0; top: 72px; max-width: 190px; }
-        .hero-float-right { right: 0; bottom: 42px; max-width: 210px; }
+        .hero-visual { position: relative; min-height: 430px; }
+        .hero-phone { position: relative; z-index: 2; width: min(100%, 330px); margin-left: auto; background: var(--forest); border: 2px solid var(--ink); border-radius: 30px; padding: 14px; box-shadow: 10px 12px 0 rgba(15,15,15,0.1); }
+        .hero-phone-screen { background: #fffaf0; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.18); }
+        .hero-phone-top { padding: 16px 16px 10px; background: var(--forest); color: #fff; }
+        .hero-mini-card { background: var(--bg); border: 1px solid var(--border-2); border-radius: 12px; padding: 12px; margin: 8px; }
+        .hero-float { position: absolute; z-index: 3; background: var(--bg); border: 2px solid var(--ink); border-radius: 14px; padding: 13px; box-shadow: 6px 8px 0 rgba(15,15,15,0.12); }
+        .hero-float-left { left: 4px; top: 64px; max-width: 170px; }
+        .hero-float-right { right: 0; bottom: 34px; max-width: 180px; }
         .hero-shape { position: absolute; z-index: 1; border-radius: 999px; background: var(--green); opacity: 0.25; }
-        .hero-shape-one { width: 220px; height: 220px; right: 18px; top: 18px; }
-        .hero-shape-two { width: 140px; height: 140px; left: 34px; bottom: 50px; background: #f0bd57; }
+        .hero-shape-one { width: 180px; height: 180px; right: 18px; top: 18px; }
+        .hero-shape-two { width: 110px; height: 110px; left: 34px; bottom: 50px; background: #f0bd57; }
         @media (max-width: 900px) {
           .preview-meta-grid { grid-template-columns: 1fr; }
           .creator-grid { grid-template-columns: 1fr; }
-          .home-hero { padding: 56px 20px 46px; }
+          .home-hero { padding: 48px 20px 42px; }
           .home-hero-inner { grid-template-columns: 1fr; gap: 36px; }
           .hero-proof { grid-template-columns: repeat(2, minmax(0, 1fr)); }
           .hero-visual { min-height: auto; }
-          .hero-phone { margin: 0 auto; box-shadow: 8px 10px 0 rgba(15,15,15,0.12); }
+          .hero-phone { margin: 0 auto; box-shadow: 8px 10px 0 rgba(15,15,15,0.1); }
           .hero-float { display: none; }
         }
         @media (max-width: 560px) {
@@ -117,20 +117,20 @@ export default function Home() {
             <div className="hero-badge fade-up">
               Philly deals, made easy
             </div>
-            <h1 className="display fade-up-2" style={{ fontSize: 'clamp(58px, 9.8vw, 118px)', marginBottom: '24px', lineHeight: 0.9, letterSpacing: '-0.04em' }}>
+            <h1 className="display fade-up-2" style={{ fontSize: 'clamp(44px, 7.4vw, 84px)', marginBottom: '20px', lineHeight: 0.94, letterSpacing: '-0.035em' }}>
               All your local favorites. Exclusive deals. One place.
             </h1>
-            <p className="fade-up-3" style={{ fontSize: 'clamp(18px, 2.2vw, 23px)', fontWeight: 600, color: 'var(--ink-2)', maxWidth: '620px', marginBottom: '16px', lineHeight: 1.45 }}>
+            <p className="fade-up-3" style={{ fontSize: 'clamp(17px, 2vw, 20px)', fontWeight: 600, color: 'var(--ink-2)', maxWidth: '560px', marginBottom: '14px', lineHeight: 1.45 }}>
               PerkPass brings restaurants, cafes, gyms, self-care spots, and neighborhood gems into one simple membership.
             </p>
-            <p className="fade-up-3" style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '560px', marginBottom: '34px', lineHeight: 1.65 }}>
+            <p className="fade-up-3" style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '520px', marginBottom: '30px', lineHeight: 1.65 }}>
               Open the app, pick a deal, show your code, and save. No clipping coupons. No awkward checkout math. Just local perks you actually want to use.
             </p>
             <div className="hero-actions fade-up-4">
-              <Link href="/signup" className="btn btn-primary" style={{ fontSize: '18px', padding: '16px 32px' }}>
+              <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px', padding: '15px 28px' }}>
                 Start saving for $3/mo
               </Link>
-              <Link href="#sneak-peek" className="btn btn-outline" style={{ fontSize: '18px', padding: '16px 32px' }}>
+              <Link href="#sneak-peek" className="btn btn-outline" style={{ fontSize: '17px', padding: '15px 28px' }}>
                 See sample deals
               </Link>
             </div>
@@ -154,13 +154,13 @@ export default function Home() {
             <div className="hero-shape hero-shape-two" />
             <div className="hero-float hero-float-left">
               <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 800, color: 'var(--green-dk)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>Today&apos;s move</div>
-              <div className="display" style={{ fontSize: '28px', lineHeight: 1 }}>Coffee, lunch, gym.</div>
+              <div className="display" style={{ fontSize: '23px', lineHeight: 1 }}>Coffee, lunch, gym.</div>
             </div>
             <div className="hero-phone">
               <div className="hero-phone-screen">
                 <div className="hero-phone-top">
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--green)', marginBottom: '8px' }}>Member deals</div>
-                  <div className="display" style={{ fontSize: '34px', color: '#fff', lineHeight: 1 }}>Good for today.</div>
+                  <div className="display" style={{ fontSize: '28px', color: '#fff', lineHeight: 1 }}>Good for today.</div>
                 </div>
                 {[
                   { tag: 'Cafe • Fishtown', title: '$2 off any espresso drink', status: 'Available now' },
