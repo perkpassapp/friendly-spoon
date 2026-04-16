@@ -156,9 +156,6 @@ export default function Home() {
               <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px', padding: '15px 28px' }}>
                 Start saving for $3/mo
               </Link>
-              <Link href="#sneak-peek" className="btn btn-outline" style={{ fontSize: '17px', padding: '15px 28px' }}>
-                See sample deals
-              </Link>
             </div>
             <div className="hero-proof">
               {[
@@ -232,11 +229,8 @@ export default function Home() {
             <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)' }}>
               Sneak peek
             </h2>
-            <p style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ink-2)', maxWidth: '560px', lineHeight: 1.45, paddingTop: '10px', marginBottom: '10px' }}>
-              What $3/month unlocks around Philly.
-            </p>
             <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '560px', lineHeight: 1.6 }}>
-              Preview of the member experience. Business names are shown for vibe, and deals rotate across cafes, restaurants, fitness, self-care, and more.
+              Preview the kind of member-only perks we are bringing to Philly as we continue onboarding local cafes, restaurants, fitness studios, self-care spots, and neighborhood favorites.
             </p>
           </div>
 
