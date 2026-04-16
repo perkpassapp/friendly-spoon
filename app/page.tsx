@@ -25,16 +25,16 @@ const FAQS = [
     answer: 'Join for $3/month, browse member-only local deals, then show a short redemption code when you visit a participating business.',
   },
   {
-    question: 'Can I cancel anytime?',
-    answer: 'Yes. PerkPass is month-to-month, and billing is managed securely through Stripe.',
+    question: 'Why is PerkPass only $3/month?',
+    answer: 'We keep PerkPass affordable on purpose. The goal is simple: help more people enjoy local deals, discover new favorites, and support neighborhood businesses without overthinking the cost.',
   },
   {
     question: 'Are these real local businesses?',
-    answer: 'Yes. PerkPass is built around participating neighborhood businesses. Preview names on this page are shown for vibe while the member experience grows.',
+    answer: 'Yes. PerkPass is built for real local businesses, and we are continuously onboarding more awesome restaurants, cafes, gyms, salons, shops, and neighborhood spots.',
   },
   {
     question: 'How do I redeem a deal?',
-    answer: 'Tap a deal in the member app, confirm you are at the business, then show your unique code to staff.',
+    answer: 'Tap a deal, confirm you are at the business, and show your code at checkout. Codes are time-sensitive, so you will have 2 minutes to show it, then that deal enters a short cooldown before you can redeem it again.',
   },
 ]
 
@@ -75,8 +75,8 @@ export default function Home() {
         .preview-meta-card { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 10px; padding: 14px 14px 12px; }
         .preview-meta-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-4); margin-bottom: 6px; }
         .preview-meta-value { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.3; }
-        .trust-strip { border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); background: var(--bg-2); padding: 18px 24px; }
-        .trust-strip-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+        .trust-strip { border-bottom: 2px solid var(--ink); background: var(--bg-2); padding: 18px 24px; }
+        .trust-strip-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
         .trust-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--ink-3); }
         .trust-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
         .faq-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
@@ -215,7 +215,7 @@ export default function Home() {
 
       <section className="trust-strip">
         <div className="trust-strip-inner">
-          {['Secure checkout by Stripe', 'Cancel anytime', 'No hidden fees', 'Built for Philly locals'].map((item) => (
+          {['Secure checkout by Stripe', 'No hidden fees', 'Built for Philly locals'].map((item) => (
             <div key={item} className="trust-item">
               <span className="trust-dot" />
               <span>{item}</span>

@@ -231,11 +231,11 @@ export default function AccountPage() {
           </div>
 
           <div className="fade-up-3" style={{
-            background: 'linear-gradient(135deg, #f6efdc 0%, #efe2bc 100%)',
+            background: 'linear-gradient(135deg, #f8efd8 0%, #e9f4df 100%)',
             borderRadius: '10px',
             padding: '22px 24px',
             marginBottom: '16px',
-            border: '1px solid #ddc885',
+            border: '1px solid #d4c385',
           }}>
             <div style={{
               display: 'inline-flex',
@@ -252,17 +252,46 @@ export default function AccountPage() {
               color: 'var(--ink)',
               marginBottom: '12px',
             }}>
-              Creator promo
+              Instagram creator offer
             </div>
             <h2 style={{ fontSize: '22px', lineHeight: 1.1, marginBottom: '10px', color: 'var(--ink)' }}>
-              Share PerkPass. Get a year free.
+              Tag us. We will DM your free-year code.
             </h2>
-            <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '14px', lineHeight: 1.55 }}>
-              If your Instagram account has over 2,000 followers and you post PerkPass while tagging <strong style={{ color: 'var(--ink)' }}>@GetPerkPass</strong>, you may qualify for 1 year of membership free.
+            <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '16px', lineHeight: 1.55 }}>
+              Have 2,000+ Instagram followers? Share PerkPass in a post or story, tag <strong style={{ color: 'var(--ink)' }}>@GetPerkPass</strong>, and we will review it. If it qualifies, we will DM you a code for 1 year of PerkPass free.
             </p>
+            <div style={{ display: 'grid', gap: '8px', marginBottom: '16px' }}>
+              {[
+                'Post or story about PerkPass',
+                'Tag @GetPerkPass so we can find it',
+                'We DM eligible creators a free-year code',
+              ].map((step, index) => (
+                <div key={step} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.46)', border: '1px solid rgba(15,15,15,0.08)', borderRadius: '8px', padding: '10px 12px' }}>
+                  <span style={{
+                    width: '22px',
+                    height: '22px',
+                    borderRadius: '50%',
+                    background: 'var(--ink)',
+                    color: '#ffffff',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: '12px',
+                    fontWeight: 800,
+                  }}>
+                    {index + 1}
+                  </span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink-3)', lineHeight: 1.35 }}>{step}</span>
+                </div>
+              ))}
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
               <a
-                href="mailto:hello@getperkpass.com?subject=PerkPass%20Creator%20Promo"
+                href="https://www.instagram.com/getperkpass/"
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -280,7 +309,7 @@ export default function AccountPage() {
                   letterSpacing: '0.04em',
                 }}
               >
-                Claim creator offer
+                Open Instagram
               </a>
               <Link
                 href="/terms"
@@ -295,6 +324,9 @@ export default function AccountPage() {
                 Terms apply
               </Link>
             </div>
+            <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ink-4)', marginTop: '12px', lineHeight: 1.45 }}>
+              Tip: keep your profile or story visible long enough for us to review it.
+            </p>
           </div>
 
           {/* Billing */}
