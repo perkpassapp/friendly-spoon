@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     template: '%s | PerkPass',
   },
   description:
-    "PerkPass is Philadelphia's local deals membership. Exclusive discounts at Philly restaurants, cafes, barbers, gyms, and nail salons — all for $3/month. Cancel anytime.",
+    "PerkPass is Philadelphia's local perks membership. Discover member-only deals at Philly restaurants, cafes, gyms, salons, shops, and neighborhood favorites for $3/month.",
   keywords: [
     'Philadelphia deals',
     'Philly discounts',
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     siteName: 'PerkPass',
     title: 'PerkPass — Philadelphia Local Deals Membership',
     description:
-      'Exclusive deals at Philly restaurants, cafes, barbers, gyms, and nail salons. $3/month. Cancel anytime.',
+      'Philadelphia perks at local restaurants, cafes, gyms, salons, shops, and neighborhood favorites. $3/month. Built for Philly locals.',
     images: [
       {
         url: '/og-image.png',
@@ -83,7 +83,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'PerkPass — Philadelphia Local Deals Membership',
     description:
-      'Exclusive deals at Philly restaurants, cafes, barbers, gyms, and nail salons. $3/month.',
+      'Philadelphia perks at local restaurants, cafes, gyms, salons, shops, and neighborhood favorites. $3/month.',
     images: ['/og-image.png'],
   },
   alternates: {
@@ -119,7 +119,7 @@ export default function RootLayout({
               '@type': 'Service',
               name: 'PerkPass',
               description:
-                "Philadelphia's local deals membership. Exclusive discounts at restaurants, cafes, barbers, gyms, and nail salons for $3/month.",
+                "Philadelphia's local perks membership. Member-only deals at restaurants, cafes, gyms, salons, shops, and neighborhood favorites for $3/month.",
               url: 'https://getperkpass.com',
               areaServed: {
                 '@type': 'City',
@@ -159,7 +159,7 @@ export default function RootLayout({
                   Perk<span>Pass</span>
                 </Link>
                 <p className="site-footer-blurb" style={{ fontSize: '15px', lineHeight: 1.65, color: 'rgba(255,255,255,0.68)', maxWidth: '320px', marginBottom: '14px' }}>
-                  Philadelphia&apos;s local deals membership with exclusive savings at neighborhood restaurants, cafes, gyms, barbers, nail salons, and more.
+                  A Philly-born local perks membership helping neighbors discover and save at restaurants, cafes, gyms, salons, shops, and everyday neighborhood favorites.
                 </p>
                 <a
                   href="mailto:hello@getperkpass.com"
@@ -196,7 +196,7 @@ export default function RootLayout({
 
             <div className="site-footer-meta" style={{ borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
               <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', fontWeight: 500 }}>
-                2026 PerkPass. Built for local Philly discovery.
+                2026 PerkPass. Philly-born and built for local discovery.
               </p>
               <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', fontWeight: 500 }}>
                 Secure checkout powered by Stripe.

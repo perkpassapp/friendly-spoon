@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Our Offerings | PerkPass',
-  description: 'See what members and businesses get with PerkPass.',
+  description: 'See how PerkPass helps Philly members discover local perks and helps Philadelphia businesses bring in repeat customers.',
 }
 
 export default function OfferingsPage() {
@@ -15,14 +15,14 @@ export default function OfferingsPage() {
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '48px 24px 80px' }}>
         <h1 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)', marginBottom: '12px' }}>Our Offerings</h1>
         <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.65, marginBottom: '32px' }}>
-          PerkPass is designed for both members looking to save locally and businesses looking to bring in repeat customers.
+          PerkPass is designed for Philly members looking to save locally and neighborhood businesses looking to bring in repeat customers.
         </p>
 
         <div style={{ display: 'grid', gap: '16px' }}>
           {[
             {
               title: 'Member Access',
-              body: 'Unlimited access to participating local deals in Philadelphia through one simple monthly membership.',
+              body: 'Unlimited access to participating Philadelphia perks through one simple monthly membership.',
             },
             {
               title: 'Fast Redemption',
@@ -34,7 +34,7 @@ export default function OfferingsPage() {
             },
             {
               title: 'Local Discovery',
-              body: 'Members can explore categories like food, fitness, grooming, and wellness across the city.',
+              body: 'Members can explore food, fitness, grooming, wellness, self-care, and neighborhood favorites across Philly.',
             },
           ].map((item) => (
             <section key={item.title} style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', borderRadius: '10px', padding: '20px' }}>

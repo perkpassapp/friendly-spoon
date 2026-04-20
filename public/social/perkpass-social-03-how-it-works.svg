@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-labelledby="title desc">
+  <title id="title">PerkPass how it works social graphic</title>
+  <desc id="desc">Square social post explaining PerkPass in three steps.</desc>
+  <rect width="1080" height="1080" fill="#e9e2cf"/>
+  <rect x="54" y="54" width="972" height="972" rx="42" fill="#f7f3ec" stroke="#1c1c1a" stroke-width="5"/>
+  <text x="98" y="132" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="48" font-weight="900" letter-spacing="1" fill="#1c1c1a">Perk<tspan fill="#5fa061">Pass</tspan></text>
+  <text x="98" y="260" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="110" font-weight="900" letter-spacing="-2.5" fill="#1c1c1a">HOW IT WORKS</text>
+  <g transform="translate(98 330)">
+    <rect width="884" height="146" rx="22" fill="#e9e2cf" stroke="#000000" stroke-opacity="0.12" stroke-width="2"/>
+    <circle cx="74" cy="73" r="42" fill="#1a2e1a"/>
+    <text x="52" y="86" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="40" font-weight="900" fill="#5fa061">1</text>
+    <text x="142" y="66" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="42" font-weight="900" letter-spacing="0.5" fill="#1c1c1a">JOIN FOR $3/MO</text>
+    <text x="142" y="106" font-family="Barlow, Arial, sans-serif" font-size="27" font-weight="700" fill="#5a5850">One simple membership for local Philly perks.</text>
+  </g>
+  <g transform="translate(98 516)">
+    <rect width="884" height="146" rx="22" fill="#e9e2cf" stroke="#000000" stroke-opacity="0.12" stroke-width="2"/>
+    <circle cx="74" cy="73" r="42" fill="#1a2e1a"/>
+    <text x="52" y="86" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="40" font-weight="900" fill="#5fa061">2</text>
+    <text x="142" y="66" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="42" font-weight="900" letter-spacing="0.5" fill="#1c1c1a">PICK A LOCAL DEAL</text>
+    <text x="142" y="106" font-family="Barlow, Arial, sans-serif" font-size="27" font-weight="700" fill="#5a5850">Browse cafes, food, fitness, self-care, and more.</text>
+  </g>
+  <g transform="translate(98 702)">
+    <rect width="884" height="146" rx="22" fill="#1a2e1a"/>
+    <circle cx="74" cy="73" r="42" fill="#5fa061"/>
+    <text x="52" y="86" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="40" font-weight="900" fill="#ffffff">3</text>
+    <text x="142" y="66" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="42" font-weight="900" letter-spacing="0.5" fill="#ffffff">SHOW YOUR CODE</text>
+    <text x="142" y="106" font-family="Barlow, Arial, sans-serif" font-size="27" font-weight="700" fill="rgba(255,255,255,0.72)">Tap, redeem, save. Simple.</text>
+  </g>
+  <text x="98" y="944" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="40" font-weight="900" letter-spacing="1.5" fill="#3d7a3f">YOUR LOCAL PASS TO PHILLY PERKS</text>
+</svg>

@@ -4,7 +4,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Influencer Creator Opportunity | PerkPass',
   description:
-    'Collaborate with PerkPass as a local creator and help spotlight great businesses doing good in the community.',
+    'Collaborate with PerkPass as a Philly creator and help spotlight great local businesses doing good in the community.',
 }
 
 const PERKS = [
@@ -16,8 +16,8 @@ const PERKS = [
 ]
 
 const FIT = [
-  'You genuinely love spotlighting local restaurants, cafes, and neighborhood gems.',
-  'You care about helping small businesses and the local community win.',
+  'You genuinely love spotlighting Philly restaurants, cafes, shops, and neighborhood gems.',
+  'You care about helping Philadelphia small businesses and the local community win.',
   'Your content feels trustworthy, useful, and community-first.',
   'You are excited to build with an early local brand and grow together.',
 ]
@@ -57,7 +57,7 @@ export default function InfluencerCreatorOpportunityPage() {
         </h1>
 
         <p style={{ fontSize: '18px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '640px', lineHeight: 1.65, marginBottom: '28px' }}>
-          We want to partner with creators who shine a light on great local businesses and do great things for the community. If that sounds like you, let&apos;s chat about a PerkPass collab.
+          We want to partner with Philly creators who shine a light on great local businesses and do great things for the community. If that sounds like you, let&apos;s chat about a PerkPass collab.
         </p>
 
         <div style={{ background: 'var(--forest)', color: '#ffffff', borderRadius: '14px', padding: '28px 24px', border: '2px solid var(--green)', marginBottom: '28px' }}>

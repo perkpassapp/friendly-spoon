@@ -22,7 +22,7 @@ const HOW = [
 const FAQS = [
   {
     question: 'How does PerkPass work?',
-    answer: 'Join for $3/month, browse member-only local deals, then show a short redemption code when you visit a participating business.',
+    answer: 'Join for $3/month, browse member-only Philly perks, then show a short redemption code when you visit a participating local business.',
   },
   {
     question: 'Why is PerkPass only $3/month?',
@@ -30,7 +30,7 @@ const FAQS = [
   },
   {
     question: 'Are these real local businesses?',
-    answer: 'Yes. PerkPass is built for real local businesses, and we are continuously onboarding more awesome restaurants, cafes, gyms, salons, shops, and neighborhood spots.',
+    answer: 'Yes. PerkPass is built around real Philadelphia businesses, and we are continuously onboarding more awesome restaurants, cafes, gyms, salons, shops, and neighborhood spots.',
   },
   {
     question: 'How do I redeem a deal?',
@@ -141,16 +141,16 @@ export default function Home() {
         <div className="home-hero-inner">
           <div>
             <div className="hero-badge fade-up">
-              Philly deals, made easy
+              Philly perks, made easy
             </div>
             <h1 className="display fade-up-2" style={{ fontSize: 'clamp(44px, 7.4vw, 84px)', marginBottom: '20px', lineHeight: 0.94, letterSpacing: '-0.035em' }}>
-              All your local favorites. Exclusive deals. One place.
+              Your Philly favorites. Member perks. One place.
             </h1>
             <p className="fade-up-3" style={{ fontSize: 'clamp(17px, 2vw, 20px)', fontWeight: 600, color: 'var(--ink-2)', maxWidth: '560px', marginBottom: '14px', lineHeight: 1.45 }}>
-              PerkPass brings restaurants, cafes, gyms, self-care spots, and neighborhood gems into one simple membership.
+              PerkPass brings Philly restaurants, cafes, gyms, self-care spots, and neighborhood gems into one simple local membership.
             </p>
             <p className="fade-up-3" style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '520px', marginBottom: '30px', lineHeight: 1.65 }}>
-              Open the app, pick a deal, show your code, and save. No clipping coupons. No awkward checkout math. Just local perks you actually want to use.
+              Open the app, pick a perk, show your code, and save. No clipping coupons. No awkward checkout math. Just Philly perks you actually want to use.
             </p>
             <div className="hero-actions fade-up-4">
               <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px', padding: '15px 28px' }}>
@@ -161,7 +161,7 @@ export default function Home() {
               {[
                 { n: '$3', l: 'Monthly access' },
                 { n: 'Fast', l: 'Code redemption' },
-                { n: 'Local', l: 'Philly focused' },
+                { n: 'Philly', l: 'Born locally' },
                 { n: 'Fresh', l: 'Deals rotate' },
               ].map(s => (
                 <div key={s.l} className="hero-proof-card">
@@ -212,7 +212,7 @@ export default function Home() {
 
       <section className="trust-strip">
         <div className="trust-strip-inner">
-          {['Secure checkout by Stripe', 'No hidden fees', 'Built for Philly locals'].map((item) => (
+          {['Secure checkout by Stripe', 'No hidden fees', 'Philly-born and local-first'].map((item) => (
             <div key={item} className="trust-item">
               <span className="trust-dot" />
               <span>{item}</span>
@@ -230,7 +230,7 @@ export default function Home() {
               Sneak peek
             </h2>
             <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '560px', lineHeight: 1.6 }}>
-              Preview the kind of member-only perks we are bringing to Philly as we continue onboarding local cafes, restaurants, fitness studios, self-care spots, and neighborhood favorites.
+              Preview the kind of member-only perks we are bringing to Philly as we continue onboarding neighborhood cafes, restaurants, fitness studios, self-care spots, shops, and local favorites.
             </p>
           </div>
 
@@ -298,11 +298,11 @@ export default function Home() {
             </Link>
           </div>
           <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-4)', marginBottom: '20px', lineHeight: 1.6 }}>
-            And this is just a preview. More deals, neighborhoods, categories, and local favorites are waiting inside the membership.
+            And this is just a preview. More perks, neighborhoods, categories, and Philly favorites are waiting inside the membership.
           </p>
           <div>
             <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px' }}>
-              Unlock all deals — $3/month
+              Unlock Philly perks — $3/month
             </Link>
           </div>
         </div>

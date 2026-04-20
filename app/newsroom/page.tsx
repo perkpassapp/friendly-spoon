@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Newsroom | PerkPass',
-  description: 'Company updates and press information for PerkPass.',
+  description: 'Company updates and press information from PerkPass, a Philly-born local perks membership.',
 }
 
 export default function NewsroomPage() {
@@ -15,7 +15,7 @@ export default function NewsroomPage() {
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '48px 24px 80px' }}>
         <h1 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)', marginBottom: '12px' }}>Newsroom</h1>
         <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.65, marginBottom: '32px' }}>
-          Find company updates, launch announcements, and press contact information here.
+          Find updates from PerkPass as we grow our Philly local perks network, launch new features, and spotlight neighborhood businesses.
         </p>
 
         <section style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', borderRadius: '10px', padding: '24px', marginBottom: '20px' }}>
@@ -26,7 +26,7 @@ export default function NewsroomPage() {
             PerkPass continues expanding local deals in Philadelphia
           </h2>
           <p style={{ fontSize: '15px', lineHeight: 1.65, color: 'var(--ink-3)' }}>
-            We are continuing to grow our network of local businesses and improve the member experience for discovering and redeeming deals around the city.
+            We are continuing to grow our Philadelphia business network and improve the member experience for discovering and redeeming perks around the city.
           </p>
         </section>
 

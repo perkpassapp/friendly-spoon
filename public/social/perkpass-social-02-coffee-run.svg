@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-labelledby="title desc">
+  <title id="title">PerkPass coffee run social graphic</title>
+  <desc id="desc">Square social post for a coffee-themed PerkPass promotion.</desc>
+  <rect width="1080" height="1080" fill="#1a2e1a"/>
+  <path d="M0 816 C210 740 345 885 560 808 C760 737 870 629 1080 700 L1080 1080 L0 1080 Z" fill="#e9e2cf"/>
+  <circle cx="860" cy="240" r="148" fill="#5fa061" opacity="0.28"/>
+  <text x="82" y="124" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="48" font-weight="900" letter-spacing="1" fill="#ffffff">Perk<tspan fill="#5fa061">Pass</tspan></text>
+  <text x="82" y="274" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="138" font-weight="900" letter-spacing="-3" fill="#ffffff">COFFEE</text>
+  <text x="82" y="404" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="138" font-weight="900" letter-spacing="-3" fill="#5fa061">RUN?</text>
+  <text x="82" y="520" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="98" font-weight="900" letter-spacing="-2" fill="#ffffff">MAKE IT A PERK.</text>
+  <rect x="82" y="586" width="480" height="104" rx="20" fill="#f7f3ec"/>
+  <text x="112" y="628" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="25" font-weight="900" letter-spacing="2" fill="#9a9890">MEMBER-ONLY PERKS</text>
+  <text x="112" y="668" font-family="Barlow, Arial, sans-serif" font-size="31" font-weight="800" fill="#3d7a3f">Cafes, lunch spots, and local favorites</text>
+  <g transform="translate(706 570)">
+    <rect x="0" y="86" width="244" height="172" rx="38" fill="#f7f3ec" stroke="#1c1c1a" stroke-width="5"/>
+    <rect x="56" y="38" width="132" height="74" rx="12" fill="#f7f3ec" stroke="#1c1c1a" stroke-width="5"/>
+    <path d="M244 130 C322 130 322 220 244 220" fill="none" stroke="#f7f3ec" stroke-width="36" stroke-linecap="round"/>
+    <path d="M244 130 C322 130 322 220 244 220" fill="none" stroke="#1c1c1a" stroke-width="5" stroke-linecap="round"/>
+    <path d="M78 0 C54 28 94 48 70 76" fill="none" stroke="#5fa061" stroke-width="12" stroke-linecap="round"/>
+    <path d="M138 0 C114 28 154 48 130 76" fill="none" stroke="#5fa061" stroke-width="12" stroke-linecap="round"/>
+  </g>
+  <text x="82" y="920" font-family="Barlow, Arial, sans-serif" font-size="34" font-weight="700" fill="#3a3830">Tiny membership. Real local savings.</text>
+  <text x="82" y="974" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="34" font-weight="900" letter-spacing="1.6" fill="#1c1c1a">JOIN AT GETPERKPASS.COM</text>
+</svg>

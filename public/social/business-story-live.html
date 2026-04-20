@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PerkPass Business Story Template</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #e9e2cf;
+      --bg-2: #f7f3ec;
+      --ink: #1c1c1a;
+      --ink-3: #5a5850;
+      --green: #5fa061;
+      --green-dk: #3d7a3f;
+      --forest: #1a2e1a;
+      --gold: #f0bd57;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #111;
+      display: grid;
+      place-items: center;
+      font-family: "Barlow", Arial, sans-serif;
+    }
+
+    .story {
+      position: relative;
+      width: min(100vw, 56.25vh);
+      aspect-ratio: 9 / 16;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 82% 12%, rgba(95, 160, 97, 0.28) 0 15%, transparent 16%),
+        radial-gradient(circle at 10% 92%, rgba(240, 189, 87, 0.42) 0 17%, transparent 18%),
+        var(--bg);
+      color: var(--ink);
+      isolation: isolate;
+    }
+
+    .story::before {
+      content: "";
+      position: absolute;
+      inset: 46px;
+      border: 5px solid var(--ink);
+      border-radius: 46px;
+      background: rgba(247, 243, 236, 0.82);
+      z-index: -1;
+      animation: cardIn 900ms cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    .grain {
+      position: absolute;
+      inset: 0;
+      opacity: 0.16;
+      background-image:
+        linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px),
+        linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px);
+      background-size: 38px 38px;
+      mix-blend-mode: multiply;
+    }
+
+    .logo {
+      position: absolute;
+      top: 92px;
+      left: 90px;
+      font-family: "Barlow Condensed", Arial Narrow, sans-serif;
+      font-size: 54px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      animation: fadeUp 700ms ease 200ms both;
+    }
+
+    .logo span { color: var(--green); }
+
+    .pill {
+      position: absolute;
+      top: 178px;
+      left: 90px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      background: var(--forest);
+      color: var(--green);
+      font-family: "Barlow Condensed", Arial Narrow, sans-serif;
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      animation: fadeUp 700ms ease 420ms both;
+    }
+
+    .headline {
+      position: absolute;
+      left: 88px;
+      right: 80px;
+      top: 302px;
+      font-family: "Barlow Condensed", Arial Narrow, sans-serif;
+      font-size: clamp(78px, 8.7vw, 108px);
+      line-height: 0.89;
+      font-weight: 900;
+      letter-spacing: -0.035em;
+      text-transform: uppercase;
+      animation: revealText 900ms cubic-bezier(.2,.8,.2,1) 760ms both;
+    }
+
+    .headline .green {
+      display: block;
+      color: var(--green);
+    }
+
+    .business-card {
+      position: absolute;
+      left: 88px;
+      right: 88px;
+      top: 730px;
+      min-height: 236px;
+      padding: 30px 30px 28px;
+      border: 3px solid rgba(28, 28, 26, 0.18);
+      border-radius: 28px;
+      background: #fffaf0;
+      box-shadow: 14px 18px 0 rgba(28, 28, 26, 0.09);
+      animation: popIn 800ms cubic-bezier(.2,.9,.2,1.2) 1350ms both;
+    }
+
+    .label {
+      margin-bottom: 14px;
+      font-family: "Barlow Condensed", Arial Narrow, sans-serif;
+      font-size: 29px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: var(--ink-3);
+      text-transform: uppercase;
+    }
+
+    .business {
+      margin-bottom: 18px;
+      font-family: "Barlow Condensed", Arial Narrow, sans-serif;
+      font-size: 62px;
+      line-height: 0.92;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .deal {
+      color: var(--green-dk);
+      font-size: 36px;
+      line-height: 1.1;
+      font-weight: 800;
+    }
+
+    .steps {
+      position: absolute;
+      left: 88px;
+      right: 88px;
+      bottom: 236px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .step {
+      min-height: 132px;
+      padding: 18px 14px;
+      border-radius: 22px;
+      background: var(--forest);
+      color: #fff;
+      animation: fadeUp 600ms ease both;
+    }
+
+    .step:nth-child(1) { animation-delay: 1900ms; }
+    .step:nth-child(2) { animation-delay: 2100ms; }
+    .step:nth-child(3) { animation-delay: 2300ms; }
+
+    .step-num {
+      margin-bottom: 10px;
+      color: var(--green);
+      font-family: "Barlow Condensed", Arial Narrow, sans-serif;
+      font-size: 25px;
+      line-height: 1;
+      font-weight: 900;
+    }
+
+    .step-copy {
+      font-family: "Barlow Condensed", Arial Narrow, sans-serif;
+      font-size: 30px;
+      line-height: 0.95;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .footer {
+      position: absolute;
+      left: 88px;
+      right: 88px;
+      bottom: 92px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      animation: fadeUp 700ms ease 2700ms both;
+    }
+
+    .handle {
+      font-family: "Barlow Condensed", Arial Narrow, sans-serif;
+      font-size: 40px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: var(--green-dk);
+      text-transform: uppercase;
+    }
+
+    .cta {
+      padding: 18px 22px;
+      border-radius: 18px;
+      background: var(--green);
+      color: #fff;
+      font-family: "Barlow Condensed", Arial Narrow, sans-serif;
+      font-size: 31px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 8px 10px 0 rgba(28, 28, 26, 0.12);
+    }
+
+    .spark {
+      position: absolute;
+      width: 84px;
+      height: 84px;
+      border-radius: 999px;
+      border: 5px solid var(--green);
+      opacity: 0;
+      animation: spark 1400ms ease-in-out infinite;
+    }
+
+    .spark.one { right: 112px; top: 210px; animation-delay: 1200ms; }
+    .spark.two { left: 150px; bottom: 420px; width: 52px; height: 52px; animation-delay: 1850ms; }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(32px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes revealText {
+      from { opacity: 0; clip-path: inset(0 100% 0 0); transform: translateY(20px); }
+      to { opacity: 1; clip-path: inset(0 0 0 0); transform: translateY(0); }
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(44px) rotate(-2deg) scale(0.92); }
+      to { opacity: 1; transform: translateY(0) rotate(-1deg) scale(1); }
+    }
+
+    @keyframes spark {
+      0% { opacity: 0; transform: scale(0.4); }
+      28% { opacity: 0.55; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.55); }
+    }
+  </style>
+</head>
+<body>
+  <main class="story" aria-label="Instagram Story animation for businesses live on PerkPass">
+    <div class="grain"></div>
+    <div class="spark one"></div>
+    <div class="spark two"></div>
+
+    <div class="logo">Perk<span>Pass</span></div>
+    <div class="pill">Now live</div>
+
+    <h1 class="headline">
+      We are live on
+      <span class="green">PerkPass</span>
+    </h1>
+
+    <section class="business-card">
+      <div class="label">Member perk at</div>
+      <div class="business" id="business">Your Business</div>
+      <div class="deal" id="deal">Exclusive deal now available inside PerkPass.</div>
+    </section>
+
+    <section class="steps" aria-label="How customers can redeem">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-copy">Open PerkPass</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-copy">Find our deal</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-copy">Show code</div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="handle">@GetPerkPass</div>
+      <div class="cta">Join + save</div>
+    </footer>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search)
+    const business = params.get('business')
+    const deal = params.get('deal')
+
+    if (business) document.getElementById('business').textContent = business
+    if (deal) document.getElementById('deal').textContent = deal
+  </script>
+</body>
+</html>

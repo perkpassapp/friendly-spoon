@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-labelledby="title desc">
+  <title id="title">PerkPass business partner social graphic</title>
+  <desc id="desc">Square social post inviting local businesses to join PerkPass.</desc>
+  <rect width="1080" height="1080" fill="#f7f3ec"/>
+  <rect x="0" y="0" width="1080" height="358" fill="#1a2e1a"/>
+  <text x="78" y="116" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="48" font-weight="900" letter-spacing="1" fill="#ffffff">Perk<tspan fill="#5fa061">Pass</tspan></text>
+  <text x="78" y="248" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="96" font-weight="900" letter-spacing="-2" fill="#ffffff">LOCAL BUSINESS?</text>
+  <text x="78" y="322" font-family="Barlow, Arial, sans-serif" font-size="32" font-weight="700" fill="rgba(255,255,255,0.76)">Get discovered by members already looking for where to go next.</text>
+  <g transform="translate(78 430)">
+    <rect width="924" height="138" rx="24" fill="#e9e2cf" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+    <text x="34" y="58" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="48" font-weight="900" fill="#5fa061">$0</text>
+    <text x="150" y="58" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="42" font-weight="900" fill="#1c1c1a">TO LIST</text>
+    <text x="150" y="100" font-family="Barlow, Arial, sans-serif" font-size="27" font-weight="700" fill="#5a5850">No setup fee. No commission on redemptions.</text>
+  </g>
+  <g transform="translate(78 604)">
+    <rect width="924" height="138" rx="24" fill="#e9e2cf" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+    <text x="34" y="58" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="48" font-weight="900" fill="#5fa061">2</text>
+    <text x="90" y="58" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="42" font-weight="900" fill="#1c1c1a">MINUTES TO APPLY</text>
+    <text x="90" y="100" font-family="Barlow, Arial, sans-serif" font-size="27" font-weight="700" fill="#5a5850">Add your business info and your first deal.</text>
+  </g>
+  <g transform="translate(78 778)">
+    <rect width="924" height="138" rx="24" fill="#e9e2cf" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+    <text x="34" y="58" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="48" font-weight="900" fill="#5fa061">100%</text>
+    <text x="168" y="58" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="42" font-weight="900" fill="#1c1c1a">YOUR PROFITS</text>
+    <text x="168" y="100" font-family="Barlow, Arial, sans-serif" font-size="27" font-weight="700" fill="#5a5850">You keep the sale. We help bring people in.</text>
+  </g>
+  <text x="78" y="995" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-size="34" font-weight="900" letter-spacing="1.6" fill="#1c1c1a">APPLY AT GETPERKPASS.COM/FOR-BUSINESS</text>
+</svg>
