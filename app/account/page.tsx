@@ -255,16 +255,16 @@ export default function AccountPage() {
               Instagram creator offer
             </div>
             <h2 style={{ fontSize: '22px', lineHeight: 1.1, marginBottom: '10px', color: 'var(--ink)' }}>
-              Tag us. We will DM your free-year code.
+              Tag us. We will DM your 3-month code.
             </h2>
             <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '16px', lineHeight: 1.55 }}>
-              Have 2,000+ Instagram followers? Share PerkPass in a post or story, tag <strong style={{ color: 'var(--ink)' }}>@GetPerkPass</strong>, and we will review it. If it qualifies, we will DM you a code for 1 year of PerkPass free.
+              Have 2,000+ Instagram followers? Share PerkPass in a post or story, tag <strong style={{ color: 'var(--ink)' }}>@GetPerkPass</strong>, and we will review it. If it qualifies, we will DM you a code for 3 months of PerkPass free.
             </p>
             <div style={{ display: 'grid', gap: '8px', marginBottom: '16px' }}>
               {[
                 'Post or story about PerkPass',
                 'Tag @GetPerkPass so we can find it',
-                'We DM eligible creators a free-year code',
+                'We DM eligible creators a 3-month code',
               ].map((step, index) => (
                 <div key={step} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.46)', border: '1px solid rgba(15,15,15,0.08)', borderRadius: '8px', padding: '10px 12px' }}>
                   <span style={{
