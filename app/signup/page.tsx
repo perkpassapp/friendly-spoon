@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 type Step = 'method' | 'phone-only' | 'manual' | 'pay' | 'active-member'
+type BillingInterval = 'monthly' | 'annual'
 type MemberStatus = {
   exists: boolean
   active: boolean
@@ -34,6 +35,7 @@ export default function SignupPage() {
   const [googleLoading, setGoogleLoading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly')
   const router = useRouter()
 
   async function getMemberStatus(nextEmail: string): Promise<MemberStatus> {
@@ -182,6 +184,7 @@ export default function SignupPage() {
           email,
           name,
           phone: phone.replace(/\D/g, ''),
+          billingInterval,
         })
       })
       const data = await res.json()
@@ -492,19 +495,67 @@ export default function SignupPage() {
                   Almost there.
                 </h1>
                 <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink-3)' }}>
-                  One tap to unlock every Philly deal.
+                  Choose monthly or save with annual access.
                 </p>
               </div>
 
-              {/* Pricing card */}
-              <div className="fade-up-2" style={{ background: 'var(--forest)', borderRadius: '10px', padding: '20px 24px', marginBottom: '20px', border: '2px solid var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--green)', marginBottom: '4px' }}>All Access</div>
-                  <div style={{ fontSize: '14px', fontWeight: 500, color: 'rgba(255,255,255,0.55)' }}>Unlimited deals · Cancel anytime</div>
-                </div>
-                <div className="display" style={{ fontSize: '40px', color: '#ffffff' }}>
-                  $3<span style={{ fontSize: '16px', fontWeight: 400, color: 'rgba(255,255,255,0.4)' }}>/mo</span>
-                </div>
+              <div className="fade-up-2" style={{ display: 'grid', gap: '10px', marginBottom: '20px' }}>
+                {([
+                  {
+                    id: 'monthly',
+                    label: 'Monthly',
+                    price: '$3',
+                    suffix: '/mo',
+                    note: 'Flexible month-to-month access.',
+                  },
+                  {
+                    id: 'annual',
+                    label: 'Annual',
+                    price: '$29.99',
+                    suffix: '/yr',
+                    note: 'Best value. Save compared to monthly.',
+                    badge: 'Save $6',
+                  },
+                ] as const).map((plan) => {
+                  const selected = billingInterval === plan.id
+                  return (
+                    <button
+                      key={plan.id}
+                      type="button"
+                      onClick={() => setBillingInterval(plan.id)}
+                      style={{
+                        width: '100%',
+                        background: selected ? 'var(--forest)' : 'var(--bg-2)',
+                        border: selected ? '2px solid var(--green)' : '1px solid var(--border-2)',
+                        borderRadius: '10px',
+                        padding: '18px 20px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '14px',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                          <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: selected ? 'var(--green)' : 'var(--ink-4)' }}>
+                            {plan.label}
+                          </span>
+                          {'badge' in plan && (
+                            <span style={{ borderRadius: '999px', background: selected ? 'rgba(255,255,255,0.1)' : 'var(--green-lt)', color: selected ? '#ffffff' : 'var(--green-dk)', padding: '3px 8px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                              {plan.badge}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: '14px', fontWeight: 500, color: selected ? 'rgba(255,255,255,0.58)' : 'var(--ink-3)' }}>{plan.note}</div>
+                      </div>
+                      <div className="display" style={{ fontSize: plan.id === 'annual' ? '34px' : '40px', color: selected ? '#ffffff' : 'var(--ink)', whiteSpace: 'nowrap' }}>
+                        {plan.price}<span style={{ fontSize: '16px', fontWeight: 400, color: selected ? 'rgba(255,255,255,0.45)' : 'var(--ink-4)' }}>{plan.suffix}</span>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
 
               {/* Account summary */}
@@ -515,6 +566,7 @@ export default function SignupPage() {
                     { l: 'Name', v: name },
                     { l: 'Phone', v: phone },
                     { l: 'Email', v: email },
+                    { l: 'Plan', v: billingInterval === 'annual' ? 'Annual · $29.99/year' : 'Monthly · $3/month' },
                   ].filter(f => f.v).map(f => (
                     <div key={f.l} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '13px', color: 'var(--ink-3)', fontWeight: 500 }}>{f.l}</span>
@@ -538,7 +590,11 @@ export default function SignupPage() {
                 className="btn btn-primary"
                 style={{ width: '100%', fontSize: '18px', padding: '16px', marginBottom: '10px' }}
               >
-                {loading ? 'Redirecting to checkout...' : 'Pay $3/month — Get access'}
+                {loading
+                  ? 'Redirecting to checkout...'
+                  : billingInterval === 'annual'
+                    ? 'Pay $29.99/year — Get access'
+                    : 'Pay $3/month — Get access'}
               </button>
 
               <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500 }}>

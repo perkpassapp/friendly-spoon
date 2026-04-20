@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     template: '%s | PerkPass',
   },
   description:
-    "PerkPass is Philadelphia's local perks membership. Discover member-only deals at Philly restaurants, cafes, gyms, salons, shops, and neighborhood favorites for $3/month.",
+    "PerkPass is Philadelphia's local perks membership. Discover member-only deals at Philly restaurants, cafes, gyms, salons, shops, and neighborhood favorites from $3/month or $29.99/year.",
   keywords: [
     'Philadelphia deals',
     'Philly discounts',
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     siteName: 'PerkPass',
     title: 'PerkPass — Philadelphia Local Deals Membership',
     description:
-      'Philadelphia perks at local restaurants, cafes, gyms, salons, shops, and neighborhood favorites. $3/month. Built for Philly locals.',
+      'Philadelphia perks at local restaurants, cafes, gyms, salons, shops, and neighborhood favorites. From $3/month or $29.99/year. Built for Philly locals.',
     images: [
       {
         url: '/og-image.png',
@@ -83,7 +83,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'PerkPass — Philadelphia Local Deals Membership',
     description:
-      'Philadelphia perks at local restaurants, cafes, gyms, salons, shops, and neighborhood favorites. $3/month.',
+      'Philadelphia perks at local restaurants, cafes, gyms, salons, shops, and neighborhood favorites. From $3/month or $29.99/year.',
     images: ['/og-image.png'],
   },
   alternates: {
@@ -119,7 +119,7 @@ export default function RootLayout({
               '@type': 'Service',
               name: 'PerkPass',
               description:
-                "Philadelphia's local perks membership. Member-only deals at restaurants, cafes, gyms, salons, shops, and neighborhood favorites for $3/month.",
+                "Philadelphia's local perks membership. Member-only deals at restaurants, cafes, gyms, salons, shops, and neighborhood favorites from $3/month or $29.99/year.",
               url: 'https://getperkpass.com',
               areaServed: {
                 '@type': 'City',
@@ -136,7 +136,7 @@ export default function RootLayout({
                 '@type': 'Offer',
                 price: '3.00',
                 priceCurrency: 'USD',
-                description: 'Monthly membership giving access to exclusive local deals in Philadelphia.',
+                description: 'Monthly and annual memberships giving access to exclusive local deals in Philadelphia.',
               },
             }),
           }}

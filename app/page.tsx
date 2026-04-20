@@ -14,7 +14,7 @@ const CAT_COLORS: Record<string, { bg: string; color: string }> = {
 }
 
 const HOW = [
-  { num: '01', title: 'Sign up for $3/month',  body: 'Enter your email, pay with any card. Instant access. No contracts ever.' },
+  { num: '01', title: 'Choose monthly or annual',  body: 'Start at $3/month or lock in a year for $29.99. Instant access. No contracts ever.' },
   { num: '02', title: 'Browse Philly deals',    body: 'Restaurants, cafes, barbers, gyms, nail salons — all in one place.' },
   { num: '03', title: 'Tap, show code, save',   body: 'A unique 6-letter code appears. Show it at the counter. Done in 10 seconds.' },
 ]
@@ -22,15 +22,15 @@ const HOW = [
 const FAQS = [
   {
     question: 'How does PerkPass work?',
-    answer: 'Join for $3/month, browse member-only Philly perks, then show a short redemption code when you visit a participating local business.',
+    answer: 'Join monthly for $3 or annually for $29.99, browse member-only Philly perks, then show a short redemption code when you visit a participating local business.',
   },
   {
-    question: 'Why is PerkPass only $3/month?',
-    answer: 'We keep PerkPass affordable on purpose. The goal is simple: help more people enjoy local deals, discover new favorites, and support neighborhood businesses without overthinking the cost.',
+    question: 'Why is PerkPass so affordable?',
+    answer: 'We keep PerkPass affordable on purpose. Start monthly for $3 or choose annual for $29.99. The goal is simple: help more people enjoy local deals, discover new favorites, and support neighborhood businesses without overthinking the cost.',
   },
   {
-    question: 'Are these real local businesses?',
-    answer: 'Yes. PerkPass is built around real Philadelphia businesses, and we are continuously onboarding more awesome restaurants, cafes, gyms, salons, shops, and neighborhood spots.',
+    question: 'Are PerkPass deals approved by businesses?',
+    answer: 'Yes. PerkPass works with local Philly businesses before perks go live, so members know the offer is clear, current, and ready to redeem.',
   },
   {
     question: 'How do I redeem a deal?',
@@ -160,9 +160,9 @@ export default function Home() {
             <div className="hero-proof">
               {[
                 { n: '$3', l: 'Monthly access' },
+                { n: '$29.99', l: 'Annual option' },
                 { n: 'Fast', l: 'Code redemption' },
                 { n: 'Philly', l: 'Born locally' },
-                { n: 'Fresh', l: 'Deals rotate' },
               ].map(s => (
                 <div key={s.l} className="hero-proof-card">
                   <div className="display" style={{ fontSize: 'clamp(28px, 4vw, 40px)', color: 'var(--green)', lineHeight: 1, whiteSpace: 'nowrap' }}>{s.n}</div>
@@ -302,7 +302,7 @@ export default function Home() {
           </p>
           <div>
             <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px' }}>
-              Unlock Philly perks — $3/month
+              Unlock Philly perks — from $3/month
             </Link>
           </div>
         </div>
@@ -442,7 +442,7 @@ export default function Home() {
             Cancel anytime. No contracts. No BS. Just deals at places you already go.
           </p>
           <Link href="/signup" className="btn btn-dark" style={{ fontSize: '18px', padding: '18px 40px' }}>
-            Get PerkPass — $3/month
+            Get PerkPass — from $3/month
           </Link>
         </div>
       </section>

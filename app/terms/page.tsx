@@ -35,7 +35,7 @@ export default function TermsPage() {
 
           <section>
             <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.03em', color: 'var(--ink)', marginBottom: '10px' }}>4. Subscription</h2>
-            <p>PerkPass offers a recurring monthly subscription. By subscribing, you agree to recurring billing unless canceled before the next billing cycle.</p>
+            <p>PerkPass offers recurring monthly and annual subscriptions. By subscribing, you agree to recurring billing unless canceled before the next billing cycle.</p>
           </section>
 
           <section>

@@ -514,9 +514,9 @@ export default function MemberDeals() {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ maxWidth: '400px', width: '100%' }}>
           <h1 className="display" style={{ fontSize: '56px', marginBottom: '12px' }}>Members only.</h1>
-          <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px' }}>Sign up to unlock every Philly deal.</p>
+          <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px' }}>Sign up to unlock Philly perks.</p>
           <Link href="/signup" className="btn btn-primary" style={{ width: '100%', fontSize: '17px', padding: '16px', display: 'flex', marginBottom: '12px' }}>
-            Get PerkPass — $3/month
+            Get PerkPass — from $3/month
           </Link>
           <button
             onClick={async () => { await supabase.auth.signOut(); router.push('/') }}

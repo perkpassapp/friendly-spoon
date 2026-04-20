@@ -69,7 +69,7 @@ export default function MemberLogin() {
             <div className="fade-up">
               <h1 className="display" style={{ fontSize: 'clamp(48px, 12vw, 64px)', marginBottom: '16px' }}>No account found.</h1>
               <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px', lineHeight: 1.55 }}>
-                <strong style={{ color: 'var(--ink)' }}>{email}</strong> isn't associated with a PerkPass account.
+                <strong style={{ color: 'var(--ink)' }}>{email}</strong> isn&apos;t associated with a PerkPass account.
               </p>
               <Link href="/signup" className="btn btn-primary" style={{ display: 'block', textAlign: 'center', fontSize: '17px', padding: '15px', marginBottom: '16px' }}>
                 Create an account
@@ -85,11 +85,11 @@ export default function MemberLogin() {
             <div className="fade-up">
               <h1 className="display" style={{ fontSize: 'clamp(48px, 12vw, 64px)', marginBottom: '16px' }}>Check your email.</h1>
               <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px', lineHeight: 1.55 }}>
-                We sent a login link to <strong style={{ color: 'var(--ink)' }}>{email}</strong>. Tap it — you'll land straight on your deals.
+                We sent a login link to <strong style={{ color: 'var(--ink)' }}>{email}</strong>. Tap it — you&apos;ll land straight on your deals.
               </p>
               <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', borderRadius: '8px', padding: '16px', marginBottom: '24px' }}>
                 <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.5 }}>
-                  After tapping the link once, you'll stay logged in for 7 days automatically.
+                  After tapping the link once, you&apos;ll stay logged in for 7 days automatically.
                 </p>
               </div>
               <button
@@ -177,7 +177,7 @@ export default function MemberLogin() {
                   <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500 }}>
                     Not a member?{' '}
                     <Link href="/signup" style={{ color: 'var(--green-dk)', fontWeight: 700, textDecoration: 'none' }}>
-                      Get PerkPass — $3/month
+                      Get PerkPass — from $3/month
                     </Link>
                   </p>
                 </div>

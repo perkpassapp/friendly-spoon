@@ -8,12 +8,15 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+type BillingInterval = 'monthly' | 'annual'
+
 export async function POST(req: NextRequest) {
   try {
-    const { email, name, phone } = await req.json()
+    const { email, name, phone, billingInterval } = await req.json()
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
     const normalizedPhone = typeof phone === 'string' ? phone.replace(/\D/g, '').slice(0, 10) : ''
     const normalizedName = typeof name === 'string' ? name.trim() : ''
+    const selectedBillingInterval: BillingInterval = billingInterval === 'annual' ? 'annual' : 'monthly'
 
     if (normalizedEmail) {
       const { data: existing } = await supabase
@@ -55,15 +58,32 @@ export async function POST(req: NextRequest) {
       }, { onConflict: 'email' })
     }
 
+    const lineItem = selectedBillingInterval === 'annual'
+      ? process.env.STRIPE_ANNUAL_PRICE_ID
+        ? { price: process.env.STRIPE_ANNUAL_PRICE_ID, quantity: 1 }
+        : {
+            price_data: {
+              currency: 'usd',
+              unit_amount: 2999,
+              recurring: { interval: 'year' as const },
+              product_data: {
+                name: 'PerkPass All Access',
+                description: 'Annual membership for Philly local perks.',
+              },
+            },
+            quantity: 1,
+          }
+      : { price: process.env.STRIPE_PRICE_ID!, quantity: 1 }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
       customer_email: normalizedEmail,
-      line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
+      line_items: [lineItem],
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/success?email=${encodeURIComponent(normalizedEmail)}`,
-            allow_promotion_codes: true,
+      allow_promotion_codes: true,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/signup`,
-      metadata: { email: normalizedEmail, name: normalizedName, phone: normalizedPhone },
+      metadata: { email: normalizedEmail, name: normalizedName, phone: normalizedPhone, billing_interval: selectedBillingInterval },
     })
 
     return NextResponse.json({ url: session.url })
