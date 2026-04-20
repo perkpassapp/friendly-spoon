@@ -16,7 +16,7 @@ export default function RefundPage() {
         <p style={{ fontSize: '13px', color: 'var(--ink-4)', fontWeight: 500, marginBottom: '40px' }}>Last updated: April 2, 2026</p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', fontSize: '15px', lineHeight: 1.65, color: 'var(--ink-3)' }}>
-          <p>PerkPass subscriptions are billed monthly or annually based on the plan you choose. You may cancel anytime from your account settings.</p>
+          <p>PerkPass subscriptions are billed based on the plan you choose. Public memberships are monthly, and creator-exclusive annual memberships may be available through referral links. You may cancel anytime from your account settings.</p>
           <p>Payments are non-refundable. We do not provide refunds for unused time, unused offers, or partial billing periods.</p>
           <p>Offers may change or be discontinued at any time by participating businesses. This does not constitute grounds for a refund.</p>
           <p>For billing issues or questions, contact us at <a href="mailto:hello@getperkpass.com" style={{ color: 'var(--green-dk)', fontWeight: 600, textDecoration: 'underline' }}>hello@getperkpass.com</a></p>

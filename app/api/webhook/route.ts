@@ -8,9 +8,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Required: tell Next.js to give us the raw body for Stripe signature verification
-export const config = { api: { bodyParser: false } }
-
 export async function POST(req: NextRequest) {
   const body = await req.text()
   const sig = req.headers.get('stripe-signature')
@@ -22,9 +19,10 @@ export async function POST(req: NextRequest) {
   let event: Stripe.Event
   try {
     event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
-  } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message)
-    return NextResponse.json({ error: `Webhook error: ${err.message}` }, { status: 400 })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Invalid webhook signature.'
+    console.error('Webhook signature verification failed:', message)
+    return NextResponse.json({ error: `Webhook error: ${message}` }, { status: 400 })
   }
 
   try {
@@ -46,6 +44,32 @@ export async function POST(req: NextRequest) {
               subscription_status: 'active',
             })
             .eq('email', email.toLowerCase())
+
+          const creatorId = session.metadata?.creator_id
+          const creatorRef = session.metadata?.creator_ref
+          const billingInterval = session.metadata?.billing_interval
+
+          if (billingInterval === 'annual' && creatorId && creatorRef) {
+            const commissionAmount = Number(session.metadata?.commission_amount || 500)
+            const { error: referralError } = await supabase
+              .from('creator_referrals')
+              .upsert({
+                creator_id: creatorId,
+                referral_code: creatorRef,
+                member_email: email.toLowerCase(),
+                stripe_customer_id: customerId ?? null,
+                stripe_subscription_id: subscriptionId ?? null,
+                stripe_checkout_session_id: session.id,
+                plan: 'annual',
+                amount_paid: session.amount_total ?? 3000,
+                commission_amount: Number.isFinite(commissionAmount) ? commissionAmount : 500,
+                payout_status: 'pending',
+              }, { onConflict: 'stripe_checkout_session_id' })
+
+            if (referralError) {
+              console.error('creator referral tracking error:', referralError)
+            }
+          }
         }
         break
       }

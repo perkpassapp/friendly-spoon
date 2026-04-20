@@ -54,11 +54,44 @@ type ExistingBusinessDealForm = {
   deal_details: string
 }
 
+type CreatorAffiliate = {
+  id: string
+  name: string
+  handle: string | null
+  referral_code: string
+  payout_email: string | null
+  status: 'active' | 'paused'
+  created_at: string
+}
+
+type CreatorReferral = {
+  id: string
+  creator_id: string
+  referral_code: string
+  member_email: string
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  stripe_checkout_session_id: string | null
+  plan: 'annual'
+  amount_paid: number
+  commission_amount: number
+  payout_status: 'pending' | 'approved' | 'paid' | 'rejected'
+  created_at: string
+  creator_affiliates?: { name: string; handle: string | null } | null
+}
+
+type CreatorForm = {
+  name: string
+  handle: string
+  referral_code: string
+  payout_email: string
+}
+
 export default function AdminDashboard() {
   const [password, setPassword] = useState('')
   const [authed, setAuthed] = useState(false)
   const [error, setError] = useState('')
-  const [tab, setTab] = useState<'overview' | 'applications' | 'deals' | 'businesses'>('overview')
+  const [tab, setTab] = useState<'overview' | 'applications' | 'deals' | 'businesses' | 'creators'>('overview')
   const [applications, setApplications] = useState<Application[]>([])
   const [deals, setDeals] = useState<Deal[]>([])
   const [businesses, setBusinesses] = useState<Business[]>([])
@@ -108,15 +141,22 @@ export default function AdminDashboard() {
   const [addingExistingDeal, setAddingExistingDeal] = useState(false)
   const [existingDealError, setExistingDealError] = useState('')
   const [dealBusinessFilter, setDealBusinessFilter] = useState<string>('all')
+  const [creatorAffiliates, setCreatorAffiliates] = useState<CreatorAffiliate[]>([])
+  const [creatorReferrals, setCreatorReferrals] = useState<CreatorReferral[]>([])
+  const [creatorForm, setCreatorForm] = useState<CreatorForm>({ name: '', handle: '', referral_code: '', payout_email: '' })
+  const [addingCreator, setAddingCreator] = useState(false)
+  const [creatorError, setCreatorError] = useState('')
 
   async function loadData() {
-    const [appsRes, dealsRes, redemptionsRes, bizRes, membersRes] = await Promise.all([
+    const [appsRes, dealsRes, redemptionsRes, bizRes, membersRes, creatorsRes] = await Promise.all([
       supabase.from('business_applications').select('*').order('created_at', { ascending: false }),
       supabase.from('deals').select('*').order('created_at', { ascending: false }),
       supabase.from('redemptions').select('id'),
       supabase.from('business_accounts').select('*').order('business_name'),
       supabase.from('members').select('id'),
+      fetch('/api/admin-creators', { headers: { 'x-admin-password': password } }),
     ])
+    const creatorsData = creatorsRes.ok ? await creatorsRes.json() : { creators: [], referrals: [] }
     const normalizedApplications = (appsRes.data || []).map((app) => ({ ...app, category: normalizeCategory(app.category) }))
     const normalizedDeals = (dealsRes.data || []).map((deal) => ({ ...deal, category: normalizeCategory(deal.category) }))
     const businessMap = new Map<string, Business>()
@@ -147,6 +187,8 @@ export default function AdminDashboard() {
     setApplications(normalizedApplications)
     setDeals(normalizedDeals)
     setBusinesses(Array.from(businessMap.values()).sort((a, b) => a.business_name.localeCompare(b.business_name)))
+    setCreatorAffiliates(creatorsData.creators || [])
+    setCreatorReferrals(creatorsData.referrals || [])
     setStats({ members: membersRes.data?.length || 0, redemptions: redemptionsRes.data?.length || 0, deals: dealsRes.data?.filter((d: Deal) => d.active && !d.admin_disabled).length || 0 })
   }
 
@@ -543,6 +585,75 @@ export default function AdminDashboard() {
     }
   }
 
+  function updateCreatorField(field: keyof CreatorForm, value: string) {
+    setCreatorForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  function normalizeReferralCode(value: string) {
+    return value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '')
+  }
+
+  function normalizeHandle(value: string) {
+    const trimmed = value.trim()
+    if (!trimmed) return ''
+    return trimmed.startsWith('@') ? trimmed : '@' + trimmed
+  }
+
+  async function addCreatorAffiliate() {
+    const name = creatorForm.name.trim()
+    const referralCode = normalizeReferralCode(creatorForm.referral_code)
+    if (!name || !referralCode) {
+      setCreatorError('Creator name and referral code are required.')
+      return
+    }
+
+    setAddingCreator(true)
+    setCreatorError('')
+
+    const res = await fetch('/api/admin-creators', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({
+        name,
+        handle: normalizeHandle(creatorForm.handle) || null,
+        referral_code: referralCode,
+        payout_email: creatorForm.payout_email.trim().toLowerCase() || null,
+      }),
+    })
+    const data = await res.json()
+
+    if (!res.ok) {
+      setCreatorError(data.error || 'Could not create creator link.')
+    } else {
+      setCreatorForm({ name: '', handle: '', referral_code: '', payout_email: '' })
+      await loadData()
+    }
+
+    setAddingCreator(false)
+  }
+
+  async function toggleCreatorStatus(creator: CreatorAffiliate) {
+    await fetch('/api/admin-creators', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({
+        type: 'creator-status',
+        id: creator.id,
+        status: creator.status === 'active' ? 'paused' : 'active',
+      }),
+    })
+    await loadData()
+  }
+
+  async function updateReferralPayoutStatus(id: string, payout_status: CreatorReferral['payout_status']) {
+    await fetch('/api/admin-creators', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ type: 'referral-payout', id, payout_status }),
+    })
+    await loadData()
+  }
+
   function login() {
     if (password === 'perkpassadmin') { setAuthed(true); loadData() } else setError('Wrong password')
   }
@@ -557,6 +668,11 @@ export default function AdminDashboard() {
   const visibleDeals = dealBusinessFilter === 'all'
     ? deals
     : deals.filter((deal) => deal.business_name === dealBusinessFilter)
+  const activeCreators = creatorAffiliates.filter((creator) => creator.status === 'active').length
+  const pendingCreatorCommission = creatorReferrals
+    .filter((referral) => referral.payout_status === 'pending' || referral.payout_status === 'approved')
+    .reduce((total, referral) => total + (referral.commission_amount || 0), 0)
+  const creatorSignupBase = 'https://getperkpass.com/signup?ref='
   const LABEL = { fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--ink-4)' }
   const INPUT_STYLE = { fontFamily: "'Inter', sans-serif", fontSize: '13px', fontWeight: 500, color: 'var(--ink)', background: 'var(--bg)', border: '1.5px solid var(--ink)', borderRadius: '6px', padding: '8px 10px', width: '100%', outline: 'none' }
 
@@ -591,7 +707,7 @@ export default function AdminDashboard() {
       </header>
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '24px' }}>
         <div style={{ display: 'flex', gap: '4px', marginBottom: '32px', borderBottom: '2px solid var(--ink)'}}>
-          {([{ key: 'overview', label: 'Overview' }, { key: 'applications', label: 'Applications' + (pending.length > 0 ? ' (' + pending.length + ')' : '') }, { key: 'deals', label: 'Live Deals' }, { key: 'businesses', label: 'Businesses' + (disabledBusinesses > 0 ? ' (' + disabledBusinesses + ' off)' : '') }] as const).map(t => (
+          {([{ key: 'overview', label: 'Overview' }, { key: 'applications', label: 'Applications' + (pending.length > 0 ? ' (' + pending.length + ')' : '') }, { key: 'deals', label: 'Live Deals' }, { key: 'businesses', label: 'Businesses' + (disabledBusinesses > 0 ? ' (' + disabledBusinesses + ' off)' : '') }, { key: 'creators', label: 'Creators' }] as const).map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.04em', padding: '12px 16px', border: 'none', cursor: 'pointer', background: 'none', color: tab === t.key ? 'var(--ink)' : 'var(--ink-4)', borderBottom: tab === t.key ? '2px solid var(--ink)' : '2px solid transparent', marginBottom: '-2px', flexShrink: 0 }}>{t.label}</button>
           ))}
         </div>
@@ -600,7 +716,7 @@ export default function AdminDashboard() {
           <div>
             <h2 className="display" style={{ fontSize: '40px', marginBottom: '20px' }}>Overview</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '32px' }}>
-              {[{ label: 'Active members', value: stats.members }, { label: 'Total redemptions', value: stats.redemptions }, { label: 'Active deals', value: stats.deals }, { label: 'Active businesses', value: activeBusinesses }].map(s => (
+              {[{ label: 'Active members', value: stats.members }, { label: 'Total redemptions', value: stats.redemptions }, { label: 'Active deals', value: stats.deals }, { label: 'Active creators', value: activeCreators }].map(s => (
                 <div key={s.label} style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '24px', border: '1px solid var(--border-2)' }}>
                   <div className="display" style={{ fontSize: '48px', color: 'var(--ink)', marginBottom: '4px' }}>{s.value}</div>
                   <div style={{ ...LABEL }}>{s.label}</div>
@@ -608,7 +724,7 @@ export default function AdminDashboard() {
               ))}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {[{ label: 'View applications', desc: pending.length + ' pending review', action: () => setTab('applications') }, { label: 'Manage deals', desc: stats.deals + ' live deals', action: () => setTab('deals') }, { label: 'Manage businesses', desc: activeBusinesses + ' active Â· ' + disabledBusinesses + ' disabled', action: () => setTab('businesses') }, { label: 'Business portal', desc: 'See what businesses see', action: () => window.open('/business/dashboard', '_blank') }].map(a => (
+              {[{ label: 'View applications', desc: pending.length + ' pending review', action: () => setTab('applications') }, { label: 'Manage deals', desc: stats.deals + ' live deals', action: () => setTab('deals') }, { label: 'Manage businesses', desc: activeBusinesses + ' active - ' + disabledBusinesses + ' disabled', action: () => setTab('businesses') }, { label: 'Creator affiliates', desc: '$' + (pendingCreatorCommission / 100).toFixed(2) + ' pending commission', action: () => setTab('creators') }, { label: 'Business portal', desc: 'See what businesses see', action: () => window.open('/business/dashboard', '_blank') }].map(a => (
                 <button key={a.label} onClick={a.action} style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', borderRadius: '8px', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }} onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--green)')} onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-2)')}>
                   <div><div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '17px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.02em', color: 'var(--ink)' }}>{a.label}</div><div style={{ fontSize: '13px', color: 'var(--ink-3)', fontWeight: 500, marginTop: '2px' }}>{a.desc}</div></div>
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 900, color: 'var(--ink-4)' }}>+</div>
@@ -947,6 +1063,117 @@ export default function AdminDashboard() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {tab === 'creators' && (
+          <div>
+            <h2 className="display" style={{ fontSize: '40px', marginBottom: '4px' }}>Creators</h2>
+            <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '20px' }}>Create invite links for creator-only annual memberships. Annual signups track a $5 commission here after Stripe confirms checkout.</p>
+
+            <div style={{ background: 'var(--bg-2)', borderRadius: '12px', padding: '18px', border: '1px solid var(--border-2)', marginBottom: '20px' }}>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+                Add creator affiliate
+              </div>
+              <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-4)', marginBottom: '14px' }}>
+                Give each creator a clean referral code. Example: foodiephilly creates {creatorSignupBase}foodiephilly.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Creator Name</label>
+                  <input style={INPUT_STYLE} value={creatorForm.name} onChange={e => updateCreatorField('name', e.target.value)} placeholder="Philly Foodie" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Instagram Handle</label>
+                  <input style={INPUT_STYLE} value={creatorForm.handle} onChange={e => updateCreatorField('handle', e.target.value)} placeholder="@phillyfoodie" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Referral Code</label>
+                  <input style={INPUT_STYLE} value={creatorForm.referral_code} onChange={e => updateCreatorField('referral_code', normalizeReferralCode(e.target.value))} placeholder="phillyfoodie" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', ...LABEL }}>Payout Email</label>
+                  <input style={INPUT_STYLE} value={creatorForm.payout_email} onChange={e => updateCreatorField('payout_email', e.target.value)} placeholder="creator@email.com" />
+                </div>
+              </div>
+              {creatorError && <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--red)', marginBottom: '10px' }}>{creatorError}</p>}
+              <button onClick={addCreatorAffiliate} disabled={addingCreator} className="btn btn-primary" style={{ fontSize: '14px', padding: '12px 18px' }}>
+                {addingCreator ? 'Adding...' : 'Create creator link'}
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+              <div style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '20px', border: '1px solid var(--border-2)' }}>
+                <div className="display" style={{ fontSize: '42px', color: 'var(--ink)', marginBottom: '4px' }}>{creatorReferrals.length}</div>
+                <div style={{ ...LABEL }}>Annual referrals</div>
+              </div>
+              <div style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '20px', border: '1px solid var(--border-2)' }}>
+                <div className="display" style={{ fontSize: '42px', color: 'var(--ink)', marginBottom: '4px' }}>${(pendingCreatorCommission / 100).toFixed(2)}</div>
+                <div style={{ ...LABEL }}>Pending commission</div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '28px' }}>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '10px' }}>
+                Creator links
+              </div>
+              {creatorAffiliates.length === 0 ? (
+                <div style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '24px', textAlign: 'center', border: '1px solid var(--border-2)' }}>
+                  <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink-3)' }}>No creator links yet.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {creatorAffiliates.map((creator) => (
+                    <div key={creator.id} style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '18px 20px', border: '1px solid ' + (creator.status === 'active' ? 'var(--border-2)' : 'var(--red)'), opacity: creator.status === 'paused' ? 0.72 : 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+                        <div style={{ flex: 1, minWidth: '240px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)' }}>{creator.name}</div>
+                            <span style={{ ...LABEL, fontSize: '10px', background: creator.status === 'active' ? 'var(--green-lt)' : 'var(--red-lt)', color: creator.status === 'active' ? 'var(--green-dk)' : 'var(--red)', padding: '2px 8px', borderRadius: '3px' }}>{creator.status}</span>
+                          </div>
+                          <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 600 }}>{creator.handle || 'No handle'} · {creator.payout_email || 'No payout email'}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--green-dk)', fontWeight: 700, marginTop: '5px', overflowWrap: 'anywhere' }}>{creatorSignupBase}{creator.referral_code}</div>
+                        </div>
+                        <button onClick={() => toggleCreatorStatus(creator)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '10px 18px', borderRadius: '6px', border: 'none', cursor: 'pointer', flexShrink: 0, background: creator.status === 'active' ? 'var(--red-lt)' : 'var(--green-lt)', color: creator.status === 'active' ? 'var(--red)' : 'var(--green-dk)' }}>
+                          {creator.status === 'active' ? 'Pause' : 'Reactivate'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '18px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '10px' }}>
+                Referral payouts
+              </div>
+              {creatorReferrals.length === 0 ? (
+                <div style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '24px', textAlign: 'center', border: '1px solid var(--border-2)' }}>
+                  <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink-3)' }}>No annual creator signups yet.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {creatorReferrals.map((referral) => (
+                    <div key={referral.id} style={{ background: 'var(--bg-2)', borderRadius: '10px', padding: '18px 20px', border: '1px solid var(--border-2)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+                        <div style={{ flex: 1, minWidth: '240px' }}>
+                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '19px', fontWeight: 800, color: 'var(--ink)', marginBottom: '3px' }}>{referral.member_email}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--ink-4)', fontWeight: 600 }}>
+                            {referral.creator_affiliates?.handle || referral.creator_affiliates?.name || referral.referral_code} · ${(referral.amount_paid / 100).toFixed(2)} sale · ${(referral.commission_amount / 100).toFixed(2)} commission
+                          </div>
+                        </div>
+                        <select style={{ ...INPUT_STYLE, width: '160px' }} value={referral.payout_status} onChange={e => updateReferralPayoutStatus(referral.id, e.target.value as CreatorReferral['payout_status'])}>
+                          {['pending', 'approved', 'paid', 'rejected'].map((status) => (
+                            <option key={status} value={status}>{status}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

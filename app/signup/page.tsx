@@ -1,7 +1,7 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 type Step = 'method' | 'phone-only' | 'manual' | 'pay' | 'active-member'
@@ -25,7 +25,32 @@ type ManualField = {
   mode: 'text' | 'tel' | 'email'
 }
 
+type CreatorAffiliate = {
+  id: string
+  name: string
+  handle: string | null
+  referralCode: string
+}
+
 export default function SignupPage() {
+  return (
+    <Suspense fallback={<SignupLoading />}>
+      <SignupContent />
+    </Suspense>
+  )
+}
+
+function SignupLoading() {
+  return (
+    <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)' }}>
+        Loading signup...
+      </div>
+    </main>
+  )
+}
+
+function SignupContent() {
   const [step, setStep] = useState<Step>('method')
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -36,7 +61,12 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly')
+  const [creatorAffiliate, setCreatorAffiliate] = useState<CreatorAffiliate | null>(null)
+  const [creatorChecked, setCreatorChecked] = useState(false)
+  const [creatorError, setCreatorError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const creatorRef = searchParams.get('ref')?.trim().toLowerCase() || ''
 
   async function getMemberStatus(nextEmail: string): Promise<MemberStatus> {
     const res = await fetch(`/api/member-status?email=${encodeURIComponent(nextEmail)}`)
@@ -99,6 +129,34 @@ export default function SignupPage() {
     init()
   }, [router])
 
+  useEffect(() => {
+    async function loadCreatorAffiliate() {
+      if (!creatorRef) {
+        setCreatorChecked(true)
+        return
+      }
+
+      try {
+        const res = await fetch(`/api/creator-affiliate?ref=${encodeURIComponent(creatorRef)}`)
+        const data = await res.json()
+        if (!res.ok || !data.valid) {
+          setCreatorError('This creator link is not active right now. Monthly access is still available.')
+          setBillingInterval('monthly')
+          return
+        }
+        setCreatorAffiliate(data.affiliate)
+        setBillingInterval('annual')
+      } catch {
+        setCreatorError('We had trouble checking this creator link. Monthly access is still available.')
+        setBillingInterval('monthly')
+      } finally {
+        setCreatorChecked(true)
+      }
+    }
+
+    loadCreatorAffiliate()
+  }, [creatorRef])
+
   function formatPhone(val: string) {
     const digits = val.replace(/\D/g, '').slice(0, 10)
     if (digits.length <= 3) return digits
@@ -122,10 +180,11 @@ export default function SignupPage() {
 
   async function handleGoogle() {
     setGoogleLoading(true)
+    const redirectPath = creatorRef ? `/signup?ref=${encodeURIComponent(creatorRef)}` : '/signup'
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/signup`,
+        redirectTo: `${window.location.origin}${redirectPath}`,
         queryParams: { access_type: 'offline', prompt: 'consent' },
       }
     })
@@ -185,6 +244,7 @@ export default function SignupPage() {
           name,
           phone: phone.replace(/\D/g, ''),
           billingInterval,
+          creatorRef: creatorAffiliate?.referralCode || '',
         })
       })
       const data = await res.json()
@@ -200,7 +260,7 @@ export default function SignupPage() {
   const STEPS = ['Your info', 'Payment']
   const stepIndex = step === 'method' ? 0 : step === 'phone-only' ? 0 : step === 'manual' ? 0 : 1
 
-  if (!authChecked) {
+  if (!authChecked || !creatorChecked) {
     return (
       <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="display pulse" style={{ fontSize: '28px', color: 'var(--green)' }}>Loading...</div>
@@ -495,9 +555,26 @@ export default function SignupPage() {
                   Almost there.
                 </h1>
                 <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink-3)' }}>
-                  Choose monthly or save with annual access.
+                  {creatorAffiliate ? 'Creator-exclusive annual access is unlocked.' : 'Monthly access is open to everyone.'}
                 </p>
               </div>
+
+              {creatorAffiliate && (
+                <div className="fade-up-2" style={{ background: 'var(--green-lt)', border: '1px solid rgba(95,160,97,0.25)', borderRadius: '10px', padding: '14px 16px', marginBottom: '14px' }}>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--green-dk)', marginBottom: '4px' }}>
+                    Creator link active
+                  </div>
+                  <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-3)', lineHeight: 1.45 }}>
+                    Annual access is unlocked through {creatorAffiliate.handle || creatorAffiliate.name}. They earn $5 when your annual membership is confirmed.
+                  </p>
+                </div>
+              )}
+
+              {creatorError && (
+                <div className="fade-up-2" style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', borderRadius: '10px', padding: '14px 16px', marginBottom: '14px' }}>
+                  <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-3)', lineHeight: 1.45 }}>{creatorError}</p>
+                </div>
+              )}
 
               <div className="fade-up-2" style={{ display: 'grid', gap: '10px', marginBottom: '20px' }}>
                 {([
@@ -511,12 +588,14 @@ export default function SignupPage() {
                   {
                     id: 'annual',
                     label: 'Annual',
-                    price: '$29.99',
+                    price: '$30',
                     suffix: '/yr',
-                    note: 'Best value. Save compared to monthly.',
-                    badge: 'Save $6',
+                    note: 'Creator-exclusive yearly access.',
+                    badge: 'Creator link',
                   },
-                ] as const).map((plan) => {
+                ] as const)
+                  .filter((plan) => plan.id === 'monthly' || Boolean(creatorAffiliate))
+                  .map((plan) => {
                   const selected = billingInterval === plan.id
                   return (
                     <button
@@ -566,7 +645,7 @@ export default function SignupPage() {
                     { l: 'Name', v: name },
                     { l: 'Phone', v: phone },
                     { l: 'Email', v: email },
-                    { l: 'Plan', v: billingInterval === 'annual' ? 'Annual · $29.99/year' : 'Monthly · $3/month' },
+                    { l: 'Plan', v: billingInterval === 'annual' ? 'Creator annual · $30/year' : 'Monthly · $3/month' },
                   ].filter(f => f.v).map(f => (
                     <div key={f.l} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '13px', color: 'var(--ink-3)', fontWeight: 500 }}>{f.l}</span>
@@ -593,7 +672,7 @@ export default function SignupPage() {
                 {loading
                   ? 'Redirecting to checkout...'
                   : billingInterval === 'annual'
-                    ? 'Pay $29.99/year — Get access'
+                    ? 'Pay $30/year — Get access'
                     : 'Pay $3/month — Get access'}
               </button>
 
