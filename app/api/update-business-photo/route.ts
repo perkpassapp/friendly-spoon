@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(bytes)
 
     const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
-    const filename = `businesses/${businessId}/photo.${ext}`
+    const filename = `businesses/${businessId}/photo-${Date.now()}.${ext}`
 
     // Upload to storage (upsert replaces existing)
     const { data, error: uploadError } = await supabase.storage
@@ -55,8 +55,8 @@ export async function POST(req: Request) {
       .from('business-photos')
       .getPublicUrl(data.path)
 
-    // Append cache-bust so browsers always show the latest image
-    const photoUrl = publicUrlData.publicUrl + '?t=' + Date.now()
+    // Timestamped paths avoid stale browser/CDN caches after replacing photos.
+    const photoUrl = publicUrlData.publicUrl
 
     // 1. Update business_accounts so the dashboard reflects the new photo
     const { data: accountData, error: accountError } = await supabase

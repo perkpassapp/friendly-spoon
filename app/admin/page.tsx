@@ -262,15 +262,28 @@ export default function AdminDashboard() {
 
   async function handleAdminPhotoUpload(deal: Deal, file: File) {
     setPhotoUploading(true)
-    const { data: bizData } = await supabase.from('business_accounts').select('id').eq('business_name', deal.business_name).limit(1)
-    const bizId = bizData?.[0]?.id || deal.id
-    const ext = file.name.split('.').pop()
-    const path = bizId + '/photo.' + ext
-    await supabase.storage.from('business-photos').upload(path, file, { upsert: true, contentType: file.type })
-    const { data: urlData } = supabase.storage.from('business-photos').getPublicUrl(path)
-    const url = urlData.publicUrl
-    await supabase.from('deals').update({ photo_url: url }).eq('business_name', deal.business_name)
-    setPhotoUploading(false); await loadData()
+    try {
+      const business = businesses.find((biz) => biz.business_name === deal.business_name)
+      if (!business) throw new Error('Business record not found.')
+
+      const accountId = await ensureBusinessAccount(business)
+      const formData = new FormData()
+      formData.append('photo', file)
+      formData.append('business_id', accountId)
+
+      const res = await fetch('/api/update-business-photo', { method: 'POST', body: formData })
+      const json = await res.json()
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Photo update failed. Try again.')
+      }
+
+      await loadData()
+    } catch (error) {
+      console.error('admin photo upload error:', error)
+      alert(error instanceof Error ? error.message : 'Photo update failed. Try again.')
+    } finally {
+      setPhotoUploading(false)
+    }
   }
 
   async function removePhoto(deal: Deal) {
