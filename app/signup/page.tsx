@@ -565,7 +565,7 @@ function SignupContent() {
                     Creator link active
                   </div>
                   <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-3)', lineHeight: 1.45 }}>
-                    Annual access is unlocked through {creatorAffiliate.handle || creatorAffiliate.name}. They earn $5 when your annual membership is confirmed.
+                    {creatorAffiliate.handle || creatorAffiliate.name} loves supporting local businesses and unlocked an even better PerkPass deal for you.
                   </p>
                 </div>
               )}
