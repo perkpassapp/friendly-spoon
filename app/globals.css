@@ -119,6 +119,20 @@ body {
 .tag-green { background: var(--green-lt); color: var(--green-dk); }
 .tag-neutral { background: var(--bg-3); color: var(--ink-3); }
 
+.site-footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.site-footer-email {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -150,6 +164,10 @@ body {
 @media (max-width: 640px) {
   .site-footer-grid {
     grid-template-columns: 1fr !important;
+  }
+
+  .site-footer-email {
+    font-size: 13px !important;
   }
 
   .site-footer-meta {
