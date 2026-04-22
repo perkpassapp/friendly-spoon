@@ -29,8 +29,8 @@ const FAQS = [
     answer: 'We keep PerkPass affordable on purpose. The goal is simple: help more people enjoy local deals, discover new favorites, and support neighborhood businesses without overthinking the cost.',
   },
   {
-    question: 'Are PerkPass deals approved by businesses?',
-    answer: 'Yes. PerkPass works with local Philly businesses before perks go live, so members know the offer is clear, current, and ready to redeem.',
+    question: 'How does PerkPass get quality local deals?',
+    answer: 'We work closely with Philly-area businesses that care about giving locals a great experience, not just a random discount. Every perk is shaped with the business so the offer feels worthwhile for members, clear at checkout, and supportive of the local spots people want to come back to.',
   },
   {
     question: 'How do I redeem a deal?',
