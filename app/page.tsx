@@ -1,27 +1,13 @@
 import Link from 'next/link'
 import { getCategoryMeta, normalizeCategory } from '@/lib/product'
 
-type HomeDeal = {
-  name: string
-  offer: string
-  cat: string
-  categoryLabel?: string
-  highlight?: string
-  area: string
-  photo: string
-}
-
-const DEALS: HomeDeal[] = [
-  { name: 'Scoop DeVille', offer: '25% off all items', cat: 'Dessert', highlight: 'Best wow deal', area: 'Center City & Queen Village', photo: '/homepage/businesses/scoop-deville.webp' },
-  { name: 'New Era Cuisine', offer: '$5 off any purchase of $20 or more', cat: 'Restaurant', highlight: 'Pays for itself fast', area: 'Center City, Philadelphia', photo: '/homepage/businesses/new-era-cuisine.webp' },
-  { name: 'Prince Tea House', offer: '10% off your order', cat: 'Dessert', highlight: 'Fan favorite', area: 'Chinatown, Philadelphia', photo: '/homepage/businesses/prince-tea-house.webp' },
-  { name: 'The Brew Room', offer: '10% off your purchase', cat: 'Cafe', area: 'Ardmore, PA', photo: '/homepage/businesses/the-brew-room.webp' },
-  { name: 'Blue Skies Pottery', offer: '$5 off a Paint-a-Pot session', cat: 'Retail', categoryLabel: 'Experience', area: 'Bryn Mawr', photo: '/homepage/businesses/blue-skies-pottery.webp' },
-  { name: 'Apetek Computers', offer: '20% off phone, tablet, and computer repairs', cat: 'Other', categoryLabel: 'Services', area: 'Italian Market, Philadelphia', photo: '/homepage/businesses/apetek-computers.webp' },
+const DEALS = [
+  { name: 'La Colombe', offer: '$2 off any espresso drink before 11am', cat: 'Cafe', area: 'Fishtown', featured: true },
+  { name: 'Mango Mango Dessert', offer: 'Free topping on any dessert order', cat: 'Dessert', area: 'Chinatown', featured: false },
+  { name: 'Earn Everything Gym', offer: '15% off your first class pack', cat: 'Fitness', area: 'Center City', featured: false },
+  { name: 'Top Design Nails And Jewelry', offer: '$10 off any service over $50', cat: 'Nails', area: 'Old City', featured: false },
+  { name: 'Suraya', offer: 'Free mezze add-on with entree purchase', cat: 'Restaurant', area: 'Fishtown', featured: false },
 ]
-
-const FEATURED_DEALS = DEALS.slice(0, 3)
-const MORE_DEALS = DEALS.slice(3)
 
 const CAT_COLORS: Record<string, { bg: string; color: string }> = {
   Dessert: { bg: '#ffe5d1', color: '#ae5d17' },
@@ -43,8 +29,8 @@ const FAQS = [
     answer: 'We keep PerkPass affordable on purpose. The goal is simple: help more people enjoy local deals, discover new favorites, and support neighborhood businesses without overthinking the cost.',
   },
   {
-    question: 'How does PerkPass keep deals accurate?',
-    answer: 'Before a perk goes live, we confirm the details with the business: what is included, when it can be used, and how members should redeem it. That way the offer is clear at checkout and businesses know exactly what members are seeing.',
+    question: 'Are PerkPass deals approved by businesses?',
+    answer: 'Yes. PerkPass works with local Philly businesses before perks go live, so members know the offer is clear, current, and ready to redeem.',
   },
   {
     question: 'How do I redeem a deal?',
@@ -75,43 +61,6 @@ const CREATORS = [
 
 const SHOW_CREATOR_COLLABS = false
 
-function DealCard({ deal, prominence = 'standard' }: { deal: HomeDeal; prominence?: 'featured' | 'compact' | 'standard' }) {
-  const normalizedCategory = normalizeCategory(deal.cat)
-  const categoryMeta = getCategoryMeta(deal.cat)
-  const colors = CAT_COLORS[deal.cat] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
-  const categoryLabel = deal.categoryLabel || (deal.cat === 'Dessert' ? deal.cat : normalizedCategory)
-
-  return (
-    <div className={`deal-card deal-card-${prominence}`}>
-      <div style={{ position: 'relative' }}>
-        <img src={deal.photo} alt={`${deal.name} preview`} className="deal-card-img" loading="lazy" />
-        <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--ink)', color: 'var(--bg)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 8px', borderRadius: '3px' }}>
-          Participating
-        </span>
-        {deal.highlight && (
-          <span style={{ position: 'absolute', left: '10px', bottom: '10px', background: 'var(--green)', color: 'var(--forest)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 9px', borderRadius: '999px' }}>
-            {deal.highlight}
-          </span>
-        )}
-      </div>
-      <div className="deal-card-body">
-        <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 9px', borderRadius: '4px' }}>
-          {categoryLabel}
-        </span>
-        <div className="deal-card-title">
-          {deal.name}
-        </div>
-        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, color: 'var(--ink-4)', textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1.25 }}>
-          {deal.area}
-        </div>
-        <div className="deal-card-offer">
-          {deal.offer}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function Home() {
   return (
     <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -119,17 +68,6 @@ export default function Home() {
         .deal-card { background: var(--bg-2); border: 1.5px solid var(--border-2); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
         .deal-card-img { width: 100%; height: 120px; object-fit: cover; display: block; }
         .deal-card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-        .deal-card-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; color: var(--ink); line-height: 1.1; letter-spacing: -0.01em; }
-        .deal-card-offer { font-size: 15px; font-weight: 700; color: var(--green-dk); line-height: 1.35; }
-        .deal-card-featured { border-color: var(--forest); box-shadow: 6px 8px 0 rgba(15,15,15,0.08); }
-        .deal-card-featured .deal-card-img { height: 220px; }
-        .deal-card-featured .deal-card-title { font-size: clamp(27px, 5vw, 38px); }
-        .deal-card-featured .deal-card-offer { font-size: 19px; }
-        .deal-card-compact .deal-card-img { height: 128px; }
-        .featured-deal-grid { display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr); gap: 12px; margin-bottom: 22px; }
-        .featured-deal-stack { display: grid; grid-template-columns: 1fr; gap: 12px; }
-        .section-mini-label { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 800; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 10px; }
-        .more-deal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 32px; }
         .quick-link { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; text-align: left; width: 100%; transition: border-color 0.15s; }
         .quick-link:hover { border-color: var(--green); }
         .preview-kicker { display: inline-flex; align-items: center; gap: 8px; background: var(--green-lt); color: var(--green-dk); padding: 4px 12px; border-radius: 999px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
@@ -165,7 +103,6 @@ export default function Home() {
         .hero-shape-two { width: 110px; height: 110px; left: 34px; bottom: 50px; background: #f0bd57; }
         @media (max-width: 900px) {
           .preview-meta-grid { grid-template-columns: 1fr; }
-          .featured-deal-grid { grid-template-columns: 1fr; }
           .trust-strip-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); }
           .faq-grid { grid-template-columns: 1fr; }
           .creator-grid { grid-template-columns: 1fr; }
@@ -290,21 +227,21 @@ export default function Home() {
           <div style={{ marginBottom: '32px' }}>
             <div className="preview-kicker">Inside the app</div>
             <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)' }}>
-              Participating businesses
+              Sneak peek
             </h2>
             <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '560px', lineHeight: 1.6 }}>
-              Real local businesses are already joining PerkPass with member-only offers across coffee, tea, restaurants, desserts, creative experiences, and everyday services.
+              Preview the kind of member-only perks we are bringing to Philly as we continue onboarding neighborhood cafes, restaurants, fitness studios, self-care spots, shops, and local favorites.
             </p>
           </div>
 
           <div className="preview-meta-grid">
             <div className="preview-meta-card">
-              <div className="preview-meta-label">Live partners</div>
-              <div className="preview-meta-value">Local businesses with confirmed PerkPass offers</div>
+              <div className="preview-meta-label">Browse</div>
+              <div className="preview-meta-value">Neighborhood favorites across categories</div>
             </div>
             <div className="preview-meta-card">
-              <div className="preview-meta-label">Explore</div>
-              <div className="preview-meta-value">Food, dessert, experiences, services, and more</div>
+              <div className="preview-meta-label">Discover</div>
+              <div className="preview-meta-value">New spots, casual go-tos, and hidden gems</div>
             </div>
             <div className="preview-meta-card">
               <div className="preview-meta-label">Redeem</div>
@@ -312,21 +249,38 @@ export default function Home() {
             </div>
           </div>
 
-          <p className="section-mini-label">Featured member deals</p>
-          <div className="featured-deal-grid">
-            <DealCard deal={FEATURED_DEALS[0]} prominence="featured" />
-            <div className="featured-deal-stack">
-              {FEATURED_DEALS.slice(1).map((deal) => (
-                <DealCard key={deal.name} deal={deal} prominence="compact" />
-              ))}
-            </div>
-          </div>
-
-          <p className="section-mini-label">More participating businesses</p>
-          <div className="more-deal-grid">
-            {MORE_DEALS.map((deal) => (
-              <DealCard key={deal.name} deal={deal} />
-            ))}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '32px' }}>
+            {DEALS.map((d, i) => {
+              const normalizedCategory = normalizeCategory(d.cat)
+              const categoryMeta = getCategoryMeta(d.cat)
+              const colors = CAT_COLORS[d.cat] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
+              const photo = d.cat === 'Dessert'
+                ? 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/Homepage/Screenshot%202026-04-06%20at%203.04.06%20PM.png'
+                : categoryMeta.photo
+              return (
+                <div key={i} className="deal-card">
+                  {photo && (
+                    <div style={{ position: 'relative' }}>
+                      <img src={photo} alt={d.cat} className="deal-card-img" loading="lazy" />
+                      <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--ink)', color: 'var(--bg)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 8px', borderRadius: '3px' }}>
+                        Member preview
+                      </span>
+                    </div>
+                  )}
+                  <div className="deal-card-body">
+                    <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 9px', borderRadius: '4px' }}>
+                      {d.cat === 'Dessert' ? d.cat : normalizedCategory}
+                    </span>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.01em' }}>
+                      {d.name}
+                    </div>
+                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--green-dk)', lineHeight: 1.35 }}>
+                      {d.offer}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
             <Link href="/for-business" style={{ textDecoration: 'none' }}>
               <div className="deal-card" style={{ background: 'var(--bg)', border: '1.5px solid var(--forest)', minHeight: '220px', cursor: 'pointer' }}>
                 <div className="deal-card-body" style={{ justifyContent: 'center', gap: '16px' }}>
@@ -344,7 +298,7 @@ export default function Home() {
             </Link>
           </div>
           <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-4)', marginBottom: '20px', lineHeight: 1.6 }}>
-            And this is just the start. We are continuing to bring more Philly-area businesses, neighborhoods, categories, and exclusive local perks into the membership.
+            And this is just a preview. More perks, neighborhoods, categories, and Philly favorites are waiting inside the membership.
           </p>
           <div>
             <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px' }}>
