@@ -1,12 +1,13 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { getCategoryMeta, normalizeCategory } from '@/lib/product'
 
 const DEALS = [
-  { name: 'The Brew Room', offer: '10% off your purchase', cat: 'Cafe', area: 'Ardmore', featured: true },
-  { name: 'Prince Tea House', offer: '10% off your order', cat: 'Restaurant', area: 'Chinatown', featured: false },
-  { name: 'Scoop DeVille', offer: '25% off all items', cat: 'Dessert', area: 'Center City', featured: false },
-  { name: 'Mocha Melt Cafe', offer: '$3 off minimum purchase of $20', cat: 'Cafe', area: 'Philadelphia', featured: false },
-  { name: 'Cellar Dog', offer: 'Happy hour specials: 1/2 off games, drinks, & bites under $10', cat: 'Sport', area: 'Philadelphia', featured: false },
+  { name: 'The Brew Room', offer: '10% off your purchase', cat: 'Cafe', area: 'Ardmore', featured: true, photo: '/homepage/the-brew-room.png' },
+  { name: 'Prince Tea House', offer: '10% off your order', cat: 'Restaurant', area: 'Chinatown', featured: false, photo: '/homepage/prince-tea-house.png' },
+  { name: 'Scoop DeVille', offer: '25% off all items', cat: 'Dessert', area: 'Center City', featured: false, photo: '/homepage/scoop-deville.png' },
+  { name: 'Mocha Melt Cafe', offer: '$3 off minimum purchase of $20', cat: 'Cafe', area: 'Philadelphia', featured: false, photo: '/homepage/mocha-melt-cafe.png' },
+  { name: 'Cellar Dog', offer: 'Happy hour specials: 1/2 off games, drinks, & bites under $10', cat: 'Restaurant', area: 'Philadelphia', featured: false, photo: '/homepage/cellar-dog.png' },
 ]
 
 const CAT_COLORS: Record<string, { bg: string; color: string }> = {
@@ -65,14 +66,14 @@ export default function Home() {
   return (
     <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <style>{`
-        .deal-card { background: var(--bg-2); border: 1.5px solid var(--border-2); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+        .deal-card { background: var(--bg-2); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
         .deal-card-img { width: 100%; height: 120px; object-fit: cover; display: block; }
         .deal-card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
         .quick-link { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; text-align: left; width: 100%; transition: border-color 0.15s; }
         .quick-link:hover { border-color: var(--green); }
         .preview-kicker { display: inline-flex; align-items: center; gap: 8px; background: var(--green-lt); color: var(--green-dk); padding: 4px 12px; border-radius: 999px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
         .preview-meta-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
-        .preview-meta-card { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 10px; padding: 14px 14px 12px; }
+        .preview-meta-card { background: var(--bg-2); border-radius: 10px; padding: 14px 14px 12px; }
         .preview-meta-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-4); margin-bottom: 6px; }
         .preview-meta-value { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.3; }
         .trust-strip { border-bottom: 2px solid var(--ink); background: var(--bg-2); padding: 18px 24px; }
@@ -80,9 +81,9 @@ export default function Home() {
         .trust-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--ink-3); }
         .trust-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
         .faq-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        .faq-card { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 12px; padding: 20px; }
+        .faq-card { background: var(--bg-2); border-radius: 12px; padding: 20px; }
         .creator-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 14px; }
-        .creator-card { background: var(--bg-2); border: 1.5px solid var(--border-2); border-radius: 14px; padding: 22px; }
+        .creator-card { background: var(--bg-2); border-radius: 14px; padding: 22px; }
         .creator-stack { display: grid; grid-template-columns: 1fr; gap: 14px; }
         .home-hero { position: relative; overflow: hidden; padding: 64px 24px 56px; border-bottom: 2px solid var(--ink); background: var(--bg); }
         .home-hero-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.82fr); gap: 42px; align-items: center; }
@@ -254,14 +255,19 @@ export default function Home() {
               const normalizedCategory = normalizeCategory(d.cat)
               const categoryMeta = getCategoryMeta(d.cat)
               const colors = CAT_COLORS[d.cat] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
-              const photo = d.cat === 'Dessert'
-                ? 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/Homepage/Screenshot%202026-04-06%20at%203.04.06%20PM.png'
-                : categoryMeta.photo
+              const photo = d.photo || categoryMeta.photo
               return (
                 <div key={i} className="deal-card">
                   {photo && (
                     <div style={{ position: 'relative' }}>
-                      <img src={photo} alt={d.cat} className="deal-card-img" loading="lazy" />
+                      <Image
+                        src={photo}
+                        alt={d.name}
+                        className="deal-card-img"
+                        width={2160}
+                        height={3840}
+                        loading="lazy"
+                      />
                       <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--ink)', color: 'var(--bg)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 8px', borderRadius: '3px' }}>
                         Member preview
                       </span>
@@ -285,7 +291,7 @@ export default function Home() {
               <div
                 className="deal-card"
                 style={{
-                  background: 'var(--bg)',
+                  background: 'var(--bg-2)',
                   border: '1.5px solid var(--forest)',
                   minHeight: '220px',
                   cursor: 'pointer',
