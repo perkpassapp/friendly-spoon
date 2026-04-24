@@ -282,19 +282,74 @@ export default function Home() {
               )
             })}
             <Link href="/for-business" style={{ textDecoration: 'none' }}>
-              <div className="deal-card" style={{ background: 'linear-gradient(180deg, #fffdf6 0%, #f6f1e3 100%)', border: '1.5px solid var(--forest)', minHeight: '220px', cursor: 'pointer' }}>
-                <div className="deal-card-body" style={{ justifyContent: 'center', gap: '14px', padding: '20px 18px 22px' }}>
-                  <div style={{ alignSelf: 'flex-start', background: 'var(--green-lt)', color: 'var(--green-dk)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 10px', borderRadius: '999px' }}>
-                    Business owner
+              <div
+                className="deal-card"
+                style={{
+                  background: 'var(--bg)',
+                  border: '1.5px solid var(--forest)',
+                  minHeight: '220px',
+                  cursor: 'pointer',
+                  position: 'relative',
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '14px',
+                    right: '14px',
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '999px',
+                    background: 'var(--green-lt)',
+                    display: 'grid',
+                    placeItems: 'center',
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: '16px',
+                    fontWeight: 800,
+                    color: 'var(--green-dk)',
+                  }}
+                >
+                  ↗
+                </div>
+                <div className="deal-card-body" style={{ justifyContent: 'center', gap: '16px', padding: '22px 18px 22px' }}>
+                  <div
+                    style={{
+                      alignSelf: 'flex-start',
+                      background: 'var(--green-lt)',
+                      color: 'var(--green-dk)',
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.06em',
+                      padding: '4px 10px',
+                      borderRadius: '999px',
+                    }}
+                  >
+                    For business owners
                   </div>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '26px', fontWeight: 900, color: 'var(--forest)', lineHeight: 1.08, maxWidth: '15ch' }}>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '26px', fontWeight: 900, color: 'var(--forest)', lineHeight: 1.05, maxWidth: '14ch' }}>
                     Wanna partner up? Let&apos;s do it.
                   </div>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-3)', lineHeight: 1.5, maxWidth: '28ch' }}>
-                    Join PerkPass and put your business in front of locals looking for their next favorite spot.
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-3)', lineHeight: 1.5, maxWidth: '30ch' }}>
+                    Put your business in front of locals already looking for their next favorite Philly spot.
                   </div>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '15px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--green-dk)' }}>
-                    Apply Now →
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      alignSelf: 'flex-start',
+                      color: 'var(--green-dk)',
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontSize: '15px',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.04em',
+                    }}
+                  >
+                    <span>Apply now</span>
+                    <span style={{ color: 'var(--green)' }}>→</span>
                   </div>
                 </div>
               </div>
