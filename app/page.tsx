@@ -3,11 +3,11 @@ import Image from 'next/image'
 import { getCategoryMeta, normalizeCategory } from '@/lib/product'
 
 const DEALS = [
-  { name: 'The Brew Room', offer: '10% off your purchase', cat: 'Cafe', area: 'Ardmore', featured: true, photo: '/homepage/the-brew-room.png' },
-  { name: 'Prince Tea House', offer: '10% off your order', cat: 'Restaurant', area: 'Chinatown', featured: false, photo: '/homepage/prince-tea-house.png' },
-  { name: 'Scoop DeVille', offer: '25% off all items', cat: 'Dessert', area: 'Center City', featured: false, photo: '/homepage/scoop-deville.png' },
-  { name: 'Mocha Melt Cafe', offer: '$3 off minimum purchase of $20', cat: 'Cafe', area: 'Philadelphia', featured: false, photo: '/homepage/mocha-melt-cafe.png' },
-  { name: 'Cellar Dog', offer: 'Happy hour specials: 1/2 off games, drinks, & bites under $10', cat: 'Restaurant', area: 'Philadelphia', featured: false, photo: '/homepage/cellar-dog.png' },
+  { name: 'The Brew Room', offer: '10% off your purchase', cat: 'Cafe', area: 'Ardmore', featured: true, photo: 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/016a6f95-c5f9-45bb-a312-88da2ae64b14/photo.png' },
+  { name: 'Prince Tea House', offer: '10% off your order', cat: 'Cafe', area: 'Chinatown', featured: false, photo: 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/7dc520df-84e1-40aa-bd96-0aa45f0de47b/photo.png' },
+  { name: 'Scoop DeVille', offer: '25% off all items', cat: 'Cafe', area: 'Center City', featured: false, photo: 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/c22ae3bd-7d0f-4b85-96a5-63f8542682ec/photo.png' },
+  { name: 'Mocha Melt Cafe', offer: '$3 off minimum purchase of $20', cat: 'Cafe', area: 'Philadelphia', featured: false, photo: 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/businesses/52259609-d50c-40c3-ae3c-bc3c56cd3b72/photo-1776914769817.png' },
+  { name: 'Cellar Dog', offer: 'Happy hour specials: 1/2 off games, drinks, & bites under $10', cat: 'Restaurant', area: 'Philadelphia', featured: false, photo: 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/businesses/88c5126c-0435-43ad-8291-864a68aca7f4/photo-1776962483796.webp' },
 ]
 
 const CAT_COLORS: Record<string, { bg: string; color: string }> = {
