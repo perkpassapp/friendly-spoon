@@ -2,11 +2,11 @@ import Link from 'next/link'
 import { getCategoryMeta, normalizeCategory } from '@/lib/product'
 
 const DEALS = [
-  { name: 'La Colombe', offer: '$2 off any espresso drink before 11am', cat: 'Cafe', area: 'Fishtown', featured: true },
-  { name: 'Mango Mango Dessert', offer: 'Free topping on any dessert order', cat: 'Dessert', area: 'Chinatown', featured: false },
-  { name: 'Earn Everything Gym', offer: '15% off your first class pack', cat: 'Fitness', area: 'Center City', featured: false },
-  { name: 'Top Design Nails And Jewelry', offer: '$10 off any service over $50', cat: 'Nails', area: 'Old City', featured: false },
-  { name: 'Suraya', offer: 'Free mezze add-on with entree purchase', cat: 'Restaurant', area: 'Fishtown', featured: false },
+  { name: 'The Brew Room', offer: '10% off your purchase', cat: 'Cafe', area: 'Ardmore', featured: true },
+  { name: 'Prince Tea House', offer: '10% off your order', cat: 'Restaurant', area: 'Chinatown', featured: false },
+  { name: 'Scoop DeVille', offer: '25% off all items', cat: 'Dessert', area: 'Center City', featured: false },
+  { name: 'Mocha Melt Cafe', offer: '$3 off minimum purchase of $20', cat: 'Cafe', area: 'Philadelphia', featured: false },
+  { name: 'Cellar Dog', offer: 'Happy hour specials: 1/2 off games, drinks, & bites under $10', cat: 'Sport', area: 'Philadelphia', featured: false },
 ]
 
 const CAT_COLORS: Record<string, { bg: string; color: string }> = {
@@ -282,15 +282,18 @@ export default function Home() {
               )
             })}
             <Link href="/for-business" style={{ textDecoration: 'none' }}>
-              <div className="deal-card" style={{ background: 'var(--bg)', border: '1.5px solid var(--forest)', minHeight: '220px', cursor: 'pointer' }}>
-                <div className="deal-card-body" style={{ justifyContent: 'center', gap: '16px' }}>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--green)' }}>
+              <div className="deal-card" style={{ background: 'linear-gradient(180deg, #fffdf6 0%, #f6f1e3 100%)', border: '1.5px solid var(--forest)', minHeight: '220px', cursor: 'pointer' }}>
+                <div className="deal-card-body" style={{ justifyContent: 'center', gap: '14px', padding: '20px 18px 22px' }}>
+                  <div style={{ alignSelf: 'flex-start', background: 'var(--green-lt)', color: 'var(--green-dk)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 10px', borderRadius: '999px' }}>
                     Business owner
                   </div>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '24px', fontWeight: 900, color: 'var(--forest)', lineHeight: 1.05 }}>
-                    Wanna list your juicy deals? Let&apos;s do it.
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '26px', fontWeight: 900, color: 'var(--forest)', lineHeight: 1.08, maxWidth: '15ch' }}>
+                    Wanna partner up? Let&apos;s do it.
                   </div>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green)' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-3)', lineHeight: 1.5, maxWidth: '28ch' }}>
+                    Join PerkPass and put your business in front of locals looking for their next favorite spot.
+                  </div>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '15px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--green-dk)' }}>
                     Apply Now →
                   </div>
                 </div>
