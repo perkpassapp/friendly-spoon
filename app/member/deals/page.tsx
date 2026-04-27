@@ -628,58 +628,55 @@ export default function MemberDeals() {
           <button
             onClick={toggleLiveOnly}
             style={{
-              width: '100%',
+              width: 'fit-content',
               marginTop: '14px',
               border: '1px solid',
-              borderColor: showLiveOnly ? 'var(--ink)' : 'var(--border)',
-              borderRadius: '18px',
-              background: showLiveOnly ? 'var(--ink)' : 'var(--bg-2)',
-              color: showLiveOnly ? 'var(--bg)' : 'var(--ink)',
-              padding: '14px 16px',
+              borderColor: showLiveOnly ? 'rgba(95,160,97,0.4)' : 'var(--border)',
+              borderRadius: '999px',
+              background: showLiveOnly ? '#f6f1e4' : 'var(--bg-2)',
+              color: 'var(--ink)',
+              padding: '10px 14px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              gap: '16px',
+              gap: '12px',
               textAlign: 'left',
             }}
           >
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={{
-                fontFamily: "'Barlow Condensed', sans-serif",
-                fontSize: '13px',
-                fontWeight: 700,
-                letterSpacing: '0.05em',
-                marginBottom: '4px',
-                textTransform: 'uppercase',
-                color: showLiveOnly ? 'var(--bg)' : 'var(--ink)',
-              }}>
-                Live deals now
-              </div>
-              <div style={{
-                fontSize: '14px',
-                fontWeight: 500,
-                lineHeight: 1.35,
-                color: showLiveOnly ? 'rgba(255,255,255,0.76)' : 'var(--ink-3)',
-              }}>
-                {showLiveOnly
-                  ? 'Showing only deals customers can redeem right now.'
-                  : 'Jump straight into deals that are redeemable right this second.'}
-              </div>
-            </div>
             <div style={{
-              flexShrink: 0,
-              borderRadius: '999px',
-              background: showLiveOnly ? 'var(--green)' : 'var(--bg)',
-              color: showLiveOnly ? '#ffffff' : 'var(--ink-3)',
-              padding: '6px 10px',
               fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: '11px',
+              fontSize: '13px',
               fontWeight: 700,
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
+              color: showLiveOnly ? 'var(--green-dk)' : 'var(--ink)',
             }}>
-              {showLiveOnly ? 'On' : 'Off'}
+              Live deals now
+            </div>
+            <div style={{
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+            }}>
+              <div style={{
+                width: '42px',
+                height: '24px',
+                borderRadius: '999px',
+                background: showLiveOnly ? 'var(--green)' : '#d8d1bf',
+                padding: '3px',
+                display: 'flex',
+                alignItems: 'center',
+              }}>
+                <div style={{
+                  width: '18px',
+                  height: '18px',
+                  borderRadius: '999px',
+                  background: 'var(--bg)',
+                  transform: showLiveOnly ? 'translateX(18px)' : 'translateX(0)',
+                  transition: 'transform 160ms ease',
+                }} />
+              </div>
             </div>
           </button>
         </div>
