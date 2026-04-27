@@ -55,7 +55,7 @@ export default function MemberDeals() {
   const [loading, setLoading] = useState(true)
   const [accessDenied, setAccessDenied] = useState(false)
   const [filter, setFilter] = useState('All')
-  const [showLiveOnly, setShowLiveOnly] = useState(false)
+  const [showLiveOnly, setShowLiveOnly] = useState(true)
   const [selectedWeekday, setSelectedWeekday] = useState<number>(new Date().getDay())
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null)
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({})
