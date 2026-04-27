@@ -55,6 +55,7 @@ export default function MemberDeals() {
   const [loading, setLoading] = useState(true)
   const [accessDenied, setAccessDenied] = useState(false)
   const [filter, setFilter] = useState('All')
+  const [showLiveOnly, setShowLiveOnly] = useState(false)
   const [selectedWeekday, setSelectedWeekday] = useState<number>(new Date().getDay())
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null)
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({})
@@ -250,8 +251,20 @@ export default function MemberDeals() {
     : filter === 'Favorites'
       ? deals.filter(d => favoriteBusinesses.includes(d.business_name))
       : deals.filter(d => d.category === filter)
-  const weekDeals = categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, selectedWeekday))
+  const weekDeals = showLiveOnly
+    ? categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, currentDay) && isScheduleActive(deal))
+    : categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, selectedWeekday))
   const selectedWeekdayLabel = dayTabs.find(tab => tab.day === selectedWeekday)?.fullLabel ?? currentDayLabel
+
+  function toggleLiveOnly() {
+    setShowLiveOnly((current) => {
+      const next = !current
+      if (next) {
+        setSelectedWeekday(currentDay)
+      }
+      return next
+    })
+  }
 
   // Reusable photo block with Option C frosted footer bar
   function BusinessPhotoBlock({
@@ -612,9 +625,63 @@ export default function MemberDeals() {
           <h1 className="display" style={{ fontSize: 'clamp(36px, 8vw, 52px)', marginBottom: '4px' }}>
             {userName ? `Hey ${userName}.` : 'Your deals.'}
           </h1>
-          <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)' }}>
-            {groupDeals(categoryFiltered).length} {groupDeals(categoryFiltered).length === 1 ? 'business' : 'businesses'} · {categoryFiltered.length} deals in Philadelphia
-          </p>
+          <button
+            onClick={toggleLiveOnly}
+            style={{
+              width: '100%',
+              marginTop: '14px',
+              border: '1px solid',
+              borderColor: showLiveOnly ? 'var(--ink)' : 'var(--border)',
+              borderRadius: '18px',
+              background: showLiveOnly ? 'var(--ink)' : 'var(--bg-2)',
+              color: showLiveOnly ? 'var(--bg)' : 'var(--ink)',
+              padding: '14px 16px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '16px',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: '13px',
+                fontWeight: 700,
+                letterSpacing: '0.05em',
+                marginBottom: '4px',
+                textTransform: 'uppercase',
+                color: showLiveOnly ? 'var(--bg)' : 'var(--ink)',
+              }}>
+                Live deals now
+              </div>
+              <div style={{
+                fontSize: '14px',
+                fontWeight: 500,
+                lineHeight: 1.35,
+                color: showLiveOnly ? 'rgba(255,255,255,0.76)' : 'var(--ink-3)',
+              }}>
+                {showLiveOnly
+                  ? 'Showing only deals customers can redeem right now.'
+                  : 'Jump straight into deals that are redeemable right this second.'}
+              </div>
+            </div>
+            <div style={{
+              flexShrink: 0,
+              borderRadius: '999px',
+              background: showLiveOnly ? 'var(--green)' : 'var(--bg)',
+              color: showLiveOnly ? '#ffffff' : 'var(--ink-3)',
+              padding: '6px 10px',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+            }}>
+              {showLiveOnly ? 'On' : 'Off'}
+            </div>
+          </button>
         </div>
 
         <div style={{ marginBottom: '18px' }}>
@@ -622,7 +689,10 @@ export default function MemberDeals() {
             {dayTabs.map(tab => (
               <button
                 key={tab.day}
-                onClick={() => setSelectedWeekday(tab.day)}
+                onClick={() => {
+                  setSelectedWeekday(tab.day)
+                  setShowLiveOnly(false)
+                }}
                 style={{
                   flexShrink: 0,
                   minWidth: '74px',
@@ -644,7 +714,9 @@ export default function MemberDeals() {
             ))}
           </div>
           <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500 }}>
-            Showing deals scheduled for {selectedWeekdayLabel}.
+            {showLiveOnly
+              ? 'Showing deals customers can redeem right now.'
+              : `Showing deals scheduled for ${selectedWeekdayLabel}.`}
           </p>
         </div>
 
@@ -669,7 +741,11 @@ export default function MemberDeals() {
           ))}
         </div>
 
-        {renderSection(selectedWeekday === currentDay ? 'Today' : selectedWeekdayLabel, `Browse what is scheduled for ${selectedWeekdayLabel}.`, weekDeals)}
+        {renderSection(
+          showLiveOnly ? 'Live now' : selectedWeekday === currentDay ? 'Today' : selectedWeekdayLabel,
+          showLiveOnly ? 'Browse deals customers can redeem right now.' : `Browse what is scheduled for ${selectedWeekdayLabel}.`,
+          weekDeals,
+        )}
 
         {weekDeals.length === 0 && (
           <div style={{ textAlign: 'center', padding: '64px 0' }}>
