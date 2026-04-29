@@ -231,11 +231,11 @@ export default function AccountPage() {
           </div>
 
           <div className="fade-up-3" style={{
-            background: 'linear-gradient(135deg, #f8efd8 0%, #e9f4df 100%)',
+            background: 'linear-gradient(135deg, #f7f2e7 0%, #edf4e8 100%)',
             borderRadius: '10px',
             padding: '22px 24px',
             marginBottom: '16px',
-            border: '1px solid #d4c385',
+            border: '1px solid #decfa2',
           }}>
             <div style={{
               display: 'inline-flex',

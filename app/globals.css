@@ -5,9 +5,9 @@
 @tailwind utilities;
 
 :root {
-  --bg:        #e9e2cf;
-  --bg-2:      #f7f3ec;
-  --bg-3:      #ddd8c4;
+  --bg:        #f3efe6;
+  --bg-2:      #fbf9f5;
+  --bg-3:      #e6dfd2;
   --ink:       #1c1c1a;
   --ink-2:     #3a3830;
   --ink-3:     #5a5850;

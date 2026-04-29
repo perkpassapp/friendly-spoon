@@ -93,7 +93,7 @@ export default function Home() {
         .hero-proof-card { background: rgba(255,255,255,0.62); border: 1px solid rgba(15,15,15,0.12); border-radius: 12px; padding: 14px 14px 12px; backdrop-filter: blur(10px); }
         .hero-visual { position: relative; min-height: 430px; }
         .hero-phone { position: relative; z-index: 2; width: min(100%, 330px); margin-left: auto; background: var(--forest); border: 2px solid var(--ink); border-radius: 30px; padding: 14px; box-shadow: 10px 12px 0 rgba(15,15,15,0.1); }
-        .hero-phone-screen { background: #fffaf0; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.18); }
+        .hero-phone-screen { background: var(--bg-2); border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.18); }
         .hero-phone-top { padding: 16px 16px 10px; background: var(--forest); color: #fff; }
         .hero-mini-card { background: var(--bg); border: 1px solid var(--border-2); border-radius: 12px; padding: 12px; margin: 8px; }
         .hero-float { position: absolute; z-index: 3; background: var(--bg); border: 2px solid var(--ink); border-radius: 14px; padding: 13px; box-shadow: 6px 8px 0 rgba(15,15,15,0.12); }

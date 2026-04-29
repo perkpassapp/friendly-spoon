@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "PerkPass",
+    "slug": "perkpass",
+    "scheme": "perkpass",
+    "version": "0.1.0",
+    "icon": "./assets/app-icon.png",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f3efe6"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.getperkpass.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.getperkpass.app"
+    },
+    "extra": {
+      "appName": "PerkPass",
+      "eas": {
+        "projectId": "51994d31-649c-4fd5-983b-f5281df48371"
+      }
+    },
+    "plugins": [
+      "expo-web-browser"
+    ]
+  }
+}
