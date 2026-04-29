@@ -24,6 +24,11 @@
 # misc
 .DS_Store
 *.pem
+output/
+mobile/.expo/
+mobile/icon-explorations/
+mobile/icon-explorations-v2/
+mobile/icon-explorations-v3/
 
 # debug
 npm-debug.log*
