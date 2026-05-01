@@ -341,8 +341,19 @@ export default function AccountPage() {
               color: 'var(--ink-4)', marginBottom: '8px',
             }}>Billing</div>
             <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '12px', lineHeight: 1.5 }}>
-              Update payment details.
+              {active
+                ? 'Update payment details or manage your membership.'
+                : 'Restart your membership or update payment details.'}
             </p>
+            {!active && (
+              <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-4)', marginBottom: '12px', lineHeight: 1.5 }}>
+                This opens Stripe&apos;s billing portal. If your old membership cannot be restarted there, use{' '}
+                <Link href="/signup" style={{ color: 'var(--green-dk)' }}>
+                  the signup page
+                </Link>{' '}
+                to begin a new one.
+              </p>
+            )}
             <button
               onClick={handleManageBilling}
               disabled={cancelLoading}
@@ -359,7 +370,13 @@ export default function AccountPage() {
                 opacity: cancelLoading ? 0.6 : 1,
               }}
             >
-              {cancelLoading ? 'Opening billing portal...' : 'Manage billing'}
+              {cancelLoading
+                ? active
+                  ? 'Opening billing portal...'
+                  : 'Opening reactivation options...'
+                : active
+                  ? 'Manage billing'
+                  : 'Reactivate membership'}
             </button>
           </div>
 

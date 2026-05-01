@@ -48,10 +48,7 @@ Lifestyle
 
 ## Support URL
 
-https://getperkpass.com/privacy
-
-Note:
-Apple usually prefers a dedicated support page, but the repo only clearly exposes support via `hello@getperkpass.com` and legal pages. If you add a dedicated support page later, use that instead.
+https://getperkpass.com/support
 
 ## Marketing URL
 
