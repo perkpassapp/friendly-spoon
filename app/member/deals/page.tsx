@@ -55,6 +55,7 @@ export default function MemberDeals() {
   const [loading, setLoading] = useState(true)
   const [accessDenied, setAccessDenied] = useState(false)
   const [filter, setFilter] = useState('All')
+  const [section, setSection] = useState<'deals' | 'favorites'>('deals')
   const [showLiveOnly, setShowLiveOnly] = useState(true)
   const [selectedWeekday, setSelectedWeekday] = useState<number>(new Date().getDay())
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null)
@@ -127,9 +128,13 @@ export default function MemberDeals() {
   function toggleFavoriteBusiness(businessName: string) {
     if (!memberEmail) return
     setFavoriteBusinesses((current) => {
-      const next = current.includes(businessName)
+      const isRemoving = current.includes(businessName)
+      const next = isRemoving
         ? current.filter((name) => name !== businessName)
         : [...current, businessName]
+      if (!isRemoving) {
+        setSection('favorites')
+      }
       window.localStorage.setItem(`perkpass:favorites:${memberEmail}`, JSON.stringify(next))
       return next
     })
@@ -230,9 +235,9 @@ export default function MemberDeals() {
   }
 
   const favoriteDealCount = deals.filter((deal) => favoriteBusinesses.includes(deal.business_name)).length
+  const hasFavorites = favoriteDealCount > 0
   const categories = [
     'All',
-    ...(favoriteDealCount > 0 ? ['Favorites'] : []),
     ...CATEGORY_OPTIONS.filter(category => deals.some((deal) => deal.category === category)),
   ]
   const now = new Date()
@@ -246,11 +251,12 @@ export default function MemberDeals() {
       fullLabel: date.toLocaleDateString('en-US', { weekday: 'long' }),
     }
   })
+  const sectionDeals = section === 'favorites'
+    ? deals.filter((deal) => favoriteBusinesses.includes(deal.business_name))
+    : deals
   const categoryFiltered = filter === 'All'
-    ? deals
-    : filter === 'Favorites'
-      ? deals.filter(d => favoriteBusinesses.includes(d.business_name))
-      : deals.filter(d => d.category === filter)
+    ? sectionDeals
+    : sectionDeals.filter((deal) => deal.category === filter)
   const weekDeals = showLiveOnly
     ? categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, currentDay) && isScheduleActive(deal))
     : categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, selectedWeekday))
@@ -610,6 +616,40 @@ export default function MemberDeals() {
       <header style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg)', borderBottom: '2px solid var(--ink)', padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link href="/member/deals" className="pp-logo">Perk<span>Pass</span></Link>
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <button
+            onClick={() => setSection('deals')}
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: '13px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              color: section === 'deals' ? 'var(--ink)' : 'var(--ink-3)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            Deals
+          </button>
+          <button
+            onClick={() => setSection('favorites')}
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: '13px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              color: section === 'favorites' ? 'var(--green-dk)' : 'var(--ink-3)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            {hasFavorites ? `Favorites (${favoriteBusinesses.length})` : 'Favorites'}
+          </button>
           <Link href="/account" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-3)', textDecoration: 'none' }}>Account</Link>
           <button
             onClick={async () => { await supabase.auth.signOut(); router.push('/') }}
@@ -623,8 +663,17 @@ export default function MemberDeals() {
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '0 20px' }}>
         <div style={{ padding: '28px 0 8px' }}>
           <h1 className="display" style={{ fontSize: 'clamp(36px, 8vw, 52px)', marginBottom: '4px' }}>
-            {userName ? `Hey ${userName}.` : 'Your deals.'}
+            {section === 'favorites'
+              ? 'Your favorites.'
+              : userName
+                ? `Hey ${userName}.`
+                : 'Your deals.'}
           </h1>
+          <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500, marginBottom: '6px' }}>
+            {section === 'favorites'
+              ? 'Saved spots live here so you can get back to them quickly.'
+              : 'Browse Philly deals by day, availability, and category.'}
+          </p>
           <button
             onClick={toggleLiveOnly}
             style={{
@@ -739,16 +788,36 @@ export default function MemberDeals() {
         </div>
 
         {renderSection(
-          showLiveOnly ? 'Live now' : selectedWeekday === currentDay ? 'Today' : selectedWeekdayLabel,
-          showLiveOnly ? 'Browse deals customers can redeem right now.' : `Browse what is scheduled for ${selectedWeekdayLabel}.`,
+          section === 'favorites'
+            ? showLiveOnly
+              ? 'Saved and live now'
+              : selectedWeekday === currentDay
+                ? 'Saved for today'
+                : `Saved for ${selectedWeekdayLabel}`
+            : showLiveOnly
+              ? 'Live now'
+              : selectedWeekday === currentDay
+                ? 'Today'
+                : selectedWeekdayLabel,
+          section === 'favorites'
+            ? showLiveOnly
+              ? 'Browse saved deals you can redeem right now.'
+              : `Browse saved deals scheduled for ${selectedWeekdayLabel}.`
+            : showLiveOnly
+              ? 'Browse deals customers can redeem right now.'
+              : `Browse what is scheduled for ${selectedWeekdayLabel}.`,
           weekDeals,
         )}
 
         {weekDeals.length === 0 && (
           <div style={{ textAlign: 'center', padding: '64px 0' }}>
-            <div className="display" style={{ fontSize: '32px', marginBottom: '8px' }}>Nothing in this window yet.</div>
+            <div className="display" style={{ fontSize: '32px', marginBottom: '8px' }}>
+              {section === 'favorites' ? 'No saved deals in this view yet.' : 'Nothing in this window yet.'}
+            </div>
             <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontWeight: 500 }}>
-              Try another day or category to see more active deals.
+              {section === 'favorites'
+                ? 'Tap Save on a business to add it here, or try another day or category.'
+                : 'Try another day or category to see more active deals.'}
             </p>
           </div>
         )}
