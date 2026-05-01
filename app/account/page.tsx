@@ -16,7 +16,7 @@ export default function AccountPage() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(true)
-  const [cancelLoading, setCancelLoading] = useState(false)
+  const [billingLoading, setBillingLoading] = useState(false)
   const [active, setActive] = useState(false)
   const [redemptions, setRedemptions] = useState<RedemptionHistory[]>([])
   const router = useRouter()
@@ -76,21 +76,29 @@ export default function AccountPage() {
     init()
   }, [router])
 
-  async function handleManageBilling() {
-    setCancelLoading(true)
+  async function handleBillingAction() {
+    setBillingLoading(true)
     try {
-      const res = await fetch('/api/cancel-subscription', {
+      const endpoint = active ? '/api/cancel-subscription' : '/api/create-checkout'
+      const body = active
+        ? { email }
+        : { email, phone: phone.replace(/\D/g, ''), billingInterval: 'monthly' }
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify(body),
       })
+
       const { url, error } = await res.json()
       if (url) window.location.href = url
+      else if (!active) window.location.href = '/signup'
       else alert(error || 'Something went wrong. Please try again.')
     } catch {
-      alert('Something went wrong. Please try again.')
+      if (!active) window.location.href = '/signup'
+      else alert('Something went wrong. Please try again.')
     }
-    setCancelLoading(false)
+    setBillingLoading(false)
   }
 
   if (loading) return (
@@ -355,8 +363,8 @@ export default function AccountPage() {
               </p>
             )}
             <button
-              onClick={handleManageBilling}
-              disabled={cancelLoading}
+              onClick={handleBillingAction}
+              disabled={billingLoading}
               style={{
                 background: 'none',
                 border: 'none',
@@ -366,14 +374,14 @@ export default function AccountPage() {
                 textUnderlineOffset: '2px',
                 fontSize: '14px',
                 fontWeight: 700,
-                cursor: cancelLoading ? 'default' : 'pointer',
-                opacity: cancelLoading ? 0.6 : 1,
+                cursor: billingLoading ? 'default' : 'pointer',
+                opacity: billingLoading ? 0.6 : 1,
               }}
             >
-              {cancelLoading
+              {billingLoading
                 ? active
                   ? 'Opening billing portal...'
-                  : 'Opening reactivation options...'
+                  : 'Starting checkout...'
                 : active
                   ? 'Manage billing'
                   : 'Reactivate membership'}
