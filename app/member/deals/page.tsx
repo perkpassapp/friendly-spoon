@@ -128,13 +128,9 @@ export default function MemberDeals() {
   function toggleFavoriteBusiness(businessName: string) {
     if (!memberEmail) return
     setFavoriteBusinesses((current) => {
-      const isRemoving = current.includes(businessName)
-      const next = isRemoving
+      const next = current.includes(businessName)
         ? current.filter((name) => name !== businessName)
         : [...current, businessName]
-      if (!isRemoving) {
-        setSection('favorites')
-      }
       window.localStorage.setItem(`perkpass:favorites:${memberEmail}`, JSON.stringify(next))
       return next
     })
@@ -234,8 +230,6 @@ export default function MemberDeals() {
     return Array.from(map.values())
   }
 
-  const favoriteDealCount = deals.filter((deal) => favoriteBusinesses.includes(deal.business_name)).length
-  const hasFavorites = favoriteDealCount > 0
   const categories = [
     'All',
     ...CATEGORY_OPTIONS.filter(category => deals.some((deal) => deal.category === category)),
@@ -617,23 +611,6 @@ export default function MemberDeals() {
         <Link href="/member/deals" className="pp-logo">Perk<span>Pass</span></Link>
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <button
-            onClick={() => setSection('deals')}
-            style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 700,
-              fontSize: '13px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              color: section === 'deals' ? 'var(--ink)' : 'var(--ink-3)',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-            }}
-          >
-            Deals
-          </button>
-          <button
             onClick={() => setSection('favorites')}
             style={{
               fontFamily: "'Barlow Condensed', sans-serif",
@@ -648,7 +625,7 @@ export default function MemberDeals() {
               padding: 0,
             }}
           >
-            {hasFavorites ? `Favorites (${favoriteBusinesses.length})` : 'Favorites'}
+            Favorites
           </button>
           <Link href="/account" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-3)', textDecoration: 'none' }}>Account</Link>
           <button
