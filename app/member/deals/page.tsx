@@ -608,7 +608,16 @@ export default function MemberDeals() {
       )}
 
       <header style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg)', borderBottom: '2px solid var(--ink)', padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/member/deals" className="pp-logo">Perk<span>Pass</span></Link>
+        <Link
+          href="/member/deals"
+          className="pp-logo"
+          onClick={() => {
+            setSection('deals')
+            setFilter('All')
+          }}
+        >
+          Perk<span>Pass</span>
+        </Link>
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <button
             onClick={() => setSection('favorites')}
