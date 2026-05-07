@@ -56,6 +56,7 @@ export default function MemberDeals() {
   const [accessDenied, setAccessDenied] = useState(false)
   const [filter, setFilter] = useState('All')
   const [section, setSection] = useState<'deals' | 'favorites'>('deals')
+  const [search, setSearch] = useState('')
   const [showLiveOnly, setShowLiveOnly] = useState(true)
   const [selectedWeekday, setSelectedWeekday] = useState<number>(new Date().getDay())
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null)
@@ -248,9 +249,13 @@ export default function MemberDeals() {
   const sectionDeals = section === 'favorites'
     ? deals.filter((deal) => favoriteBusinesses.includes(deal.business_name))
     : deals
+  const normalizedSearch = search.trim().toLowerCase()
+  const searchFiltered = normalizedSearch
+    ? sectionDeals.filter((deal) => deal.business_name.toLowerCase().includes(normalizedSearch))
+    : sectionDeals
   const categoryFiltered = filter === 'All'
-    ? sectionDeals
-    : sectionDeals.filter((deal) => deal.category === filter)
+    ? searchFiltered
+    : searchFiltered.filter((deal) => deal.category === filter)
   const weekDeals = showLiveOnly
     ? categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, currentDay) && isScheduleActive(deal))
     : categoryFiltered.filter((deal) => isDealAvailableOnDay(deal, selectedWeekday))
@@ -660,6 +665,46 @@ export default function MemberDeals() {
               ? 'Saved spots live here so you can get back to them quickly.'
               : 'Browse Philly deals by day, availability, and category.'}
           </p>
+          <div style={{ marginTop: '18px', marginBottom: '10px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={section === 'favorites' ? 'Search saved spots' : 'Search deals, businesses, or neighborhoods'}
+              style={{
+                width: '100%',
+                padding: '13px 14px',
+                borderRadius: '12px',
+                border: '1px solid var(--border)',
+                background: 'var(--bg-2)',
+                color: 'var(--ink)',
+                fontSize: '15px',
+                fontWeight: 500,
+                outline: 'none',
+              }}
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                style={{
+                  flexShrink: 0,
+                  border: 'none',
+                  background: 'none',
+                  color: 'var(--ink-4)',
+                  cursor: 'pointer',
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  padding: 0,
+                }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
           <button
             onClick={toggleLiveOnly}
             style={{
@@ -798,10 +843,16 @@ export default function MemberDeals() {
         {weekDeals.length === 0 && (
           <div style={{ textAlign: 'center', padding: '64px 0' }}>
             <div className="display" style={{ fontSize: '32px', marginBottom: '8px' }}>
-              {section === 'favorites' ? 'No saved deals in this view yet.' : 'Nothing in this window yet.'}
+              {search
+                ? 'No matching deals yet.'
+                : section === 'favorites'
+                  ? 'No saved deals in this view yet.'
+                  : 'Nothing in this window yet.'}
             </div>
             <p style={{ fontSize: '14px', color: 'var(--ink-4)', fontWeight: 500 }}>
-              {section === 'favorites'
+              {search
+                ? 'Try a different search term, category, or day.'
+                : section === 'favorites'
                 ? 'Tap Save on a business to add it here, or try another day or category.'
                 : 'Try another day or category to see more active deals.'}
             </p>
