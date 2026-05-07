@@ -113,7 +113,7 @@ function SignupContent() {
         if (status.phone) setPhone(formatPhone(status.phone))
         setHasActiveMembership(status.active)
 
-        if (status.active) {
+        if (status.active && status.hasPhone) {
           setStep('active-member')
           return
         }
@@ -428,13 +428,15 @@ function SignupContent() {
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '4px 12px', borderRadius: '4px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '16px' }}>
                   Google connected
                 </div>
-                <h1 className="display" style={{ fontSize: 'clamp(44px, 10vw, 64px)', marginBottom: '8px' }}>
-                  One more thing.
-                </h1>
-                <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.55 }}>
-                  We use your phone number to keep your account secure — one account per person.
-                </p>
-              </div>
+              <h1 className="display" style={{ fontSize: 'clamp(44px, 10vw, 64px)', marginBottom: '8px' }}>
+                One more thing.
+              </h1>
+              <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.55 }}>
+                  {hasActiveMembership
+                    ? 'Your membership is active. Add your phone number once so we can finish account access.'
+                    : 'We use your phone number to keep your account secure — one account per person.'}
+              </p>
+            </div>
 
               {/* Show what Google gave us */}
               <div style={{ background: 'var(--bg-2)', borderRadius: '8px', padding: '14px 16px', border: '1px solid var(--border-2)', marginBottom: '20px' }}>
