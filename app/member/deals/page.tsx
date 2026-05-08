@@ -50,6 +50,20 @@ function getMapsUrl(address: string): string {
   return `https://maps.google.com/?q=${encoded}`
 }
 
+function CloseIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M4 4L12 12M12 4L4 12"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export default function MemberDeals() {
   const [deals, setDeals] = useState<Deal[]>([])
   const [loading, setLoading] = useState(true)
@@ -247,7 +261,15 @@ export default function MemberDeals() {
     : deals
   const normalizedSearch = search.trim().toLowerCase()
   const searchFiltered = normalizedSearch
-    ? sectionDeals.filter((deal) => deal.business_name.toLowerCase().includes(normalizedSearch))
+    ? sectionDeals.filter((deal) => {
+      const fields = [
+        deal.business_name,
+        deal.deal_description,
+        deal.deal_details || '',
+        deal.address,
+      ]
+      return fields.some((field) => field.toLowerCase().includes(normalizedSearch))
+    })
     : sectionDeals
   const categoryFiltered = filter === 'All'
     ? searchFiltered
@@ -666,7 +688,7 @@ export default function MemberDeals() {
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder={section === 'favorites' ? 'Search saved spots' : 'Search deals, businesses, or neighborhoods'}
+              placeholder={section === 'favorites' ? 'Search saved businesses, deals, or addresses' : 'Search businesses, deals, or addresses'}
               style={{
                 width: '100%',
                 padding: '13px 14px',
@@ -685,19 +707,25 @@ export default function MemberDeals() {
                 onClick={() => setSearch('')}
                 style={{
                   flexShrink: 0,
-                  border: 'none',
-                  background: 'none',
-                  color: 'var(--ink-4)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '999px',
+                  background: 'var(--bg-2)',
+                  color: 'var(--ink-3)',
                   cursor: 'pointer',
                   fontFamily: "'Barlow Condensed', sans-serif",
                   fontSize: '12px',
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  padding: 0,
+                  padding: '10px 12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
                 }}
+                aria-label="Clear search"
               >
-                Clear
+                <CloseIcon />
+                <span>Clear</span>
               </button>
             )}
           </div>
