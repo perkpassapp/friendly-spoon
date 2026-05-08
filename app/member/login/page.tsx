@@ -16,7 +16,7 @@ export default function MemberLogin() {
   // Silently redirect if already logged in — no loading screen
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) router.replace('/member/deals')
+      if (data.user) router.replace('/member/access')
     })
   }, [router])
 
@@ -25,7 +25,7 @@ export default function MemberLogin() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/member/deals`,
+        redirectTo: `${window.location.origin}/member/access`,
         queryParams: { access_type: 'offline', prompt: 'consent' },
       }
     })
@@ -36,7 +36,7 @@ export default function MemberLogin() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/member/deals`,
+        emailRedirectTo: `${window.location.origin}/member/access`,
         shouldCreateUser: false,
       }
     })
