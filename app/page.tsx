@@ -62,6 +62,20 @@ const CREATORS = [
 
 const SHOW_CREATOR_COLLABS = false
 
+function ArrowUpRightIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M4 12L12 4M6 4H12V10"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export default function Home() {
   return (
     <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -264,9 +278,12 @@ export default function Home() {
                         src={photo}
                         alt={d.name}
                         className="deal-card-img"
-                        width={2160}
-                        height={3840}
+                        width={1200}
+                        height={675}
+                        sizes="(max-width: 720px) 100vw, (max-width: 1100px) 50vw, 240px"
+                        quality={72}
                         loading="lazy"
+                        preload={i === 0}
                       />
                       <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--ink)', color: 'var(--bg)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 8px', borderRadius: '3px' }}>
                         Member preview
@@ -355,7 +372,9 @@ export default function Home() {
                     }}
                   >
                     <span>Apply now</span>
-                    <span style={{ color: 'var(--green)' }}>→</span>
+                    <span style={{ color: 'var(--green)', display: 'inline-flex', alignItems: 'center' }}>
+                      <ArrowUpRightIcon />
+                    </span>
                   </div>
                 </div>
               </div>

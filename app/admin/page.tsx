@@ -148,15 +148,15 @@ export default function AdminDashboard() {
   const [creatorError, setCreatorError] = useState('')
 
   async function loadData() {
-    const [appsRes, dealsRes, redemptionsRes, bizRes, membersRes, creatorsRes] = await Promise.all([
+    const [appsRes, dealsRes, bizRes, creatorsRes, statsRes] = await Promise.all([
       supabase.from('business_applications').select('*').order('created_at', { ascending: false }),
       supabase.from('deals').select('*').order('created_at', { ascending: false }),
-      supabase.from('redemptions').select('id'),
       supabase.from('business_accounts').select('*').order('business_name'),
-      supabase.from('members').select('id'),
       fetch('/api/admin-creators', { headers: { 'x-admin-password': password } }),
+      fetch('/api/admin-stats', { headers: { 'x-admin-password': password } }),
     ])
     const creatorsData = creatorsRes.ok ? await creatorsRes.json() : { creators: [], referrals: [] }
+    const statsData = statsRes.ok ? await statsRes.json() : { members: 0, redemptions: 0, deals: 0 }
     const normalizedApplications = (appsRes.data || []).map((app) => ({ ...app, category: normalizeCategory(app.category) }))
     const normalizedDeals = (dealsRes.data || []).map((deal) => ({ ...deal, category: normalizeCategory(deal.category) }))
     const businessMap = new Map<string, Business>()
@@ -189,7 +189,11 @@ export default function AdminDashboard() {
     setBusinesses(Array.from(businessMap.values()).sort((a, b) => a.business_name.localeCompare(b.business_name)))
     setCreatorAffiliates(creatorsData.creators || [])
     setCreatorReferrals(creatorsData.referrals || [])
-    setStats({ members: membersRes.data?.length || 0, redemptions: redemptionsRes.data?.length || 0, deals: dealsRes.data?.filter((d: Deal) => d.active && !d.admin_disabled).length || 0 })
+    setStats({
+      members: statsData.members || 0,
+      redemptions: statsData.redemptions || 0,
+      deals: statsData.deals || 0,
+    })
   }
 
   async function approveApplication(app: Application) {

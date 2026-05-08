@@ -63,7 +63,6 @@ export default function MemberDeals() {
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({})
   const [userName, setUserName] = useState('')
   const [memberEmail, setMemberEmail] = useState('')
-  const [missingPhone, setMissingPhone] = useState(false)
   const [favoriteBusinesses, setFavoriteBusinesses] = useState<string[]>([])
   const router = useRouter()
 
@@ -88,7 +87,6 @@ export default function MemberDeals() {
         .from('members').select('name, phone').eq('email', email).limit(1)
       const member = memberData?.[0] as MemberProfile | undefined
       if (member?.name) setUserName(member.name.split(' ')[0])
-      setMissingPhone(!member?.phone)
       const res = await fetch('/api/verify-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -663,34 +661,6 @@ export default function MemberDeals() {
               ? 'Saved spots live here so you can get back to them quickly.'
               : 'Browse Philly deals by day, availability, and category.'}
           </p>
-          {missingPhone && (
-            <div style={{
-              marginTop: '16px',
-              marginBottom: '10px',
-              padding: '14px 16px',
-              borderRadius: '12px',
-              background: 'var(--bg-2)',
-              border: '1px solid var(--border-2)',
-            }}>
-              <div style={{
-                fontFamily: "'Barlow Condensed', sans-serif",
-                fontSize: '12px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                color: 'var(--ink-4)',
-                marginBottom: '6px',
-              }}>
-                Finish your profile
-              </div>
-              <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.5, marginBottom: '8px' }}>
-                You can access deals now, but you should add a phone number to keep your member account fully set up.
-              </p>
-              <Link href="/account" style={{ color: 'var(--green-dk)', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: '2px' }}>
-                Add your phone number in account
-              </Link>
-            </div>
-          )}
           <div style={{ marginTop: '18px', marginBottom: '10px', display: 'flex', gap: '10px', alignItems: 'center' }}>
             <input
               type="search"
