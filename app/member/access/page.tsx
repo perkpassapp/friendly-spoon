@@ -7,7 +7,6 @@ import { supabase } from '@/lib/supabase'
 type MemberStatus = {
   exists: boolean
   active: boolean
-  hasPhone: boolean
 }
 
 export default function MemberAccessPage() {
@@ -32,7 +31,7 @@ export default function MemberAccessPage() {
 
         const status = (await res.json()) as MemberStatus
 
-        if (status.active && status.hasPhone) {
+        if (status.active) {
           router.replace('/member/deals')
           return
         }

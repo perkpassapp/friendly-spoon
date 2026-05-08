@@ -15,13 +15,8 @@ type RedemptionHistory = {
 export default function AccountPage() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
-  const [phoneDraft, setPhoneDraft] = useState('')
   const [loading, setLoading] = useState(true)
   const [billingLoading, setBillingLoading] = useState(false)
-  const [phoneSaving, setPhoneSaving] = useState(false)
-  const [editingPhone, setEditingPhone] = useState(false)
-  const [phoneMessage, setPhoneMessage] = useState('')
-  const [phoneError, setPhoneError] = useState('')
   const [active, setActive] = useState(false)
   const [redemptions, setRedemptions] = useState<RedemptionHistory[]>([])
   const router = useRouter()
@@ -56,7 +51,6 @@ export default function AccountPage() {
 
       if (memberData?.phone) {
         setPhone(memberData.phone)
-        setPhoneDraft(formatPhone(memberData.phone))
       }
 
       const { data: redemptionData } = await supabase
@@ -81,42 +75,6 @@ export default function AccountPage() {
     }
     init()
   }, [router])
-
-  async function handleSavePhone() {
-    const digits = phoneDraft.replace(/\D/g, '').slice(0, 10)
-    if (digits.length !== 10) {
-      setPhoneError('Please enter a valid 10-digit phone number.')
-      setPhoneMessage('')
-      return
-    }
-
-    setPhoneSaving(true)
-    setPhoneError('')
-    setPhoneMessage('')
-
-    try {
-      const res = await fetch('/api/update-member-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, phone: digits }),
-      })
-      const data = await res.json()
-
-      if (!res.ok) {
-        setPhoneError(data.error || 'Unable to save your phone number.')
-        return
-      }
-
-      setPhone(data.phone)
-      setPhoneDraft(formatPhone(data.phone))
-      setEditingPhone(false)
-      setPhoneMessage('Phone number updated.')
-    } catch {
-      setPhoneError('Unable to save your phone number.')
-    } finally {
-      setPhoneSaving(false)
-    }
-  }
 
   async function handleBillingAction() {
     setBillingLoading(true)
@@ -227,87 +185,6 @@ export default function AccountPage() {
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="fade-up-2" style={{
-            background: 'var(--bg-2)', borderRadius: '10px',
-            padding: '20px 24px', marginBottom: '16px',
-            border: '1px solid var(--border-2)',
-          }}>
-            <div style={{
-              fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px',
-              fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
-              color: 'var(--ink-4)', marginBottom: '10px',
-            }}>Phone number</div>
-            <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '14px', lineHeight: 1.5 }}>
-              Keep your number current so member access and account verification work properly.
-            </p>
-            {editingPhone ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <input
-                  type="tel"
-                  value={phoneDraft}
-                  onChange={(event) => setPhoneDraft(formatPhone(event.target.value))}
-                  placeholder="(215) 555-0100"
-                  className="pp-input"
-                  inputMode="tel"
-                  autoComplete="tel"
-                />
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <button
-                    onClick={handleSavePhone}
-                    disabled={phoneSaving}
-                    className="btn btn-primary"
-                    style={{ padding: '12px 18px', fontSize: '14px' }}
-                  >
-                    {phoneSaving ? 'Saving...' : 'Save phone'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setPhoneDraft(formatPhone(phone))
-                      setEditingPhone(false)
-                      setPhoneError('')
-                      setPhoneMessage('')
-                    }}
-                    className="btn btn-outline"
-                    style={{ padding: '12px 18px', fontSize: '14px' }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-                <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>{formatPhone(phone)}</div>
-                <button
-                  onClick={() => {
-                    setPhoneDraft(formatPhone(phone))
-                    setEditingPhone(true)
-                    setPhoneError('')
-                    setPhoneMessage('')
-                  }}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                    color: 'var(--green-dk)',
-                    textDecoration: 'underline',
-                    textUnderlineOffset: '2px',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {phone ? 'Edit phone' : 'Add phone number'}
-                </button>
-              </div>
-            )}
-            {phoneMessage && (
-              <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--green-dk)', marginTop: '12px' }}>{phoneMessage}</p>
-            )}
-            {phoneError && (
-              <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--red)', marginTop: '12px' }}>{phoneError}</p>
-            )}
           </div>
 
           <div className="fade-up-3" style={{
