@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
       customer_email: normalizedEmail,
       line_items: [lineItem],
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/success?email=${encodeURIComponent(normalizedEmail)}`,
-      allow_promotion_codes: true,
+      allow_promotion_codes: selectedBillingInterval === 'monthly',
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/signup`,
       metadata: {
         email: normalizedEmail,
