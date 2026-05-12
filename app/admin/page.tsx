@@ -155,10 +155,12 @@ export default function AdminDashboard() {
       fetch('/api/admin-creators', { headers: { 'x-admin-password': password } }),
       fetch('/api/admin-stats', { headers: { 'x-admin-password': password } }),
     ])
-    const appsData = appsRes.ok ? await appsRes.json() : { applications: [] }
+    const appsData: { applications: Application[] } = appsRes.ok
+      ? await appsRes.json()
+      : { applications: [] }
     const creatorsData = creatorsRes.ok ? await creatorsRes.json() : { creators: [], referrals: [] }
     const statsData = statsRes.ok ? await statsRes.json() : { members: 0, redemptions: 0, deals: 0 }
-    const normalizedApplications = (appsData.applications || []).map((app: Application) => ({ ...app, category: normalizeCategory(app.category) }))
+    const normalizedApplications: Application[] = appsData.applications.map((app) => ({ ...app, category: normalizeCategory(app.category) }))
     const normalizedDeals = (dealsRes.data || []).map((deal) => ({ ...deal, category: normalizeCategory(deal.category) }))
     const businessMap = new Map<string, Business>()
     ;(bizRes.data || []).forEach((biz) => {
