@@ -71,16 +71,17 @@ export async function PATCH(req: NextRequest) {
 
   const category = normalizeCategory(application.category)
 
-  const { data: existingAccount, error: existingAccountError } = await supabase
+  const { data: existingAccounts, error: existingAccountError } = await supabase
     .from('business_accounts')
     .select('id, photo_url')
     .eq('business_name', application.business_name)
-    .maybeSingle()
+    .limit(1)
 
   if (existingAccountError) {
     return NextResponse.json({ error: existingAccountError.message }, { status: 500 })
   }
 
+  const existingAccount = existingAccounts?.[0] || null
   const photoUrl = existingAccount?.photo_url || null
 
   const accountPayload = {
@@ -97,7 +98,7 @@ export async function PATCH(req: NextRequest) {
     ? await supabase
         .from('business_accounts')
         .update(accountPayload)
-        .eq('id', existingAccount.id)
+        .eq('business_name', application.business_name)
     : await supabase
         .from('business_accounts')
         .insert(accountPayload)
@@ -106,17 +107,19 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: accountError.message }, { status: 500 })
   }
 
-  const { data: existingDeal, error: existingDealError } = await supabase
+  const { data: existingDeals, error: existingDealError } = await supabase
     .from('deals')
     .select('id')
     .eq('business_name', application.business_name)
     .eq('deal_description', application.deal_offer)
     .eq('address', application.address)
-    .maybeSingle()
+    .limit(1)
 
   if (existingDealError) {
     return NextResponse.json({ error: existingDealError.message }, { status: 500 })
   }
+
+  const existingDeal = existingDeals?.[0] || null
 
   if (!existingDeal?.id) {
     const { error: dealError } = await supabase.from('deals').insert({
