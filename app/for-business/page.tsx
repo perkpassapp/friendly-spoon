@@ -107,21 +107,6 @@ export default function ForBusiness() {
       </nav>
 
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '48px 24px 80px', width: '100%' }}>
-        <div className="fade-up" style={{ background: 'var(--forest)', borderRadius: '10px', padding: '28px', border: '2px solid var(--green)', marginBottom: '48px' }}>
-          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--green)', marginBottom: '8px' }}>Already a partner?</div>
-          <div className="display" style={{ fontSize: '32px', color: '#ffffff', marginBottom: '8px' }}>View your dashboard.</div>
-          <p style={{ fontSize: '14px', fontWeight: 500, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: '16px' }}>See how many customers we sent you, peak times, deal performance, and more.</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px' }}>
-            {['Total redemptions this month', 'Busiest days and peak hours', 'Deal performance tracking', 'Live code verification scanner'].map(f => (
-              <div key={f} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, color: 'var(--green)', fontSize: '14px' }}>+</span>
-                <span style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.6)' }}>{f}</span>
-              </div>
-            ))}
-          </div>
-          <a href="/business/dashboard" className="btn btn-primary" style={{ fontSize: '16px', padding: '14px 28px', display: 'inline-flex', textDecoration: 'none' }}>Log in to your dashboard</a>
-        </div>
-
         <div className="fade-up-2" style={{ marginBottom: '48px' }}>
           <div style={{ display: 'inline-block', background: 'var(--green-lt)', color: 'var(--green-dk)', padding: '4px 12px', borderRadius: '4px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '16px' }}>Not listed yet?</div>
           <h1 className="display" style={{ fontSize: 'clamp(52px, 10vw, 80px)', marginBottom: '16px' }}>Get new customers in 2 mins or less.<br /> Pay nothing.</h1>

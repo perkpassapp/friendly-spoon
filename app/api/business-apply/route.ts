@@ -22,7 +22,17 @@ export async function POST(req: Request) {
 
     const { error } = await supabase
       .from('business_applications')
-      .insert([{ business_name, category: normalizedCategory, address, deal_offer, deal_details: deal_details || null, contact_name, contact_email: normalizedEmail, phone }])
+      .insert([{
+        business_name,
+        category: normalizedCategory,
+        address,
+        deal_offer,
+        deal_details: deal_details || null,
+        contact_name,
+        contact_email: normalizedEmail,
+        phone,
+        status: 'pending',
+      }])
 
     if (error) throw error
 
