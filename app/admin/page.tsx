@@ -155,12 +155,28 @@ export default function AdminDashboard() {
       fetch('/api/admin-creators', { headers: { 'x-admin-password': password } }),
       fetch('/api/admin-stats', { headers: { 'x-admin-password': password } }),
     ])
+    if (!appsRes.ok) {
+      const data = await appsRes.json().catch(() => ({ error: 'Unable to load applications.' }))
+      throw new Error(data.error || 'Unable to load applications.')
+    }
+    if (!creatorsRes.ok) {
+      const data = await creatorsRes.json().catch(() => ({ error: 'Unable to load creator data.' }))
+      throw new Error(data.error || 'Unable to load creator data.')
+    }
+    if (!statsRes.ok) {
+      const data = await statsRes.json().catch(() => ({ error: 'Unable to load admin stats.' }))
+      throw new Error(data.error || 'Unable to load admin stats.')
+    }
     const appsData: { applications: Application[] } = appsRes.ok
       ? await appsRes.json()
       : { applications: [] }
-    const creatorsData = creatorsRes.ok ? await creatorsRes.json() : { creators: [], referrals: [] }
-    const statsData = statsRes.ok ? await statsRes.json() : { members: 0, redemptions: 0, deals: 0 }
-    const normalizedApplications: Application[] = appsData.applications.map((app) => ({ ...app, category: normalizeCategory(app.category) }))
+    const creatorsData = await creatorsRes.json()
+    const statsData = await statsRes.json()
+    const normalizedApplications: Application[] = appsData.applications.map((app) => ({
+      ...app,
+      category: normalizeCategory(app.category),
+      status: app.status || 'pending',
+    }))
     const normalizedDeals = (dealsRes.data || []).map((deal) => ({ ...deal, category: normalizeCategory(deal.category) }))
     const businessMap = new Map<string, Business>()
     ;(bizRes.data || []).forEach((biz) => {
@@ -674,8 +690,20 @@ export default function AdminDashboard() {
     await loadData()
   }
 
-  function login() {
-    if (password === 'perkpassadmin') { setAuthed(true); loadData() } else setError('Wrong password')
+  async function login() {
+    setError('')
+    try {
+      const res = await fetch('/api/admin-stats', { headers: { 'x-admin-password': password } })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Wrong password' }))
+        setError(data.error || 'Wrong password')
+        return
+      }
+      setAuthed(true)
+      await loadData()
+    } catch {
+      setError('Unable to verify admin access right now.')
+    }
   }
 
   const pending = applications.filter(a => a.status === 'pending')
