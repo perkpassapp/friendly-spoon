@@ -73,7 +73,7 @@ export async function PATCH(req: NextRequest) {
 
   const { data: existingAccount, error: existingAccountError } = await supabase
     .from('business_accounts')
-    .select('photo_url')
+    .select('id, photo_url')
     .eq('business_name', application.business_name)
     .maybeSingle()
 
@@ -83,23 +83,7 @@ export async function PATCH(req: NextRequest) {
 
   const photoUrl = existingAccount?.photo_url || null
 
-  const { error: dealError } = await supabase.from('deals').insert({
-    business_name: application.business_name,
-    deal_description: application.deal_offer,
-    deal_details: application.deal_details || null,
-    category,
-    emoji: '🎟️',
-    address: application.address,
-    active: true,
-    admin_disabled: false,
-    photo_url: photoUrl,
-  })
-
-  if (dealError) {
-    return NextResponse.json({ error: dealError.message }, { status: 500 })
-  }
-
-  const { error: accountError } = await supabase.from('business_accounts').upsert({
+  const accountPayload = {
     business_name: application.business_name,
     category,
     address: application.address,
@@ -107,10 +91,49 @@ export async function PATCH(req: NextRequest) {
     contact_email: application.contact_email.toLowerCase().trim(),
     active: true,
     admin_disabled: false,
-  }, { onConflict: 'business_name' })
+  }
+
+  const { error: accountError } = existingAccount?.id
+    ? await supabase
+        .from('business_accounts')
+        .update(accountPayload)
+        .eq('id', existingAccount.id)
+    : await supabase
+        .from('business_accounts')
+        .insert(accountPayload)
 
   if (accountError) {
     return NextResponse.json({ error: accountError.message }, { status: 500 })
+  }
+
+  const { data: existingDeal, error: existingDealError } = await supabase
+    .from('deals')
+    .select('id')
+    .eq('business_name', application.business_name)
+    .eq('deal_description', application.deal_offer)
+    .eq('address', application.address)
+    .maybeSingle()
+
+  if (existingDealError) {
+    return NextResponse.json({ error: existingDealError.message }, { status: 500 })
+  }
+
+  if (!existingDeal?.id) {
+    const { error: dealError } = await supabase.from('deals').insert({
+      business_name: application.business_name,
+      deal_description: application.deal_offer,
+      deal_details: application.deal_details || null,
+      category,
+      emoji: '🎟️',
+      address: application.address,
+      active: true,
+      admin_disabled: false,
+      photo_url: photoUrl,
+    })
+
+    if (dealError) {
+      return NextResponse.json({ error: dealError.message }, { status: 500 })
+    }
   }
 
   const { error: statusError } = await supabase
