@@ -29,7 +29,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native'
-import { AccountRow, EmptyState, Header, MemberNotice, StatusNotice, TabBar } from './src/components/AppChrome'
+import { AccountRow, EmptyState, MemberNotice, StatusNotice, TabBar } from './src/components/AppChrome'
 import { BusinessGroupCard } from './src/components/DealCards'
 import { REDEMPTION_HISTORY } from './src/data/demo'
 import { env, hasSupabaseConfig } from './src/lib/env'
@@ -640,12 +640,12 @@ function PerkPassApp() {
     )
   }
 
+  const showBottomTabs = screen !== 'login'
+
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.shell}>
-        <Header onHome={goToDealsToday} onAccount={() => setScreen('account')} />
-
         {screen === 'login' && (
           <ScrollView contentContainerStyle={styles.page}>
             <Text style={[styles.hero, compact && styles.heroCompact]}>Welcome back.</Text>
@@ -1029,7 +1029,7 @@ function PerkPassApp() {
           </ScrollView>
         )}
 
-        <TabBar screen={screen} onChange={setScreen} bottomInset={insets.bottom} />
+        {showBottomTabs ? <TabBar screen={screen} onChange={setScreen} bottomInset={insets.bottom} /> : null}
       </View>
 
       <Modal animationType="slide" transparent visible={Boolean(selectedDeal)} onRequestClose={() => setSelectedDeal(null)}>

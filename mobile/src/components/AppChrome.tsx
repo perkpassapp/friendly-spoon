@@ -54,19 +54,6 @@ export function StatusNotice({
   )
 }
 
-export function Header({ onHome, onAccount }: { onHome: () => void; onAccount: () => void }) {
-  return (
-    <View style={styles.header}>
-      <Pressable onPress={onHome} hitSlop={12}>
-        <Text style={styles.logo}>Perk<Text style={styles.logoAccent}>Pass</Text></Text>
-      </Pressable>
-      <Pressable onPress={onAccount} hitSlop={12}>
-        <Text style={styles.headerMeta}>Account</Text>
-      </Pressable>
-    </View>
-  )
-}
-
 export function EmptyState({ title, text }: { title: string; text: string }) {
   return (
     <View style={styles.empty}>
@@ -98,6 +85,7 @@ export function TabBar({
     { id: 'deals', label: 'Deals' },
     { id: 'favorites', label: 'Favorites' },
     { id: 'history', label: 'History' },
+    { id: 'account', label: 'Account' },
   ]
 
   return (
