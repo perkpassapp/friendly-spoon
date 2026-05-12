@@ -217,24 +217,39 @@ export default function AdminDashboard() {
 
   async function approveApplication(app: Application) {
     setApproving(app.id)
-    const category = normalizeCategory(app.category)
-    // Carry over existing photo_url if this business already has one
-    const { data: existingAccount } = await supabase
-      .from('business_accounts')
-      .select('photo_url')
-      .eq('business_name', app.business_name)
-      .maybeSingle()
-    const photoUrl = existingAccount?.photo_url || null
-
-    await supabase.from('deals').insert({ business_name: app.business_name, deal_description: app.deal_offer, deal_details: app.deal_details || null, category, emoji: '🎟️', address: app.address, active: true, admin_disabled: false, photo_url: photoUrl })
-    await supabase.from('business_accounts').upsert({ business_name: app.business_name, category, address: app.address, deal_offer: app.deal_offer, contact_email: app.contact_email.toLowerCase().trim(), active: true, admin_disabled: false }, { onConflict: 'business_name' })
-    await supabase.from('business_applications').update({ status: 'approved' }).eq('id', app.id)
-    await loadData(); setApproving(null)
+    try {
+      const res = await fetch('/api/admin-applications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({ id: app.id, action: 'approve' }),
+      })
+      const data = await res.json().catch(() => ({ error: 'Unable to approve application.' }))
+      if (!res.ok) {
+        throw new Error(data.error || 'Unable to approve application.')
+      }
+      await loadData()
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Unable to approve application.')
+    } finally {
+      setApproving(null)
+    }
   }
 
   async function rejectApplication(id: string) {
-    await supabase.from('business_applications').update({ status: 'rejected' }).eq('id', id)
-    await loadData()
+    try {
+      const res = await fetch('/api/admin-applications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({ id, action: 'reject' }),
+      })
+      const data = await res.json().catch(() => ({ error: 'Unable to reject application.' }))
+      if (!res.ok) {
+        throw new Error(data.error || 'Unable to reject application.')
+      }
+      await loadData()
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Unable to reject application.')
+    }
   }
 
   async function adminToggleDeal(deal: Deal) {
