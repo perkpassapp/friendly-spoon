@@ -11,10 +11,11 @@ export async function POST(req: Request) {
     const formData = await req.formData()
     const file = formData.get('photo') as File | null
     const businessId = formData.get('business_id') as string | null
+    const businessName = formData.get('business_name') as string | null
 
-    if (!file || !businessId) {
+    if (!file || (!businessId && !businessName)) {
       return NextResponse.json(
-        { success: false, error: 'Missing photo or business ID' },
+        { success: false, error: 'Missing photo or business reference' },
         { status: 400 }
       )
     }
@@ -39,7 +40,8 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(bytes)
 
     const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
-    const filename = `businesses/${businessId}/photo-${Date.now()}.${ext}`
+    const folderId = businessId || (businessName ? businessName.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-') : 'business')
+    const filename = `businesses/${folderId}/photo-${Date.now()}.${ext}`
 
     // Upload to storage (upsert replaces existing)
     const { data, error: uploadError } = await supabase.storage
@@ -58,13 +60,32 @@ export async function POST(req: Request) {
     // Timestamped paths avoid stale browser/CDN caches after replacing photos.
     const photoUrl = publicUrlData.publicUrl
 
-    // 1. Update business_accounts so the dashboard reflects the new photo
-    const { data: accountData, error: accountError } = await supabase
+    let resolvedBusinessName = businessName?.trim() || ''
+
+    if (businessId) {
+      const { data: accountRows, error: accountByIdError } = await supabase
+        .from('business_accounts')
+        .select('business_name')
+        .eq('id', businessId)
+        .limit(1)
+
+      if (accountByIdError) throw accountByIdError
+      if (accountRows?.[0]?.business_name) {
+        resolvedBusinessName = accountRows[0].business_name
+      }
+    }
+
+    if (!resolvedBusinessName) {
+      return NextResponse.json(
+        { success: false, error: 'Business record not found for this photo.' },
+        { status: 404 }
+      )
+    }
+
+    const { error: accountError } = await supabase
       .from('business_accounts')
       .update({ photo_url: photoUrl })
-      .eq('id', businessId)
-      .select('business_name')
-      .single()
+      .eq('business_name', resolvedBusinessName)
 
     if (accountError) throw accountError
 
@@ -72,7 +93,7 @@ export async function POST(req: Request) {
     const { error: dealsError } = await supabase
       .from('deals')
       .update({ photo_url: photoUrl })
-      .eq('business_name', accountData.business_name)
+      .eq('business_name', resolvedBusinessName)
 
     if (dealsError) throw dealsError
 

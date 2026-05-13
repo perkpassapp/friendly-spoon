@@ -108,10 +108,10 @@ export default function MemberDeals() {
       })
       const { active } = await res.json()
       if (!active) { setAccessDenied(true); setLoading(false); return }
-      const { data: dealsData } = await supabase
-        .from('deals').select('*').eq('active', true).order('created_at')
-      if (dealsData) {
-        setDeals(dealsData.map((deal) => ({ ...deal, category: normalizeCategory(deal.category) })))
+      const dealsRes = await fetch('/api/member-deals')
+      const dealsJson: { deals: Deal[] } = await dealsRes.json().catch(() => ({ deals: [] }))
+      if (dealsRes.ok && Array.isArray(dealsJson.deals)) {
+        setDeals(dealsJson.deals.map((deal) => ({ ...deal, category: normalizeCategory(deal.category) })))
       }
       const cooldownThreshold = new Date(Date.now() - REDEMPTION_COOLDOWN_SECONDS * 1000).toISOString()
       const { data: redemptions } = await supabase

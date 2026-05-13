@@ -308,6 +308,7 @@ export default function AdminDashboard() {
       const formData = new FormData()
       formData.append('photo', file)
       formData.append('business_id', accountId)
+      formData.append('business_name', business.business_name)
 
       const res = await fetch('/api/update-business-photo', { method: 'POST', body: formData })
       const json = await res.json()
@@ -374,11 +375,13 @@ export default function AdminDashboard() {
   async function ensureBusinessAccount(biz: Business): Promise<string> {
     if (biz.source !== 'approved_application' && !biz.id.startsWith('application:')) return biz.id
 
-    const { data: existingAccount } = await supabase
+    const { data: existingAccounts } = await supabase
       .from('business_accounts')
       .select('id')
       .eq('business_name', biz.business_name)
-      .maybeSingle()
+      .limit(1)
+
+    const existingAccount = existingAccounts?.[0]
 
     if (existingAccount?.id) return existingAccount.id
 
