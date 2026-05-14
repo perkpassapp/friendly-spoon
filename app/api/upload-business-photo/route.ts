@@ -55,8 +55,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, photo_url: publicUrlData.publicUrl })
   } catch (err) {
     console.error('upload-business-photo error:', err)
+    const message = err instanceof Error ? err.message : 'Photo upload failed. Try again.'
     return NextResponse.json(
-      { success: false, error: 'Photo upload failed. Try again.' },
+      { success: false, error: message },
       { status: 500 }
     )
   }
