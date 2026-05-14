@@ -6,6 +6,18 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) return error.message
+  if (typeof error === 'object' && error !== null) {
+    const maybeMessage = 'message' in error ? error.message : null
+    if (typeof maybeMessage === 'string' && maybeMessage) return maybeMessage
+    const maybeError = 'error' in error ? error.error : null
+    if (typeof maybeError === 'string' && maybeError) return maybeError
+    return JSON.stringify(error)
+  }
+  return 'Photo update failed. Try again.'
+}
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData()
@@ -100,7 +112,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, photo_url: photoUrl })
   } catch (err) {
     console.error('update-business-photo error:', err)
-    const message = err instanceof Error ? err.message : 'Photo update failed. Try again.'
+    const message = getErrorMessage(err)
     return NextResponse.json(
       { success: false, error: message },
       { status: 500 }

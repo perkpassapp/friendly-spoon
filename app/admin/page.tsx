@@ -272,14 +272,44 @@ export default function AdminDashboard() {
 
   async function deleteDeal(id: string) {
     setDeletingDeal(id)
-    await supabase.from('deals').delete().eq('id', id)
-    setConfirmDelete(null); await loadData(); setDeletingDeal(null)
+    try {
+      const res = await fetch('/api/admin-delete-deal', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({ id }),
+      })
+      const data = await res.json().catch(() => ({ error: 'Unable to delete deal.' }))
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Unable to delete deal.')
+      }
+      setConfirmDelete(null)
+      await loadData()
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Unable to delete deal.')
+    } finally {
+      setDeletingDeal(null)
+    }
   }
 
   async function archiveDeal(id: string) {
     setDeletingDeal(id)
-    await supabase.from('deals').update({ active: false, admin_disabled: true, featured: false }).eq('id', id)
-    setConfirmDelete(null); await loadData(); setDeletingDeal(null)
+    try {
+      const res = await fetch('/api/admin-delete-deal', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({ id }),
+      })
+      const data = await res.json().catch(() => ({ error: 'Unable to archive deal.' }))
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Unable to archive deal.')
+      }
+      setConfirmDelete(null)
+      await loadData()
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Unable to archive deal.')
+    } finally {
+      setDeletingDeal(null)
+    }
   }
 
   function startEdit(deal: Deal) {
@@ -421,52 +451,32 @@ export default function AdminDashboard() {
     if (!businessEditFields.business_name || !businessEditFields.category || !businessEditFields.address || !businessEditFields.contact_email) return
 
     setSavingBusinessEdit(true)
-    const oldBusinessName = biz.business_name
-    const accountId = await ensureBusinessAccount(biz)
-    const newBusinessName = businessEditFields.business_name.trim()
-    const normalizedCategory = normalizeCategory(businessEditFields.category)
-    const normalizedEmail = businessEditFields.contact_email.trim().toLowerCase()
-    const trimmedAddress = businessEditFields.address.trim()
-    const trimmedDealOffer = businessEditFields.deal_offer.trim()
-    const trimmedDealDescription = businessEditFields.deal_description.trim()
-    const primaryDeal = deals.find((deal) => deal.business_name === oldBusinessName && deal.deal_description === (biz.deal_offer || ''))
-      || deals.find((deal) => deal.business_name === oldBusinessName)
+    try {
+      const oldBusinessName = biz.business_name
+      const primaryDeal = deals.find((deal) => deal.business_name === oldBusinessName && deal.deal_description === (biz.deal_offer || ''))
+        || deals.find((deal) => deal.business_name === oldBusinessName)
 
-    await supabase.from('business_accounts').update({
-      business_name: newBusinessName,
-      category: normalizedCategory,
-      address: trimmedAddress,
-      contact_email: normalizedEmail,
-      deal_offer: trimmedDealOffer || null,
-    }).eq('id', accountId)
+      const res = await fetch('/api/admin-businesses', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({
+          oldBusinessName,
+          primaryDealId: primaryDeal?.id || '',
+          ...businessEditFields,
+        }),
+      })
+      const data = await res.json().catch(() => ({ error: 'Unable to save business changes.' }))
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Unable to save business changes.')
+      }
 
-    await supabase.from('deals').update({
-      business_name: newBusinessName,
-      category: normalizedCategory,
-      address: trimmedAddress,
-    }).eq('business_name', oldBusinessName)
-
-    if (primaryDeal?.id && trimmedDealDescription) {
-      await supabase.from('deals').update({
-        deal_description: trimmedDealDescription,
-      }).eq('id', primaryDeal.id)
+      setEditingBusiness(null)
+      await loadData()
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Unable to save business changes.')
+    } finally {
+      setSavingBusinessEdit(false)
     }
-
-    await supabase.from('redemptions').update({
-      business_name: newBusinessName,
-    }).eq('business_name', oldBusinessName)
-
-    await supabase.from('business_applications').update({
-      business_name: newBusinessName,
-      category: normalizedCategory,
-      address: trimmedAddress,
-      contact_email: normalizedEmail,
-      deal_offer: trimmedDealOffer || null,
-    }).eq('business_name', oldBusinessName)
-
-    setEditingBusiness(null)
-    setSavingBusinessEdit(false)
-    await loadData()
   }
 
   async function deleteBusiness(biz: Business) {
