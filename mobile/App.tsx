@@ -16,6 +16,7 @@ import {
   Alert,
   ActivityIndicator,
   Animated,
+  LayoutChangeEvent,
   Linking,
   Modal,
   PanResponder,
@@ -103,6 +104,7 @@ function PerkPassApp() {
   const [favoriteBusinesses, setFavoriteBusinesses] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [selectedWeekday, setSelectedWeekday] = useState(new Date().getDay())
+  const [search, setSearch] = useState('')
   const [showLiveOnly, setShowLiveOnly] = useState(true)
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null)
   const [activeRedemption, setActiveRedemption] = useState<ActiveRedemption | null>(null)
@@ -112,8 +114,11 @@ function PerkPassApp() {
   const redemptionSheetY = useState(() => new Animated.Value(0))[0]
   const holdCloseProgress = useState(() => new Animated.Value(0))[0]
   const [holdButtonWidth, setHoldButtonWidth] = useState(0)
+  const [dayTabsWidth, setDayTabsWidth] = useState(0)
   const favoritesHydratedRef = useRef(false)
   const redemptionPollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const dayTabsScrollRef = useRef<ScrollView | null>(null)
+  const dayTabLayoutsRef = useRef<Record<number, { x: number; width: number }>>({})
 
   const now = useMemo(() => new Date(), [clock])
   const currentDay = now.getDay()
@@ -142,10 +147,19 @@ function PerkPassApp() {
       ? deals
       : deals.filter((deal) => normalizeCategory(deal.category) === selectedCategory)
   ), [deals, selectedCategory])
+  const normalizedSearch = search.trim().toLowerCase()
+  const searchFilteredDeals = useMemo(() => (
+    normalizedSearch
+      ? categoryFilteredDeals.filter((deal) => {
+          const fields = [deal.businessName, deal.offer, deal.address || '']
+          return fields.some((field) => field.toLowerCase().includes(normalizedSearch))
+        })
+      : categoryFilteredDeals
+  ), [categoryFilteredDeals, normalizedSearch])
   const scheduledDeals = useMemo(() => {
-    const weekdayDeals = categoryFilteredDeals.filter((deal) => isDealAvailableOnDay(deal, selectedWeekday))
+    const weekdayDeals = searchFilteredDeals.filter((deal) => isDealAvailableOnDay(deal, selectedWeekday))
     return showLiveOnly ? weekdayDeals.filter((deal) => getAvailabilityLabel(deal) === 'Available now' || deal.schedule === null) : weekdayDeals
-  }, [categoryFilteredDeals, selectedWeekday, showLiveOnly])
+  }, [searchFilteredDeals, selectedWeekday, showLiveOnly])
   const favoriteDeals = useMemo(
     () => deals.filter((deal) => favoriteBusinesses.includes(deal.businessName)),
     [deals, favoriteBusinesses],
@@ -262,6 +276,22 @@ function PerkPassApp() {
       return Object.keys(next).length === Object.keys(current).length ? current : next
     })
   }, [clock])
+
+  useEffect(() => {
+    const layout = dayTabLayoutsRef.current[selectedWeekday]
+    if (!layout || !dayTabsWidth || !dayTabsScrollRef.current) return
+    const targetX = Math.max(0, layout.x - (dayTabsWidth - layout.width) / 2)
+    dayTabsScrollRef.current.scrollTo({ x: targetX, animated: true })
+  }, [dayTabsWidth, selectedWeekday])
+
+  function handleDayTabsLayout(event: LayoutChangeEvent) {
+    setDayTabsWidth(event.nativeEvent.layout.width)
+  }
+
+  function handleDayTabLayout(day: number, event: LayoutChangeEvent) {
+    const { x, width: tabWidth } = event.nativeEvent.layout
+    dayTabLayoutsRef.current[day] = { x, width: tabWidth }
+  }
 
   async function bootAuth() {
     if (!hasSupabaseConfig) return
@@ -724,13 +754,35 @@ function PerkPassApp() {
               </View>
             </View>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dayTabs}>
+            <View style={styles.searchRow}>
+              <TextInput
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Search businesses, deals, or addresses"
+                placeholderTextColor={colors.inkFaint}
+                style={styles.searchInput}
+              />
+              {search ? (
+                <Pressable style={styles.searchClearButton} onPress={() => setSearch('')}>
+                  <Text style={styles.searchClearButtonText}>Clear</Text>
+                </Pressable>
+              ) : null}
+            </View>
+
+            <ScrollView
+              ref={dayTabsScrollRef}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.dayTabs}
+              onLayout={handleDayTabsLayout}
+            >
               {dayTabs.map((tab) => {
                 const selected = selectedWeekday === tab.day
                 return (
                   <Pressable
                     key={tab.day}
                     style={[styles.dayTab, selected && styles.dayTabActive]}
+                    onLayout={(event) => handleDayTabLayout(tab.day, event)}
                     onPress={() => {
                       setSelectedWeekday(tab.day)
                       setShowLiveOnly(false)
@@ -784,7 +836,10 @@ function PerkPassApp() {
                 ))}
               </View>
             ) : (
-              <EmptyState title="Nothing in this window yet." text="Try another day or category to see more active deals." />
+              <EmptyState
+                title={search ? 'Nothing matches that search yet.' : 'Nothing in this window yet.'}
+                text={search ? 'Try a different business, deal, or address search.' : 'Try another day or category to see more active deals.'}
+              />
             )}
           </ScrollView>
         )}
