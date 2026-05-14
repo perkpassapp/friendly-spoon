@@ -87,6 +87,17 @@ type CreatorForm = {
   payout_email: string
 }
 
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message
+  if (typeof error === 'object' && error !== null) {
+    const maybeMessage = 'message' in error ? error.message : null
+    if (typeof maybeMessage === 'string' && maybeMessage) return maybeMessage
+    const maybeError = 'error' in error ? error.error : null
+    if (typeof maybeError === 'string' && maybeError) return maybeError
+  }
+  return fallback
+}
+
 export default function AdminDashboard() {
   const [password, setPassword] = useState('')
   const [authed, setAuthed] = useState(false)
@@ -334,10 +345,8 @@ export default function AdminDashboard() {
       const business = businesses.find((biz) => biz.business_name === deal.business_name)
       if (!business) throw new Error('Business record not found.')
 
-      const accountId = await ensureBusinessAccount(business)
       const formData = new FormData()
       formData.append('photo', file)
-      formData.append('business_id', accountId)
       formData.append('business_name', business.business_name)
 
       const res = await fetch('/api/update-business-photo', { method: 'POST', body: formData })
@@ -349,7 +358,7 @@ export default function AdminDashboard() {
       await loadData()
     } catch (error) {
       console.error('admin photo upload error:', error)
-      alert(error instanceof Error ? error.message : 'Photo update failed. Try again.')
+      alert(getErrorMessage(error, 'Photo update failed. Try again.'))
     } finally {
       setPhotoUploading(false)
     }
