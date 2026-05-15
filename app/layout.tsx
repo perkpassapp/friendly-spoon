@@ -91,7 +91,7 @@ export const metadata: Metadata = {
     canonical: 'https://getperkpass.com',
   },
   icons: {
-    icon: '/favicon.ico',
+    icon: '/icon.png',
     apple: '/apple-touch-icon.png',
   },
 }
