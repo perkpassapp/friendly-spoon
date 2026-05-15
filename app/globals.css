@@ -61,7 +61,13 @@ body {
   color: var(--ink);
   text-decoration: none;
 }
-.pp-logo span { color: var(--green); }
+.pp-logo > span {
+  color: var(--green);
+}
+
+.pp-logo > span > span {
+  color: var(--ink);
+}
 
 .pp-logo-mark {
   width: 28px;
