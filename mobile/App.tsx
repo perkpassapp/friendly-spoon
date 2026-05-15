@@ -813,8 +813,6 @@ function PerkPassApp() {
               </View>
             ) : filteredGroups.length > 0 ? (
               <View style={styles.dealGroupList}>
-                <Text style={styles.sectionKicker}>{selectedWeekday === currentDay ? 'Today' : selectedWeekdayLabel}</Text>
-                <Text style={styles.sectionSubcopy}>Browse what is scheduled for {selectedWeekdayLabel}.</Text>
                 {filteredGroups.map((group) => (
                   <BusinessGroupCard
                     key={group.businessName}
