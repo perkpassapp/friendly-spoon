@@ -156,7 +156,7 @@ export default function RootLayout({
           <div style={{ maxWidth: '1120px', margin: '0 auto', width: '100%' }}>
             <div className="site-footer-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) repeat(3, minmax(140px, 1fr))', gap: '24px 40px', alignItems: 'start', marginBottom: '32px' }}>
               <div className="site-footer-brand">
-                <Link href="/" className="pp-logo" style={{ color: '#ffffff', display: 'block', width: 'fit-content', marginBottom: '12px' }}>
+                <Link href="/" className="pp-logo pp-logo-light" style={{ color: '#ffffff', display: 'block', width: 'fit-content', marginBottom: '12px' }}>
                   Perk<span>Pass</span>
                 </Link>
                 <p className="site-footer-blurb" style={{ fontSize: '15px', lineHeight: 1.65, color: 'rgba(255,255,255,0.68)', maxWidth: '320px', marginBottom: '14px' }}>

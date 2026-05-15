@@ -40,7 +40,7 @@ export default function BusinessScan() {
         padding: '0 24px', height: '56px',
         borderBottom: '2px solid rgba(95,160,97,0.3)',
       }}>
-        <Link href="/business/dashboard" className="pp-logo" style={{ color: '#ffffff' }}>Perk<span>Pass</span></Link>
+        <Link href="/business/dashboard" className="pp-logo pp-logo-light" style={{ color: '#ffffff' }}>Perk<span>Pass</span></Link>
       </nav>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>

@@ -58,21 +58,31 @@ body {
   font-size: 24px;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  color: var(--ink);
+  color: var(--green);
   text-decoration: none;
 }
-.pp-logo > span {
-  color: var(--green);
+
+.pp-logo::before {
+  content: '';
+  width: 28px;
+  height: 33px;
+  flex-shrink: 0;
+  background-image: url('/perkpass-logo.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
-.pp-logo > span > span {
+.pp-logo span {
   color: var(--ink);
 }
 
-.pp-logo-mark {
-  width: 28px;
-  height: auto;
-  flex-shrink: 0;
+.pp-logo-light {
+  color: #ffffff;
+}
+
+.pp-logo-light span {
+  color: #ffffff;
 }
 
 .btn {

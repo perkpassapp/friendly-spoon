@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { getCategoryMeta, normalizeCategory } from '@/lib/product'
 
 const DEALS = [
@@ -140,19 +139,7 @@ export default function Home() {
 
       {/* Nav */}
       <nav style={{ position: 'sticky', top: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', height: '56px', background: 'var(--bg)', borderBottom: '2px solid var(--ink)' }}>
-        <Link href="/" className="pp-logo">
-          <Image
-            src="/perkpass-logo.png"
-            alt="PerkPass logo"
-            width={28}
-            height={33}
-            className="pp-logo-mark"
-            priority
-          />
-          <span>
-            Perk<span>Pass</span>
-          </span>
-        </Link>
+        <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <Link href="/member/login" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.03em', color: 'var(--ink-3)', textDecoration: 'none', padding: '8px 12px' }}>
             Log in

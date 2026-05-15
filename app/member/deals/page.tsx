@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import {
   CATEGORY_OPTIONS,
   REDEMPTION_COOLDOWN_SECONDS,
@@ -62,24 +61,6 @@ function CloseIcon({ size = 14 }: { size?: number }) {
         strokeLinejoin="round"
       />
     </svg>
-  )
-}
-
-function BrandLogo() {
-  return (
-    <>
-      <Image
-        src="/perkpass-logo.png"
-        alt="PerkPass logo"
-        width={28}
-        height={33}
-        className="pp-logo-mark"
-        priority
-      />
-      <span>
-        Perk<span>Pass</span>
-      </span>
-    </>
   )
 }
 
@@ -538,9 +519,7 @@ export default function MemberDeals() {
   if (loading) return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: '48px' }}>
       <header style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg)', borderBottom: '2px solid var(--ink)', padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span className="pp-logo">
-          <BrandLogo />
-        </span>
+        <span className="pp-logo">Perk<span>Pass</span></span>
       </header>
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '28px 20px' }}>
         <div style={{ marginBottom: '24px' }}>
@@ -566,9 +545,7 @@ export default function MemberDeals() {
   if (accessDenied) return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
       <nav style={{ display: 'flex', alignItems: 'center', padding: '0 24px', height: '56px', borderBottom: '2px solid var(--ink)' }}>
-        <Link href="/" className="pp-logo">
-          <BrandLogo />
-        </Link>
+        <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
       </nav>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ maxWidth: '400px', width: '100%' }}>
@@ -662,7 +639,7 @@ export default function MemberDeals() {
             setFilter('All')
           }}
         >
-          <BrandLogo />
+          Perk<span>Pass</span>
         </Link>
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <button
