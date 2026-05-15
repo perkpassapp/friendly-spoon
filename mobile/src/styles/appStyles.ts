@@ -995,7 +995,7 @@ export const styles = StyleSheet.create({
   },
   tabIndicatorActive: {
     width: 40,
-    backgroundColor: colors.ink,
+    backgroundColor: colors.green,
   },
   tabText: {
     color: colors.inkFaint,
@@ -1005,7 +1005,7 @@ export const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   tabTextActive: {
-    color: colors.ink,
+    color: colors.green,
   },
   modalBackdrop: {
     flex: 1,

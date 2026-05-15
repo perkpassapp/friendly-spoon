@@ -30,7 +30,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native'
-import { AccountRow, EmptyState, MemberNotice, StatusNotice, TabBar } from './src/components/AppChrome'
+import { AccountRow, EmptyState, TabBar } from './src/components/AppChrome'
 import { BusinessGroupCard } from './src/components/DealCards'
 import { REDEMPTION_HISTORY } from './src/data/demo'
 import { env, hasSupabaseConfig } from './src/lib/env'
@@ -99,7 +99,6 @@ function PerkPassApp() {
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [deals, setDeals] = useState<Deal[]>([])
   const [dealsLoading, setDealsLoading] = useState(true)
-  const [dealsError, setDealsError] = useState('')
   const [dealSource, setDealSource] = useState<'live' | 'demo'>('demo')
   const [favoriteBusinesses, setFavoriteBusinesses] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState('All')
@@ -337,7 +336,6 @@ function PerkPassApp() {
     const result = await loadDeals()
     setDeals(result.deals)
     setDealSource(result.source)
-    setDealsError(result.error || '')
     setDealsLoading(false)
   }
 
@@ -729,12 +727,6 @@ function PerkPassApp() {
             refreshControl={<RefreshControl refreshing={dealsLoading} onRefresh={refreshDeals} tintColor={colors.greenDark} />}
           >
             <Text style={[styles.hero, compact && styles.heroCompact]}>{userFirstName ? `Hey ${userFirstName}.` : 'Your deals.'}</Text>
-            {memberMode === 'demo' || dealSource === 'demo' ? (
-              <>
-                <MemberNotice mode={memberMode} member={member} />
-                <StatusNotice source={dealSource} error={dealsError} hasSupabaseConfig={hasSupabaseConfig} />
-              </>
-            ) : null}
 
             <View style={styles.summaryBlock}>
               <Pressable onPress={toggleLiveOnly} style={[styles.liveModeCard, showLiveOnly && styles.liveModeCardActive]}>
@@ -946,17 +938,9 @@ function PerkPassApp() {
             <Text style={styles.kicker}>Account</Text>
             <Text style={[styles.hero, compact && styles.heroCompact]}>PerkPass All Access.</Text>
             <View style={styles.accountHeroCard}>
-              <Text style={styles.accountHeroEyebrow}>{memberMode === 'active' ? 'Membership active' : 'Preview mode'}</Text>
-              <Text style={styles.accountHeroTitle}>
-                {memberMode === 'active'
-                  ? (member?.name || email || 'PerkPass member')
-                  : 'Preview mode'}
-              </Text>
-              <Text style={styles.accountHeroText}>
-                {memberMode === 'active'
-                  ? 'Your local deals, favorite spots, and redemption history all live here.'
-                  : 'You are browsing a preview of the app. Sign in with an active membership to unlock live redemptions.'}
-              </Text>
+              <Text style={styles.accountHeroEyebrow}>Account</Text>
+              <Text style={styles.accountHeroTitle}>{member?.name || email || 'PerkPass member'}</Text>
+              <Text style={styles.accountHeroText}>Your membership details, favorites, and recent activity all live here.</Text>
               <View style={styles.accountStatsRow}>
                 <View style={styles.accountStatCard}>
                   <Text style={styles.accountStatValue}>{favoriteBusinesses.length}</Text>
@@ -967,25 +951,19 @@ function PerkPassApp() {
                   <Text style={styles.accountStatLabel}>History</Text>
                 </View>
                 <View style={styles.accountStatCard}>
-                  <Text style={styles.accountStatValue}>{dealSource === 'live' ? 'Live' : 'Preview'}</Text>
+                  <Text style={styles.accountStatValue}>{deals.length}</Text>
                   <Text style={styles.accountStatLabel}>Deals</Text>
                 </View>
               </View>
             </View>
-            <View style={styles.accountSubCard}>
-              <Text style={styles.subCardEyebrow}>What lives here</Text>
-              <Text style={styles.subCardText}>
-                Use this screen to check your membership details, open billing, review recent activity, and get support fast.
-              </Text>
-            </View>
             <View style={styles.accountCard}>
               <Text style={styles.subCardEyebrow}>Membership details</Text>
-              <AccountRow label="Status" value={memberMode === 'active' ? 'Active member' : 'Preview mode'} />
-              <AccountRow label="Email" value={memberMode === 'active' ? email : 'Not signed in'} />
+              <AccountRow label="Status" value={memberMode === 'active' ? 'Active member' : 'Member access'} />
+              <AccountRow label="Email" value={email || 'Not signed in'} />
               <AccountRow label="Plan" value="PerkPass All Access" />
               <AccountRow label="Phone" value={member?.phone ? formatPhone(member.phone) : 'Managed on web'} />
-              <AccountRow label="Billing" value={memberMode === 'active' ? 'Stripe billing portal' : 'Active members only'} />
-              <AccountRow label="Data" value={dealSource === 'live' ? 'Live PerkPass deals' : 'Preview data'} />
+              <AccountRow label="Billing" value={memberMode === 'active' ? 'Stripe billing portal' : 'Sign in to manage billing'} />
+              <AccountRow label="Data" value="PerkPass deals" />
             </View>
             <View style={styles.accountSubCard}>
               <Text style={styles.subCardEyebrow}>Recent activity</Text>
@@ -1049,8 +1027,8 @@ function PerkPassApp() {
                 <View style={styles.buttonGap} />
               </>
             ) : null}
-            <Pressable style={styles.secondaryButton} onPress={() => Linking.openURL('mailto:hello@getperkpass.com')}>
-              <Text style={styles.secondaryButtonText}>Email support</Text>
+            <Pressable style={styles.secondaryButton} onPress={() => Linking.openURL('https://getperkpass.com/support')}>
+              <Text style={styles.secondaryButtonText}>Open support</Text>
             </Pressable>
             <View style={styles.buttonGap} />
             <View style={styles.accountSubCard}>
