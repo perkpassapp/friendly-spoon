@@ -50,6 +50,9 @@ body {
 }
 
 .pp-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 900;
   font-size: 24px;
@@ -59,6 +62,12 @@ body {
   text-decoration: none;
 }
 .pp-logo span { color: var(--green); }
+
+.pp-logo-mark {
+  width: 28px;
+  height: auto;
+  flex-shrink: 0;
+}
 
 .btn {
   font-family: 'Barlow Condensed', sans-serif;
