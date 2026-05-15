@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { getCategoryMeta, normalizeCategory } from '@/lib/product'
 
 const DEALS = [
