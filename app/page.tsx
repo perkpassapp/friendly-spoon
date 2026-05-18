@@ -115,7 +115,7 @@ export default function Home() {
         .hero-float-right { right: 0; bottom: 34px; max-width: 180px; }
         .hero-shape { position: absolute; z-index: 1; border-radius: 999px; background: var(--green); opacity: 0.25; }
         .hero-shape-one { width: 180px; height: 180px; right: 18px; top: 18px; }
-        .hero-shape-two { width: 110px; height: 110px; left: 34px; bottom: 50px; background: #f0bd57; }
+        .hero-shape-two { width: 110px; height: 110px; left: 34px; bottom: 50px; background: var(--green-lt); }
         @media (max-width: 900px) {
           .preview-meta-grid { grid-template-columns: 1fr; }
           .trust-strip-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); }
