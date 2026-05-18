@@ -18,7 +18,8 @@
       "bundleIdentifier": "com.getperkpass.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "buildNumber": "3"
     },
     "android": {
       "package": "com.getperkpass.app"
