@@ -764,7 +764,7 @@ export default function AdminDashboard() {
   if (!authed) return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
       <nav style={{ display: 'flex', alignItems: 'center', padding: '0 24px', height: '56px', borderBottom: '2px solid var(--ink)' }}>
-        <Link href="/admin" className="pp-logo">Perk<span>Pass</span></Link>
+        <Link href="/admin" className="pp-logo"><span className="pp-logo-perk">Perk</span><span className="pp-logo-pass">Pass</span></Link>
       </nav>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ width: '100%', maxWidth: '360px' }}>
@@ -785,7 +785,7 @@ export default function AdminDashboard() {
     <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: '80px' }}>
       <header style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg)', borderBottom: '2px solid var(--ink)', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Link href="/admin" className="pp-logo">Perk<span>Pass</span></Link>
+          <Link href="/admin" className="pp-logo"><span className="pp-logo-perk">Perk</span><span className="pp-logo-pass">Pass</span></Link>
           <span style={{ ...LABEL, color: 'var(--ink-4)' }}>Admin</span>
         </div>
         <button onClick={() => setAuthed(false)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer' }}>Sign out</button>

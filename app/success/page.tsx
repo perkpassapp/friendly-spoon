@@ -30,7 +30,7 @@ function SuccessContent() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 24px', height: '56px', borderBottom: '2px solid var(--ink)',
       }}>
-        <Link href="/member/deals" className="pp-logo">Perk<span>Pass</span></Link>
+        <Link href="/member/deals" className="pp-logo"><span className="pp-logo-perk">Perk</span><span className="pp-logo-pass">Pass</span></Link>
       </nav>
 
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>

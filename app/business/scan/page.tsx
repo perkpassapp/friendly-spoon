@@ -40,7 +40,7 @@ export default function BusinessScan() {
         padding: '0 24px', height: '56px',
         borderBottom: '2px solid rgba(95,160,97,0.3)',
       }}>
-        <Link href="/business/dashboard" className="pp-logo pp-logo-light" style={{ color: '#ffffff' }}>Perk<span>Pass</span></Link>
+        <Link href="/business/dashboard" className="pp-logo pp-logo-light" style={{ color: '#ffffff' }}><span className="pp-logo-perk">Perk</span><span className="pp-logo-pass">Pass</span></Link>
       </nav>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
@@ -104,7 +104,7 @@ export default function BusinessScan() {
         display: 'flex', alignItems: 'center', padding: '0 24px',
         height: '56px', borderBottom: '2px solid var(--ink)',
       }}>
-        <Link href="/business/dashboard" className="pp-logo">Perk<span>Pass</span></Link>
+        <Link href="/business/dashboard" className="pp-logo"><span className="pp-logo-perk">Perk</span><span className="pp-logo-pass">Pass</span></Link>
       </nav>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ width: '100%', maxWidth: '400px' }}>
@@ -145,7 +145,7 @@ export default function BusinessScan() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 24px', height: '56px', borderBottom: '2px solid var(--ink)',
       }}>
-        <Link href="/business/dashboard" className="pp-logo">Perk<span>Pass</span></Link>
+        <Link href="/business/dashboard" className="pp-logo"><span className="pp-logo-perk">Perk</span><span className="pp-logo-pass">Pass</span></Link>
         <span style={{
           fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
           fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.06em',

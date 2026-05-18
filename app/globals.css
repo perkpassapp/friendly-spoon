@@ -57,8 +57,7 @@ body {
   font-weight: 900;
   font-size: 24px;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
-  color: var(--green);
+  letter-spacing: 0;
   text-decoration: none;
 }
 
@@ -73,19 +72,21 @@ body {
   background-size: contain;
 }
 
-.pp-logo span {
-  margin-left: -0.06em;
+.pp-logo-perk {
+  color: var(--green);
 }
 
-.pp-logo span {
+.pp-logo-pass {
   color: var(--ink);
+  margin-left: -0.08em;
 }
 
 .pp-logo-light {
   color: #ffffff;
 }
 
-.pp-logo-light span {
+.pp-logo-light .pp-logo-perk,
+.pp-logo-light .pp-logo-pass {
   color: #ffffff;
 }
 

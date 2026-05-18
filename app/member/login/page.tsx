@@ -54,7 +54,7 @@ export default function MemberLogin() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 24px', height: '56px', borderBottom: '2px solid var(--ink)',
       }}>
-        <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
+        <Link href="/" className="pp-logo"><span className="pp-logo-perk">Perk</span><span className="pp-logo-pass">Pass</span></Link>
         <Link href="/signup" style={{
           fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
           fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.04em',

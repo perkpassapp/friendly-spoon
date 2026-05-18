@@ -157,7 +157,7 @@ export default function RootLayout({
             <div className="site-footer-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) repeat(3, minmax(140px, 1fr))', gap: '24px 40px', alignItems: 'start', marginBottom: '32px' }}>
               <div className="site-footer-brand">
                 <Link href="/" className="pp-logo pp-logo-light" style={{ color: '#ffffff', display: 'block', width: 'fit-content', marginBottom: '12px' }}>
-                  Perk<span>Pass</span>
+                  <span className="pp-logo-perk">Perk</span><span className="pp-logo-pass">Pass</span>
                 </Link>
                 <p className="site-footer-blurb" style={{ fontSize: '15px', lineHeight: 1.65, color: 'rgba(255,255,255,0.68)', maxWidth: '320px', marginBottom: '14px' }}>
                   A Philly-born local perks membership helping neighbors discover and save at restaurants, cafes, gyms, salons, shops, and everyday neighborhood favorites.

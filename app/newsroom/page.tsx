@@ -10,7 +10,7 @@ export default function NewsroomPage() {
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <nav style={{ display: 'flex', alignItems: 'center', padding: '0 24px', height: '56px', borderBottom: '2px solid var(--ink)' }}>
-        <Link href="/" className="pp-logo">Perk<span>Pass</span></Link>
+        <Link href="/" className="pp-logo"><span className="pp-logo-perk">Perk</span><span className="pp-logo-pass">Pass</span></Link>
       </nav>
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '48px 24px 80px' }}>
         <h1 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)', marginBottom: '12px' }}>Newsroom</h1>

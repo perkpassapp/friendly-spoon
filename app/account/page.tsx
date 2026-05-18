@@ -104,7 +104,7 @@ export default function AccountPage() {
   if (loading) return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
       <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', height: '56px', borderBottom: '2px solid var(--ink)' }}>
-        <span className="pp-logo">Perk<span>Pass</span></span>
+        <span className="pp-logo"><span className="pp-logo-perk">Perk</span><span className="pp-logo-pass">Pass</span></span>
       </nav>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ width: '100%', maxWidth: '440px' }}>
@@ -132,7 +132,7 @@ export default function AccountPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 24px', height: '56px', borderBottom: '2px solid var(--ink)',
       }}>
-        <Link href="/member/deals" className="pp-logo">Perk<span>Pass</span></Link>
+        <Link href="/member/deals" className="pp-logo"><span className="pp-logo-perk">Perk</span><span className="pp-logo-pass">Pass</span></Link>
         <Link href="/member/deals" style={{
           fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
           fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em',
