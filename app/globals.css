@@ -73,16 +73,16 @@ body {
 }
 
 .pp-logo-perk {
-  display: block;
+  display: inline-block;
   color: var(--green);
   line-height: 1;
 }
 
 .pp-logo-pass {
-  display: block;
+  display: inline-block;
   color: var(--ink);
   line-height: 1;
-  margin-left: -0.18em;
+  margin-left: -0.28em;
 }
 
 .pp-logo-light {
