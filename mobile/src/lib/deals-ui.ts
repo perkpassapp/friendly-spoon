@@ -3,6 +3,7 @@ import type { Deal } from '../types'
 export const CATEGORY_META: Record<string, { emoji: string; label: string; photo: string }> = {
   Cafe: { emoji: '☕', label: 'Cafe', photo: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&q=75' },
   Restaurant: { emoji: '🍽️', label: 'Restaurant', photo: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=75' },
+  Dessert: { emoji: '🍰', label: 'Dessert', photo: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=75' },
   Barber: { emoji: '✂️', label: 'Barber', photo: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&q=75' },
   Fitness: { emoji: '🏋️', label: 'Fitness', photo: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=75' },
   Nails: { emoji: '💅', label: 'Nails', photo: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&q=75' },
@@ -62,6 +63,11 @@ export function normalizeCategory(category: string) {
   const aliases: Record<string, string> = {
     cafe: 'Cafe',
     restaurant: 'Restaurant',
+    dessert: 'Dessert',
+    bakery: 'Dessert',
+    icecream: 'Dessert',
+    'ice cream': 'Dessert',
+    'dessert shop': 'Dessert',
     barber: 'Barber',
     fitness: 'Fitness',
     nails: 'Nails',
@@ -70,7 +76,6 @@ export function normalizeCategory(category: string) {
     pickleball: 'Sport',
     wellness: 'Wellness',
     retail: 'Retail',
-    dessert: 'Restaurant',
     'self-care': 'Wellness',
     'self care': 'Wellness',
   }

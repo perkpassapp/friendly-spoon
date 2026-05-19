@@ -10,6 +10,7 @@ export const REDEMPTION_RULES = [
 export const CATEGORY_OPTIONS = [
   'Cafe',
   'Restaurant',
+  'Dessert',
   'Barber',
   'Fitness',
   'Nails',
@@ -33,6 +34,11 @@ type CategoryMeta = {
 const CATEGORY_ALIAS_MAP: Record<string, Category> = {
   cafe: 'Cafe',
   restaurant: 'Restaurant',
+  dessert: 'Dessert',
+  bakery: 'Dessert',
+  icecream: 'Dessert',
+  'ice cream': 'Dessert',
+  'dessert shop': 'Dessert',
   barber: 'Barber',
   fitness: 'Fitness',
   nails: 'Nails',
@@ -54,6 +60,11 @@ export const CATEGORY_META: Record<Category, CategoryMeta> = {
     emoji: '🍽️',
     photo: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=75',
     color: { bg: '#FDE8E8', color: '#8B1A1A' },
+  },
+  Dessert: {
+    emoji: '🍰',
+    photo: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=75',
+    color: { bg: '#FFF0F5', color: '#A53A63' },
   },
   Barber: {
     emoji: '✂️',
