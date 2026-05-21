@@ -32,7 +32,6 @@ import {
 } from 'react-native'
 import { AccountRow, EmptyState, TabBar } from './src/components/AppChrome'
 import { BusinessGroupCard } from './src/components/DealCards'
-import { REDEMPTION_HISTORY } from './src/data/demo'
 import { env, hasSupabaseConfig } from './src/lib/env'
 import {
   CATEGORY_META,
@@ -51,7 +50,6 @@ import {
   getCurrentSession,
   handleAuthCallbackUrl,
   sendMagicLink,
-  signInWithGoogle,
   signOut as signOutOfSupabase,
 } from './src/services/auth'
 import { deleteAccount as deleteMemberAccount } from './src/services/account'
@@ -90,16 +88,15 @@ function PerkPassApp() {
   const [screen, setScreen] = useState<Screen>('login')
   const [email, setEmail] = useState('')
   const [member, setMember] = useState<MemberStatus | null>(null)
-  const [memberMode, setMemberMode] = useState<'guest' | 'demo' | 'active'>('guest')
+  const [memberMode, setMemberMode] = useState<'guest' | 'active'>('guest')
   const [memberLoading, setMemberLoading] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
   const [billingLoading, setBillingLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [memberError, setMemberError] = useState('')
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [deals, setDeals] = useState<Deal[]>([])
   const [dealsLoading, setDealsLoading] = useState(true)
-  const [dealSource, setDealSource] = useState<'live' | 'demo'>('demo')
+  const [dealSource, setDealSource] = useState<'live'>('live')
   const [favoriteBusinesses, setFavoriteBusinesses] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [selectedWeekday, setSelectedWeekday] = useState(new Date().getDay())
@@ -108,7 +105,7 @@ function PerkPassApp() {
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null)
   const [activeRedemption, setActiveRedemption] = useState<ActiveRedemption | null>(null)
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({})
-  const [redemptionHistory, setRedemptionHistory] = useState<RedemptionHistoryItem[]>(REDEMPTION_HISTORY)
+  const [redemptionHistory, setRedemptionHistory] = useState<RedemptionHistoryItem[]>([])
   const [clock, setClock] = useState(Date.now())
   const redemptionSheetY = useState(() => new Animated.Value(0))[0]
   const holdCloseProgress = useState(() => new Animated.Value(0))[0]
@@ -136,7 +133,7 @@ function PerkPassApp() {
     () => dayTabs.find((tab) => tab.day === selectedWeekday)?.fullLabel || currentDayLabel,
     [currentDayLabel, dayTabs, selectedWeekday],
   )
-  const favoriteScope = memberMode === 'active' && email ? email.trim().toLowerCase() : 'demo'
+  const favoriteScope = memberMode === 'active' && email ? email.trim().toLowerCase() : 'guest'
   const categories = useMemo(() => [
     'All',
     ...Object.keys(CATEGORY_META).filter((category) => deals.some((deal) => normalizeCategory(deal.category) === category)),
@@ -309,7 +306,7 @@ function PerkPassApp() {
         await completeMemberAccess(sessionEmail)
       }
     } catch {
-      // Do not block demo mode if local auth env vars are missing or stale.
+      // Do not block guest browsing if local auth env vars are missing or stale.
     }
   }
 
@@ -353,7 +350,7 @@ function PerkPassApp() {
 
   async function requestMagicLink() {
     if (!hasSupabaseConfig) {
-      setMemberError('Mobile sign-in is not configured on this build yet. You can still preview the app experience below.')
+      setMemberError('Mobile sign-in is not configured on this build yet.')
       return
     }
 
@@ -370,33 +367,15 @@ function PerkPassApp() {
       await sendMagicLink(email)
       setMagicLinkSent(true)
     } catch (err) {
-      setMemberError(err instanceof Error ? err.message : 'Unable to send login link right now.')
+      const message = err instanceof Error ? err.message : 'Unable to send login link right now.'
+      const normalized = message.toLowerCase()
+      if (normalized.includes('social') || normalized.includes('identity') || normalized.includes('oauth')) {
+        setMemberError('We could not send a sign-in link for this account yet. If you normally use Google on the website, contact support and we will help you unlock mobile access.')
+      } else {
+        setMemberError(message)
+      }
     } finally {
       setMemberLoading(false)
-    }
-  }
-
-  async function handleGoogleLogin() {
-    if (!hasSupabaseConfig) {
-      setMemberError('Mobile sign-in is not configured on this build yet. You can still preview the app experience below.')
-      return
-    }
-
-    setGoogleLoading(true)
-    setMemberError('')
-    setMagicLinkSent(false)
-
-    try {
-      const session = await signInWithGoogle()
-      const sessionEmail = session?.user.email
-      if (sessionEmail) {
-        setEmail(sessionEmail)
-        await completeMemberAccess(sessionEmail)
-      }
-    } catch (err) {
-      setMemberError(err instanceof Error ? err.message : 'Unable to sign in with Google right now.')
-    } finally {
-      setGoogleLoading(false)
     }
   }
 
@@ -430,16 +409,18 @@ function PerkPassApp() {
     }
   }
 
-  function previewDemo() {
-    setMemberMode('demo')
-    setMember(null)
-    goToDealsToday()
-  }
-
   function goToDealsToday() {
     setSelectedWeekday(new Date().getDay())
     setShowLiveOnly(true)
     setScreen('deals')
+  }
+
+  function continueAsGuest() {
+    setMemberMode('guest')
+    setMember(null)
+    setMagicLinkSent(false)
+    setMemberError('')
+    goToDealsToday()
   }
 
   function toggleLiveOnly() {
@@ -467,14 +448,14 @@ function PerkPassApp() {
     setCooldowns({})
     setActiveRedemption(null)
     setSelectedDeal(null)
-    setRedemptionHistory(REDEMPTION_HISTORY)
+    setRedemptionHistory([])
     setMagicLinkSent(false)
     setScreen('login')
   }
 
   async function openBillingPortal() {
     if (memberMode !== 'active' || !email) {
-      Alert.alert('Member access only', 'PerkPass mobile is currently for existing active members.')
+      Alert.alert('Sign in required', 'Sign in with your PerkPass email to manage billing.')
       return
     }
 
@@ -583,18 +564,7 @@ function PerkPassApp() {
     const expiresAt = Date.now() + REDEMPTION_CODE_TTL_SECONDS * 1000
 
     if (memberMode !== 'active' || !email || !hasSupabaseConfig) {
-      setActiveRedemption({ deal, code, expiresAt, persisted: false })
-      setCooldowns((current) => ({ ...current, [deal.id]: Date.now() + REDEMPTION_COOLDOWN_SECONDS * 1000 }))
-      setRedemptionHistory((current) => [
-        {
-          id: `${deal.id}-${Date.now()}`,
-          businessName: deal.businessName,
-          deal: deal.offer,
-          date: formatHistoryDate(new Date()),
-          status: 'Code generated',
-        },
-        ...current,
-      ])
+      Alert.alert('Sign in required', 'Sign in with your PerkPass email to redeem member offers.')
       return
     }
 
@@ -677,16 +647,7 @@ function PerkPassApp() {
         {screen === 'login' && (
           <ScrollView contentContainerStyle={styles.page}>
             <Text style={[styles.hero, compact && styles.heroCompact]}>Welcome back.</Text>
-            <Text style={styles.body}>Log in to access member deals.</Text>
-            <Pressable style={styles.googleButton} onPress={handleGoogleLogin} disabled={googleLoading || memberLoading}>
-              <Text style={styles.googleMark}>G</Text>
-              <Text style={styles.googleButtonText}>{googleLoading ? 'Redirecting...' : 'Continue with Google'}</Text>
-            </Pressable>
-            <View style={styles.dividerRow}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or</Text>
-              <View style={styles.dividerLine} />
-            </View>
+            <Text style={styles.body}>Use your PerkPass email to access member deals.</Text>
             <TextInput
               value={email}
               onChangeText={setEmail}
@@ -701,6 +662,10 @@ function PerkPassApp() {
                 <Text style={styles.noticeText}>We sent a login link to {email}. Open it on this device to land back in PerkPass.</Text>
               </View>
             ) : null}
+            <View style={styles.noticeLive}>
+              <Text style={styles.noticeTitle}>Use the same email as your website account</Text>
+              <Text style={styles.noticeText}>If you normally use Google on the website, enter that same email here and we will send a sign-in link.</Text>
+            </View>
             {memberError ? (
               <View style={styles.noticeDemo}>
                 <Text style={styles.noticeTitle}>Membership check</Text>
@@ -711,13 +676,9 @@ function PerkPassApp() {
               <Text style={styles.primaryButtonText}>{memberLoading ? 'Checking...' : 'Continue with email'}</Text>
             </Pressable>
             <View style={styles.buttonGap} />
-            <Pressable style={styles.secondaryButton} onPress={previewDemo}>
-              <Text style={styles.secondaryButtonText}>Preview the app</Text>
+            <Pressable style={styles.secondaryButton} onPress={continueAsGuest}>
+              <Text style={styles.secondaryButtonText}>Browse current deals</Text>
             </Pressable>
-            <View style={styles.noticeDemo}>
-              <Text style={styles.noticeTitle}>Current launch plan</Text>
-              <Text style={styles.noticeText}>PerkPass mobile is currently designed for existing active members.</Text>
-            </View>
           </ScrollView>
         )}
 
@@ -856,7 +817,7 @@ function PerkPassApp() {
                   <Text style={styles.accountStatLabel}>Deals</Text>
                 </View>
                 <View style={styles.accountStatCard}>
-                  <Text style={styles.accountStatValue}>{dealSource === 'live' ? 'Live' : 'Preview'}</Text>
+                  <Text style={styles.accountStatValue}>Live</Text>
                   <Text style={styles.accountStatLabel}>Mode</Text>
                 </View>
               </View>
@@ -884,49 +845,60 @@ function PerkPassApp() {
         {screen === 'history' && (
           <ScrollView contentContainerStyle={styles.page}>
             <Text style={styles.kicker}>Redemption history</Text>
-            <Text style={[styles.hero, compact && styles.heroCompact]}>Your recent PerkPass activity.</Text>
-            <View style={styles.accountHeroCard}>
-              <Text style={styles.accountHeroEyebrow}>Activity snapshot</Text>
-              <Text style={styles.accountHeroTitle}>{redemptionHistory.length} total</Text>
-              <Text style={styles.accountHeroText}>
-                Keep track of what you redeemed, what got confirmed, and what is still cooling down.
-              </Text>
-              <View style={styles.accountStatsRow}>
-                <View style={styles.accountStatCard}>
-                  <Text style={styles.accountStatValue}>{confirmedHistoryCount}</Text>
-                  <Text style={styles.accountStatLabel}>Confirmed</Text>
-                </View>
-                <View style={styles.accountStatCard}>
-                  <Text style={styles.accountStatValue}>{pendingHistoryCount}</Text>
-                  <Text style={styles.accountStatLabel}>Pending</Text>
-                </View>
-                <View style={styles.accountStatCard}>
-                  <Text style={styles.accountStatValue}>{favoriteGroups.length}</Text>
-                  <Text style={styles.accountStatLabel}>Favorites</Text>
-                </View>
-              </View>
-            </View>
-            <View style={styles.accountSubCard}>
-              <Text style={styles.subCardEyebrow}>Recent redemptions</Text>
-              <Text style={styles.subCardText}>
-                Every code you open shows up here, so you can keep track of what was confirmed and what is still recent.
-              </Text>
-            </View>
-            {redemptionHistory.length === 0 ? (
-              <EmptyState title="No redemptions yet." text="Once you use a PerkPass deal, your recent activity will show up here." />
+            <Text style={[styles.hero, compact && styles.heroCompact]}>
+              {memberMode === 'active' ? 'Your recent PerkPass activity.' : 'History unlocks after sign in.'}
+            </Text>
+            {memberMode !== 'active' ? (
+              <EmptyState
+                title="Sign in to view history."
+                text="Use your PerkPass email to view redemption history and manage member activity."
+              />
             ) : (
-              <View style={styles.historyList}>
-                {redemptionHistory.map((item) => (
-                  <View key={item.id} style={styles.historyCard}>
-                    <View style={styles.historyBody}>
-                      <Text style={styles.cardTitle}>{item.businessName}</Text>
-                      <Text style={styles.dealText}>{item.deal}</Text>
-                      <Text style={styles.muted}>{item.date}</Text>
+              <>
+                <View style={styles.accountHeroCard}>
+                  <Text style={styles.accountHeroEyebrow}>Activity snapshot</Text>
+                  <Text style={styles.accountHeroTitle}>{redemptionHistory.length} total</Text>
+                  <Text style={styles.accountHeroText}>
+                    Keep track of what you redeemed, what got confirmed, and what is still cooling down.
+                  </Text>
+                  <View style={styles.accountStatsRow}>
+                    <View style={styles.accountStatCard}>
+                      <Text style={styles.accountStatValue}>{confirmedHistoryCount}</Text>
+                      <Text style={styles.accountStatLabel}>Confirmed</Text>
                     </View>
-                    <Text style={styles.statusPill}>{item.status}</Text>
+                    <View style={styles.accountStatCard}>
+                      <Text style={styles.accountStatValue}>{pendingHistoryCount}</Text>
+                      <Text style={styles.accountStatLabel}>Pending</Text>
+                    </View>
+                    <View style={styles.accountStatCard}>
+                      <Text style={styles.accountStatValue}>{favoriteGroups.length}</Text>
+                      <Text style={styles.accountStatLabel}>Favorites</Text>
+                    </View>
                   </View>
-                ))}
-              </View>
+                </View>
+                <View style={styles.accountSubCard}>
+                  <Text style={styles.subCardEyebrow}>Recent redemptions</Text>
+                  <Text style={styles.subCardText}>
+                    Every code you open shows up here, so you can keep track of what was confirmed and what is still recent.
+                  </Text>
+                </View>
+                {redemptionHistory.length === 0 ? (
+                  <EmptyState title="No redemptions yet." text="Once you use a PerkPass deal, your recent activity will show up here." />
+                ) : (
+                  <View style={styles.historyList}>
+                    {redemptionHistory.map((item) => (
+                      <View key={item.id} style={styles.historyCard}>
+                        <View style={styles.historyBody}>
+                          <Text style={styles.cardTitle}>{item.businessName}</Text>
+                          <Text style={styles.dealText}>{item.deal}</Text>
+                          <Text style={styles.muted}>{item.date}</Text>
+                        </View>
+                        <Text style={styles.statusPill}>{item.status}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </>
             )}
           </ScrollView>
         )}
@@ -934,11 +906,17 @@ function PerkPassApp() {
         {screen === 'account' && (
           <ScrollView contentContainerStyle={styles.page}>
             <Text style={styles.kicker}>Account</Text>
-            <Text style={[styles.hero, compact && styles.heroCompact]}>PerkPass All Access.</Text>
+            <Text style={[styles.hero, compact && styles.heroCompact]}>
+              {memberMode === 'active' ? 'PerkPass All Access.' : 'Browse first. Sign in when ready.'}
+            </Text>
             <View style={styles.accountHeroCard}>
               <Text style={styles.accountHeroEyebrow}>Account</Text>
-              <Text style={styles.accountHeroTitle}>{member?.name || email || 'PerkPass member'}</Text>
-              <Text style={styles.accountHeroText}>Your membership details, favorites, and recent activity all live here.</Text>
+              <Text style={styles.accountHeroTitle}>{member?.name || email || 'PerkPass guest'}</Text>
+              <Text style={styles.accountHeroText}>
+                {memberMode === 'active'
+                  ? 'Your membership details, favorites, and recent activity all live here.'
+                  : 'You can browse live deals as a guest. Sign in with your PerkPass email to redeem offers, manage billing, and view account activity.'}
+              </Text>
               <View style={styles.accountStatsRow}>
                 <View style={styles.accountStatCard}>
                   <Text style={styles.accountStatValue}>{favoriteBusinesses.length}</Text>
@@ -956,16 +934,20 @@ function PerkPassApp() {
             </View>
             <View style={styles.accountCard}>
               <Text style={styles.subCardEyebrow}>Membership details</Text>
-              <AccountRow label="Status" value={memberMode === 'active' ? 'Active member' : 'Member access'} />
+              <AccountRow label="Status" value={memberMode === 'active' ? 'Active member' : 'Guest browsing'} />
               <AccountRow label="Email" value={email || 'Not signed in'} />
-              <AccountRow label="Plan" value="PerkPass All Access" />
+              <AccountRow label="Plan" value={memberMode === 'active' ? 'PerkPass All Access' : 'Sign in for member access'} />
               <AccountRow label="Phone" value={member?.phone ? formatPhone(member.phone) : 'Managed on web'} />
               <AccountRow label="Billing" value={memberMode === 'active' ? 'Stripe billing portal' : 'Sign in to manage billing'} />
               <AccountRow label="Data" value="PerkPass deals" />
             </View>
             <View style={styles.accountSubCard}>
               <Text style={styles.subCardEyebrow}>Recent activity</Text>
-              {redemptionHistory.length === 0 ? (
+              {memberMode !== 'active' ? (
+                <Text style={styles.subCardText}>
+                  Sign in with your PerkPass email when you want to unlock redemption history and account activity.
+                </Text>
+              ) : redemptionHistory.length === 0 ? (
                 <Text style={styles.subCardText}>Once you redeem a deal, your recent PerkPass activity will show up here.</Text>
               ) : (
                 redemptionHistory.slice(0, 3).map((item, index) => (
@@ -1024,7 +1006,14 @@ function PerkPassApp() {
                 </Pressable>
                 <View style={styles.buttonGap} />
               </>
-            ) : null}
+            ) : (
+              <>
+                <Pressable style={styles.primaryButton} onPress={signOut}>
+                  <Text style={styles.primaryButtonText}>Sign in with email</Text>
+                </Pressable>
+                <View style={styles.buttonGap} />
+              </>
+            )}
             <Pressable style={styles.secondaryButton} onPress={() => Linking.openURL('https://getperkpass.com/support')}>
               <Text style={styles.secondaryButtonText}>Open support</Text>
             </Pressable>
@@ -1054,9 +1043,11 @@ function PerkPassApp() {
                 <View style={styles.buttonGap} />
               </>
             ) : null}
-            <Pressable style={styles.secondaryButton} onPress={signOut}>
-              <Text style={styles.secondaryButtonText}>{memberMode === 'active' ? 'Sign out' : 'Exit preview'}</Text>
-            </Pressable>
+            {memberMode === 'active' ? (
+              <Pressable style={styles.secondaryButton} onPress={signOut}>
+                <Text style={styles.secondaryButtonText}>Sign out</Text>
+              </Pressable>
+            ) : null}
           </ScrollView>
         )}
 

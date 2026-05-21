@@ -1,4 +1,3 @@
-import { DEALS } from '../data/demo'
 import { hasSupabaseConfig } from '../lib/env'
 import { supabase } from '../lib/supabase'
 import type { Deal } from '../types'
@@ -18,13 +17,13 @@ type DealRow = {
   } | null
 }
 
-export async function loadDeals(): Promise<{ deals: Deal[]; source: 'live' | 'demo'; error?: string }> {
+export async function loadDeals(): Promise<{ deals: Deal[]; source: 'live'; error?: string }> {
   if (!hasSupabaseConfig) {
-    return { deals: DEALS, source: 'demo' }
+    return { deals: [], source: 'live', error: 'Supabase is not configured for this build.' }
   }
 
   if (!supabase) {
-    return { deals: DEALS, source: 'demo', error: 'Supabase is not configured.' }
+    return { deals: [], source: 'live', error: 'Supabase is not configured.' }
   }
 
   const { data, error } = await supabase
@@ -35,7 +34,7 @@ export async function loadDeals(): Promise<{ deals: Deal[]; source: 'live' | 'de
     .order('created_at')
 
   if (error) {
-    return { deals: DEALS, source: 'demo', error: error.message }
+    return { deals: [], source: 'live', error: error.message }
   }
 
   const liveDeals = (data || [])
@@ -43,7 +42,7 @@ export async function loadDeals(): Promise<{ deals: Deal[]; source: 'live' | 'de
     .filter((deal): deal is Deal => Boolean(deal))
 
   if (!liveDeals.length) {
-    return { deals: DEALS, source: 'demo', error: 'No live deals returned yet.' }
+    return { deals: [], source: 'live', error: 'No live deals returned yet.' }
   }
 
   return { deals: liveDeals, source: 'live' }
