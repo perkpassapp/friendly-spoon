@@ -167,11 +167,6 @@ async function loadSneakPeekDeals(): Promise<LiveDeal[]> {
 export default async function Home() {
   await connection()
   const liveDeals = await loadSneakPeekDeals()
-  const featuredDeal = liveDeals[0]
-  const supportingDeals = liveDeals.slice(1, 4)
-  const liveCategories = Array.from(
-    new Set(liveDeals.map((deal) => normalizeCategory(deal.category))),
-  ).slice(0, 4)
   return (
     <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <style>{`
@@ -383,91 +378,79 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="preview-category-row">
-            {liveCategories.map((category) => (
-              <div key={category} className="preview-category-pill">
-                <span className="preview-category-dot" />
-                <span>{category}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="deal-showcase">
-            {featuredDeal ? (() => {
-              const normalizedCategory = normalizeCategory(featuredDeal.category)
-              const categoryMeta = getCategoryMeta(featuredDeal.category)
-              const colors = CAT_COLORS[featuredDeal.category] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
-              const photo = featuredDeal.photo_url || categoryMeta.photo
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '32px' }}>
+            {liveDeals.map((d) => {
+              const normalizedCategory = normalizeCategory(d.category)
+              const categoryMeta = getCategoryMeta(d.category)
+              const colors = CAT_COLORS[d.category] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
+              const photo = d.photo_url || categoryMeta.photo
               return (
-                <div className="deal-feature">
+                <div key={d.id} className="deal-card">
                   {photo && (
-                    <div className="deal-feature-media">
+                    <div style={{ position: 'relative' }}>
                       <Image
                         src={photo}
-                        alt={featuredDeal.business_name}
-                        className="deal-feature-image"
+                        alt={d.business_name}
+                        className="deal-card-img"
                         width={1200}
-                        height={800}
-                        sizes="(max-width: 900px) 100vw, 460px"
-                        quality={76}
+                        height={675}
+                        sizes="(max-width: 720px) 100vw, (max-width: 1100px) 50vw, 240px"
+                        quality={72}
                         loading="lazy"
                       />
+                      <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--ink)', color: 'var(--bg)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 8px', borderRadius: '3px' }}>
+                        Live now
+                      </span>
                     </div>
                   )}
-                  <div className="deal-feature-body">
-                    <div className="deal-badge-row">
-                      <span className="deal-live-chip">
-                        <span className="deal-live-dot" />
-                        <span>Live now</span>
-                      </span>
-                      <span style={{ display: 'inline-block', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '5px 10px', borderRadius: '999px' }}>
-                        {featuredDeal.category === 'Dessert' ? featuredDeal.category : normalizedCategory}
-                      </span>
+                  <div className="deal-card-body">
+                    <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 9px', borderRadius: '4px' }}>
+                      {d.category === 'Dessert' ? d.category : normalizedCategory}
+                    </span>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.01em' }}>
+                      {d.business_name}
                     </div>
-                    <div className="deal-feature-title">{featuredDeal.business_name}</div>
-                    <div className="deal-feature-offer">{featuredDeal.deal_description}</div>
-                    <div className="deal-feature-meta">
-                      <span>{featuredDeal.address}</span>
+                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--green-dk)', lineHeight: 1.35 }}>
+                      {d.deal_description}
                     </div>
-                    <div className="deal-feature-value">Worth checking the app for</div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)', lineHeight: 1.45 }}>
+                      {d.address}
+                    </div>
                   </div>
                 </div>
               )
-            })() : null}
-
-            <div className="deal-stack">
-              {supportingDeals.map((d) => {
-                const normalizedCategory = normalizeCategory(d.category)
-                const categoryMeta = getCategoryMeta(d.category)
-                const colors = CAT_COLORS[d.category] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
-                return (
-                  <div key={d.id} className="deal-compact">
-                    <div className="deal-badge-row">
-                      <span className="deal-live-chip">
-                        <span className="deal-live-dot" />
-                        <span>Live now</span>
-                      </span>
-                      <span style={{ display: 'inline-block', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '5px 10px', borderRadius: '999px' }}>
-                        {d.category === 'Dessert' ? d.category : normalizedCategory}
-                      </span>
-                    </div>
-                    <div className="deal-compact-title">{d.business_name}</div>
-                    <div className="deal-compact-offer">{d.deal_description}</div>
-                    <div className="deal-compact-address">{d.address}</div>
-                  </div>
-                )
-              })}
-              <Link href="/for-business" style={{ textDecoration: 'none' }}>
+            })}
+            <Link href="/for-business" style={{ textDecoration: 'none' }}>
+              <div
+                className="deal-card"
+                style={{
+                  background: 'var(--bg-2)',
+                  border: '1.5px solid var(--forest)',
+                  minHeight: '220px',
+                  cursor: 'pointer',
+                  position: 'relative',
+                }}
+              >
                 <div
-                  className="deal-compact"
                   style={{
-                    border: '1.5px solid var(--forest)',
-                    minHeight: '100%',
-                    cursor: 'pointer',
-                    justifyContent: 'center',
-                    gap: '12px',
+                    position: 'absolute',
+                    top: '14px',
+                    right: '14px',
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '999px',
+                    background: 'var(--green-lt)',
+                    display: 'grid',
+                    placeItems: 'center',
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: '16px',
+                    fontWeight: 800,
+                    color: 'var(--green-dk)',
                   }}
                 >
+                  ↗
+                </div>
+                <div className="deal-card-body" style={{ justifyContent: 'center', gap: '16px', padding: '22px 18px 22px' }}>
                   <div
                     style={{
                       alignSelf: 'flex-start',
@@ -484,8 +467,8 @@ export default async function Home() {
                   >
                     For business owners
                   </div>
-                  <div className="deal-compact-title" style={{ fontSize: '28px', color: 'var(--forest)', maxWidth: '14ch' }}>
-                    Want to get on the board?
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '26px', fontWeight: 900, color: 'var(--forest)', lineHeight: 1.05, maxWidth: '14ch' }}>
+                    Wanna partner up? Let&apos;s do it.
                   </div>
                   <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-3)', lineHeight: 1.5, maxWidth: '30ch' }}>
                     Put your business in front of locals already looking for their next favorite Philly spot.
@@ -510,12 +493,12 @@ export default async function Home() {
                     </span>
                   </div>
                 </div>
-              </Link>
-            </div>
+              </div>
+            </Link>
           </div>
 
           <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-4)', marginBottom: '20px', lineHeight: 1.6 }}>
-            The board changes throughout the week, so there&apos;s always something new to try, save, or come back for.
+            Offers rotate throughout the week, so the live board changes as new spots come online and time windows open up.
           </p>
           <div>
             <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px' }}>
