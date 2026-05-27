@@ -49,7 +49,9 @@ import { getBillingPortalUrl } from './src/services/billing'
 import {
   getCurrentSession,
   handleAuthCallbackUrl,
+  sendPasswordReset,
   sendMagicLink,
+  signInWithPassword,
   signOut as signOutOfSupabase,
 } from './src/services/auth'
 import { deleteAccount as deleteMemberAccount } from './src/services/account'
@@ -87,6 +89,7 @@ function PerkPassApp() {
   const compact = width < 380
   const [screen, setScreen] = useState<Screen>('login')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [member, setMember] = useState<MemberStatus | null>(null)
   const [memberMode, setMemberMode] = useState<'guest' | 'active'>('guest')
   const [memberLoading, setMemberLoading] = useState(false)
@@ -348,6 +351,65 @@ function PerkPassApp() {
     requestMagicLink()
   }
 
+  async function handleForgotPassword() {
+    if (!hasSupabaseConfig) {
+      setMemberError('Mobile sign-in is not configured on this build yet.')
+      return
+    }
+
+    if (!email.includes('@')) {
+      Alert.alert('Add your email', 'Enter the email tied to your PerkPass account first.')
+      return
+    }
+
+    setMemberLoading(true)
+    setMemberError('')
+
+    try {
+      await sendPasswordReset(email)
+      Alert.alert(
+        'Reset email sent',
+        `We sent a password reset link to ${email}. Open it to create a new password for PerkPass.`,
+      )
+    } catch (err) {
+      setMemberError(err instanceof Error ? err.message : 'Unable to send a password reset right now.')
+    } finally {
+      setMemberLoading(false)
+    }
+  }
+
+  async function handlePasswordLogin() {
+    if (!hasSupabaseConfig) {
+      setMemberError('Mobile sign-in is not configured on this build yet.')
+      return
+    }
+
+    if (!email.includes('@')) {
+      Alert.alert('Add your email', 'Enter the email tied to your PerkPass account.')
+      return
+    }
+
+    if (!password.trim()) {
+      Alert.alert('Add your password', 'Enter the password for this PerkPass account.')
+      return
+    }
+
+    setMemberLoading(true)
+    setMemberError('')
+    setMagicLinkSent(false)
+
+    try {
+      const session = await signInWithPassword(email, password)
+      const sessionEmail = session?.user.email || email.trim().toLowerCase()
+      setEmail(sessionEmail)
+      await completeMemberAccess(sessionEmail)
+    } catch (err) {
+      setMemberError(err instanceof Error ? err.message : 'Unable to sign in with password right now.')
+    } finally {
+      setMemberLoading(false)
+    }
+  }
+
   async function requestMagicLink() {
     if (!hasSupabaseConfig) {
       setMemberError('Mobile sign-in is not configured on this build yet.')
@@ -368,12 +430,7 @@ function PerkPassApp() {
       setMagicLinkSent(true)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unable to send login link right now.'
-      const normalized = message.toLowerCase()
-      if (normalized.includes('social') || normalized.includes('identity') || normalized.includes('oauth')) {
-        setMemberError('We could not send a sign-in link for this account yet. If you normally use Google on the website, contact support and we will help you unlock mobile access.')
-      } else {
-        setMemberError(message)
-      }
+      setMemberError(message)
     } finally {
       setMemberLoading(false)
     }
@@ -444,6 +501,7 @@ function PerkPassApp() {
     setMemberMode('guest')
     setMember(null)
     setEmail('')
+    setPassword('')
     setFavoriteBusinesses([])
     setCooldowns({})
     setActiveRedemption(null)
@@ -656,6 +714,14 @@ function PerkPassApp() {
               keyboardType="email-address"
               style={styles.input}
             />
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Password"
+              autoCapitalize="none"
+              secureTextEntry
+              style={styles.input}
+            />
             {magicLinkSent ? (
               <View style={styles.noticeLive}>
                 <Text style={styles.noticeTitle}>Check your email</Text>
@@ -663,8 +729,8 @@ function PerkPassApp() {
               </View>
             ) : null}
             <View style={styles.noticeLive}>
-              <Text style={styles.noticeTitle}>Use the same email as your website account</Text>
-              <Text style={styles.noticeText}>If you normally use Google on the website, enter that same email here and we will send a sign-in link.</Text>
+              <Text style={styles.noticeTitle}>Email works either way</Text>
+              <Text style={styles.noticeText}>Use your PerkPass email to sign in with a password, request a fresh magic link, or create a new password if you have never set one.</Text>
             </View>
             {memberError ? (
               <View style={styles.noticeDemo}>
@@ -672,8 +738,16 @@ function PerkPassApp() {
                 <Text style={styles.noticeText}>{memberError}</Text>
               </View>
             ) : null}
-            <Pressable style={styles.primaryButton} onPress={handleLogin}>
-              <Text style={styles.primaryButtonText}>{memberLoading ? 'Checking...' : 'Continue with email'}</Text>
+            <Pressable style={styles.primaryButton} onPress={handlePasswordLogin}>
+              <Text style={styles.primaryButtonText}>{memberLoading ? 'Signing in...' : 'Sign in with password'}</Text>
+            </Pressable>
+            <View style={styles.buttonGap} />
+            <Pressable style={styles.secondaryButton} onPress={handleLogin}>
+              <Text style={styles.secondaryButtonText}>{memberLoading ? 'Sending link...' : 'Email me a sign-in link'}</Text>
+            </Pressable>
+            <View style={styles.buttonGap} />
+            <Pressable onPress={handleForgotPassword}>
+              <Text style={[styles.secondaryButtonText, { color: colors.greenDark, textAlign: 'center' }]}>Forgot password?</Text>
             </Pressable>
             <View style={styles.buttonGap} />
             <Pressable style={styles.secondaryButton} onPress={continueAsGuest}>

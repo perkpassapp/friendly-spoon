@@ -6,11 +6,14 @@ import Link from 'next/link'
 
 export default function MemberLogin() {
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [sent, setSent] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [showEmail, setShowEmail] = useState(false)
   const [noAccount, setNoAccount] = useState(false)
+  const [loginError, setLoginError] = useState('')
   const router = useRouter()
 
   // Silently redirect if already logged in — no loading screen
@@ -32,6 +35,8 @@ export default function MemberLogin() {
   }
 
   async function handleMagicLink() {
+    setLoginError('')
+    setResetSent(false)
     setLoading(true)
     const { error } = await supabase.auth.signInWithOtp({
       email,
@@ -45,6 +50,56 @@ export default function MemberLogin() {
     } else if (error.status === 422) {
       setNoAccount(true)
     }
+    setLoading(false)
+  }
+
+  async function handlePasswordLogin() {
+    if (!email || !password) return
+
+    setLoading(true)
+    setLoginError('')
+    setNoAccount(false)
+    setResetSent(false)
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    })
+
+    if (!error) {
+      router.replace('/member/access')
+      return
+    }
+
+    if (error.status === 400 || error.status === 401) {
+      setLoginError('That email and password combination did not work. If you have never set a password, use Forgot password to create one.')
+    } else {
+      setLoginError(error.message)
+    }
+
+    setLoading(false)
+  }
+
+  async function handlePasswordReset() {
+    if (!email) {
+      setLoginError('Enter your email first so we know where to send the reset link.')
+      return
+    }
+
+    setLoading(true)
+    setLoginError('')
+    setNoAccount(false)
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: `${window.location.origin}/member/reset-password`,
+    })
+
+    if (!error) {
+      setResetSent(true)
+    } else {
+      setLoginError(error.message)
+    }
+
     setLoading(false)
   }
 
@@ -75,10 +130,28 @@ export default function MemberLogin() {
                 Create an account
               </Link>
               <button
-                onClick={() => { setNoAccount(false); setEmail('') }}
+                onClick={() => { setNoAccount(false); setEmail(''); setPassword(''); setLoginError('') }}
                 style={{ background: 'none', border: 'none', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-4)', cursor: 'pointer', padding: 0 }}
               >
                 Try a different email
+              </button>
+            </div>
+          ) : resetSent ? (
+            <div className="fade-up">
+              <h1 className="display" style={{ fontSize: 'clamp(48px, 12vw, 64px)', marginBottom: '16px' }}>Check your email.</h1>
+              <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px', lineHeight: 1.55 }}>
+                We sent a password reset link to <strong style={{ color: 'var(--ink)' }}>{email}</strong>. Open it to create a password, then come back here to sign in.
+              </p>
+              <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', borderRadius: '8px', padding: '16px', marginBottom: '24px' }}>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.5 }}>
+                  If you originally used Google or only ever used login links, this is the easiest way to add a password to your PerkPass account.
+                </p>
+              </div>
+              <button
+                onClick={() => { setResetSent(false); setShowEmail(true); setPassword(''); setLoginError('') }}
+                style={{ background: 'none', border: 'none', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-4)', cursor: 'pointer', padding: 0 }}
+              >
+                Back to login
               </button>
             </div>
           ) : sent ? (
@@ -93,7 +166,7 @@ export default function MemberLogin() {
                 </p>
               </div>
               <button
-                onClick={() => { setSent(false); setShowEmail(false); setEmail('') }}
+                onClick={() => { setSent(false); setShowEmail(false); setEmail(''); setPassword(''); setLoginError('') }}
                 style={{ background: 'none', border: 'none', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-4)', cursor: 'pointer', padding: 0 }}
               >
                 Try a different method
@@ -139,7 +212,7 @@ export default function MemberLogin() {
 
                 {!showEmail ? (
                   <button
-                    onClick={() => setShowEmail(true)}
+                    onClick={() => { setShowEmail(true); setLoginError('') }}
                     style={{
                       width: '100%', padding: '15px', background: 'transparent',
                       border: '1px solid var(--border-2)', borderRadius: '8px', cursor: 'pointer',
@@ -160,15 +233,62 @@ export default function MemberLogin() {
                       placeholder="you@email.com"
                       className="pp-input" autoFocus
                       autoComplete="email" inputMode="email"
-                      onKeyDown={e => e.key === 'Enter' && email && handleMagicLink()}
+                      onKeyDown={e => e.key === 'Enter' && email && password && handlePasswordLogin()}
                     />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="Password"
+                      className="pp-input"
+                      autoComplete="current-password"
+                      onKeyDown={e => e.key === 'Enter' && email && password && handlePasswordLogin()}
+                    />
+                    <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border-2)', borderRadius: '8px', padding: '14px 16px' }}>
+                      <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ink-3)', lineHeight: 1.5 }}>
+                        Already have a password? Sign in directly. Need one? Use Forgot password or request a magic link instead.
+                      </p>
+                    </div>
+                    {loginError ? (
+                      <div style={{ background: '#fff1ee', border: '1px solid #f0c5bb', borderRadius: '8px', padding: '14px 16px' }}>
+                        <p style={{ fontSize: '13px', fontWeight: 600, color: '#7c3f34', lineHeight: 1.5 }}>{loginError}</p>
+                      </div>
+                    ) : null}
                     <button
-                      onClick={handleMagicLink}
-                      disabled={loading || !email}
+                      onClick={handlePasswordLogin}
+                      disabled={loading || !email || !password}
                       className="btn btn-primary"
                       style={{ width: '100%', fontSize: '17px', padding: '15px' }}
                     >
-                      {loading ? 'Sending...' : 'Send login link'}
+                      {loading ? 'Signing in...' : 'Sign in with password'}
+                    </button>
+                    <button
+                      onClick={handleMagicLink}
+                      disabled={loading || !email}
+                      style={{
+                        width: '100%', padding: '15px', background: 'transparent',
+                        border: '1px solid var(--border-2)', borderRadius: '8px', cursor: 'pointer',
+                        fontFamily: "'Barlow Condensed', sans-serif", fontSize: '16px', fontWeight: 700,
+                        textTransform: 'uppercase', letterSpacing: '0.03em', color: 'var(--ink-3)',
+                      }}
+                    >
+                      {loading ? 'Sending...' : 'Email me a sign-in link'}
+                    </button>
+                    <button
+                      onClick={handlePasswordReset}
+                      disabled={loading}
+                      style={{ background: 'none', border: 'none', padding: '4px 0 0', cursor: 'pointer', textAlign: 'left' }}
+                    >
+                      <span style={{
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                        color: 'var(--green-dk)',
+                      }}>
+                        Forgot password?
+                      </span>
                     </button>
                   </div>
                 )}

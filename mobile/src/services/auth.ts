@@ -2,6 +2,7 @@ import * as ExpoLinking from 'expo-linking'
 import * as WebBrowser from 'expo-web-browser'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
+import { env } from '../lib/env'
 
 WebBrowser.maybeCompleteAuthSession()
 
@@ -26,30 +27,14 @@ export async function getCurrentSession() {
   return data.session
 }
 
-export async function signInWithGoogle() {
+export async function signInWithPassword(email: string, password: string) {
   const client = requireSupabase()
-  const { data, error } = await client.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: authRedirectUrl,
-      skipBrowserRedirect: true,
-      queryParams: { access_type: 'offline', prompt: 'consent' },
-    },
+  const { data, error } = await client.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password,
   })
-
   if (error) throw error
-  if (!data.url) throw new Error('Unable to start Google sign-in.')
-
-  const result = await WebBrowser.openAuthSessionAsync(data.url, authRedirectUrl)
-  if (result.type !== 'success') {
-    throw new Error('Google sign-in was closed before PerkPass received a session.')
-  }
-
-  const session = await handleAuthCallbackUrl(result.url)
-  if (!session) {
-    throw new Error(`Google sign-in returned without a session. Add this redirect URL in Supabase: ${authRedirectUrl}`)
-  }
-  return session
+  return data.session
 }
 
 export async function sendMagicLink(email: string) {
@@ -60,6 +45,14 @@ export async function sendMagicLink(email: string) {
       emailRedirectTo: authRedirectUrl,
       shouldCreateUser: false,
     },
+  })
+  if (error) throw error
+}
+
+export async function sendPasswordReset(email: string) {
+  const client = requireSupabase()
+  const { error } = await client.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo: `${env.webBaseUrl}/member/reset-password`,
   })
   if (error) throw error
 }
