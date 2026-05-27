@@ -22,6 +22,15 @@ type LiveDeal = {
   } | null
 }
 
+const SNEAK_PEEK_EXCLUDED_BUSINESSES = new Set([
+  'koto sushi - hibachi catering',
+])
+
+const SNEAK_PEEK_PRIORITY_BUSINESSES = [
+  'mocha melt cafe',
+  'prince tea house',
+]
+
 const HOW = [
   { num: '01', title: 'Join for $3/month',  body: 'Start monthly, unlock the member experience, and keep it simple. No contracts ever.' },
   { num: '02', title: 'Browse Philly deals',    body: 'Restaurants, cafes, barbers, gyms, nail salons — all in one place.' },
@@ -131,16 +140,38 @@ async function loadSneakPeekDeals(): Promise<LiveDeal[]> {
   )
 
   const now = new Date()
+  const priorityOrder = new Map(
+    SNEAK_PEEK_PRIORITY_BUSINESSES.map((business, index) => [business, index]),
+  )
 
   return ((deals || []) as LiveDeal[])
     .filter((deal) => !pendingBusinesses.has(deal.business_name.trim().toLowerCase()))
+    .filter((deal) => !SNEAK_PEEK_EXCLUDED_BUSINESSES.has(deal.business_name.trim().toLowerCase()))
     .filter((deal) => isDealLiveNow(deal, now))
+    .sort((left, right) => {
+      const leftName = left.business_name.trim().toLowerCase()
+      const rightName = right.business_name.trim().toLowerCase()
+      const leftPriority = priorityOrder.get(leftName)
+      const rightPriority = priorityOrder.get(rightName)
+
+      if (leftPriority !== undefined && rightPriority !== undefined) {
+        return leftPriority - rightPriority
+      }
+      if (leftPriority !== undefined) return -1
+      if (rightPriority !== undefined) return 1
+      return left.business_name.localeCompare(right.business_name)
+    })
     .slice(0, 5)
 }
 
 export default async function Home() {
   await connection()
   const liveDeals = await loadSneakPeekDeals()
+  const featuredDeal = liveDeals[0]
+  const supportingDeals = liveDeals.slice(1, 4)
+  const liveCategories = Array.from(
+    new Set(liveDeals.map((deal) => normalizeCategory(deal.category))),
+  ).slice(0, 4)
   return (
     <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <style>{`
@@ -154,6 +185,26 @@ export default async function Home() {
         .preview-meta-card { background: var(--bg-2); border-radius: 10px; padding: 14px 14px 12px; }
         .preview-meta-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-4); margin-bottom: 6px; }
         .preview-meta-value { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+        .preview-category-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+        .preview-category-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); }
+        .preview-category-dot { width: 7px; height: 7px; border-radius: 999px; background: var(--green); flex-shrink: 0; }
+        .deal-showcase { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr); gap: 14px; margin-bottom: 24px; }
+        .deal-feature { background: var(--bg-2); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; min-height: 100%; display: flex; flex-direction: column; }
+        .deal-feature-media { position: relative; }
+        .deal-feature-image { width: 100%; height: 260px; object-fit: cover; display: block; }
+        .deal-feature-body { padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+        .deal-badge-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .deal-live-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--forest); color: var(--bg); border-radius: 999px; padding: 5px 10px; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+        .deal-live-dot { width: 7px; height: 7px; border-radius: 999px; background: var(--green); flex-shrink: 0; }
+        .deal-feature-title { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(30px, 5vw, 40px); font-weight: 900; color: var(--ink); line-height: 0.98; letter-spacing: -0.02em; }
+        .deal-feature-offer { font-size: 22px; font-weight: 800; color: var(--green-dk); line-height: 1.18; }
+        .deal-feature-meta { display: flex; flex-wrap: wrap; gap: 8px 12px; font-size: 13px; font-weight: 700; color: var(--ink-4); }
+        .deal-feature-value { background: var(--green-lt); color: var(--green-dk); border-radius: 999px; padding: 6px 11px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; align-self: flex-start; }
+        .deal-stack { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .deal-compact { background: var(--bg-2); border: 1px solid var(--border); border-radius: 14px; padding: 15px 15px 16px; display: flex; flex-direction: column; gap: 8px; }
+        .deal-compact-title { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 900; color: var(--ink); line-height: 1; letter-spacing: -0.015em; }
+        .deal-compact-offer { font-size: 16px; font-weight: 800; color: var(--green-dk); line-height: 1.25; }
+        .deal-compact-address { font-size: 13px; font-weight: 600; color: var(--ink-4); line-height: 1.4; }
         .trust-strip { border-bottom: 2px solid var(--ink); background: var(--bg-2); padding: 18px 24px; }
         .trust-strip-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
         .trust-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--ink-3); }
@@ -182,6 +233,7 @@ export default async function Home() {
         .hero-shape-two { width: 110px; height: 110px; left: 34px; bottom: 50px; background: var(--green-lt); }
         @media (max-width: 900px) {
           .preview-meta-grid { grid-template-columns: 1fr; }
+          .deal-showcase { grid-template-columns: 1fr; }
           .trust-strip-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); }
           .faq-grid { grid-template-columns: 1fr; }
           .creator-grid { grid-template-columns: 1fr; }
@@ -312,7 +364,7 @@ export default async function Home() {
               Live right now
             </h2>
             <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '560px', lineHeight: 1.6 }}>
-              These are real deals members can use right now across Philly. People kept asking to see the actual offers before joining, so here&apos;s a live look inside the lineup.
+              See the kinds of offers people can actually use the minute they join. This board updates throughout the week, so the lineup always feels fresh.
             </p>
           </div>
 
@@ -322,8 +374,8 @@ export default async function Home() {
               <div className="preview-meta-value">{liveDeals.length || 0} current offers on the board</div>
             </div>
             <div className="preview-meta-card">
-              <div className="preview-meta-label">Browse</div>
-              <div className="preview-meta-value">Real spots across cafes, restaurants, dessert, fitness, and more</div>
+              <div className="preview-meta-label">Categories</div>
+              <div className="preview-meta-value">Coffee, food, dessert, fitness, and neighborhood favorites</div>
             </div>
             <div className="preview-meta-card">
               <div className="preview-meta-label">Redeem</div>
@@ -331,79 +383,91 @@ export default async function Home() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '32px' }}>
-            {liveDeals.map((d, i) => {
-              const normalizedCategory = normalizeCategory(d.category)
-              const categoryMeta = getCategoryMeta(d.category)
-              const colors = CAT_COLORS[d.category] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
-              const photo = d.photo_url || categoryMeta.photo
+          <div className="preview-category-row">
+            {liveCategories.map((category) => (
+              <div key={category} className="preview-category-pill">
+                <span className="preview-category-dot" />
+                <span>{category}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="deal-showcase">
+            {featuredDeal ? (() => {
+              const normalizedCategory = normalizeCategory(featuredDeal.category)
+              const categoryMeta = getCategoryMeta(featuredDeal.category)
+              const colors = CAT_COLORS[featuredDeal.category] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
+              const photo = featuredDeal.photo_url || categoryMeta.photo
               return (
-                <div key={d.id} className="deal-card">
+                <div className="deal-feature">
                   {photo && (
-                    <div style={{ position: 'relative' }}>
+                    <div className="deal-feature-media">
                       <Image
                         src={photo}
-                        alt={d.business_name}
-                        className="deal-card-img"
+                        alt={featuredDeal.business_name}
+                        className="deal-feature-image"
                         width={1200}
-                        height={675}
-                        sizes="(max-width: 720px) 100vw, (max-width: 1100px) 50vw, 240px"
-                        quality={72}
+                        height={800}
+                        sizes="(max-width: 900px) 100vw, 460px"
+                        quality={76}
                         loading="lazy"
                       />
-                      <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--ink)', color: 'var(--bg)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 8px', borderRadius: '3px' }}>
-                        Live now
-                      </span>
                     </div>
                   )}
-                  <div className="deal-card-body">
-                    <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 9px', borderRadius: '4px' }}>
-                      {d.category === 'Dessert' ? d.category : normalizedCategory}
-                    </span>
-                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.01em' }}>
-                      {d.business_name}
+                  <div className="deal-feature-body">
+                    <div className="deal-badge-row">
+                      <span className="deal-live-chip">
+                        <span className="deal-live-dot" />
+                        <span>Live now</span>
+                      </span>
+                      <span style={{ display: 'inline-block', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '5px 10px', borderRadius: '999px' }}>
+                        {featuredDeal.category === 'Dessert' ? featuredDeal.category : normalizedCategory}
+                      </span>
                     </div>
-                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--green-dk)', lineHeight: 1.35 }}>
-                      {d.deal_description}
+                    <div className="deal-feature-title">{featuredDeal.business_name}</div>
+                    <div className="deal-feature-offer">{featuredDeal.deal_description}</div>
+                    <div className="deal-feature-meta">
+                      <span>{featuredDeal.address}</span>
                     </div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)', lineHeight: 1.45 }}>
-                      {d.address}
-                    </div>
+                    <div className="deal-feature-value">Worth checking the app for</div>
                   </div>
                 </div>
               )
-            })}
-            <Link href="/for-business" style={{ textDecoration: 'none' }}>
-              <div
-                className="deal-card"
-                style={{
-                  background: 'var(--bg-2)',
-                  border: '1.5px solid var(--forest)',
-                  minHeight: '220px',
-                  cursor: 'pointer',
-                  position: 'relative',
-                }}
-              >
+            })() : null}
+
+            <div className="deal-stack">
+              {supportingDeals.map((d) => {
+                const normalizedCategory = normalizeCategory(d.category)
+                const categoryMeta = getCategoryMeta(d.category)
+                const colors = CAT_COLORS[d.category] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
+                return (
+                  <div key={d.id} className="deal-compact">
+                    <div className="deal-badge-row">
+                      <span className="deal-live-chip">
+                        <span className="deal-live-dot" />
+                        <span>Live now</span>
+                      </span>
+                      <span style={{ display: 'inline-block', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '5px 10px', borderRadius: '999px' }}>
+                        {d.category === 'Dessert' ? d.category : normalizedCategory}
+                      </span>
+                    </div>
+                    <div className="deal-compact-title">{d.business_name}</div>
+                    <div className="deal-compact-offer">{d.deal_description}</div>
+                    <div className="deal-compact-address">{d.address}</div>
+                  </div>
+                )
+              })}
+              <Link href="/for-business" style={{ textDecoration: 'none' }}>
                 <div
+                  className="deal-compact"
                   style={{
-                    position: 'absolute',
-                    top: '14px',
-                    right: '14px',
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '999px',
-                    background: 'var(--green-lt)',
-                    display: 'grid',
-                    placeItems: 'center',
-                    fontFamily: "'Barlow Condensed', sans-serif",
-                    fontSize: '16px',
-                    fontWeight: 800,
-                    color: 'var(--green-dk)',
+                    border: '1.5px solid var(--forest)',
+                    minHeight: '100%',
+                    cursor: 'pointer',
+                    justifyContent: 'center',
+                    gap: '12px',
                   }}
                 >
-                  ↗
-                </div>
-                <div className="deal-card-body" style={{ justifyContent: 'center', gap: '16px', padding: '22px 18px 22px' }}>
                   <div
                     style={{
                       alignSelf: 'flex-start',
@@ -420,8 +484,8 @@ export default async function Home() {
                   >
                     For business owners
                   </div>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '26px', fontWeight: 900, color: 'var(--forest)', lineHeight: 1.05, maxWidth: '14ch' }}>
-                    Wanna partner up? Let&apos;s do it.
+                  <div className="deal-compact-title" style={{ fontSize: '28px', color: 'var(--forest)', maxWidth: '14ch' }}>
+                    Want to get on the board?
                   </div>
                   <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-3)', lineHeight: 1.5, maxWidth: '30ch' }}>
                     Put your business in front of locals already looking for their next favorite Philly spot.
@@ -446,11 +510,12 @@ export default async function Home() {
                     </span>
                   </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            </div>
           </div>
+
           <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-4)', marginBottom: '20px', lineHeight: 1.6 }}>
-            Offers rotate throughout the week, so the live board changes as new spots come online and time windows open up.
+            The board changes throughout the week, so there&apos;s always something new to try, save, or come back for.
           </p>
           <div>
             <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px' }}>
