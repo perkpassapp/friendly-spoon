@@ -1,17 +1,25 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { connection } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { getCategoryMeta, normalizeCategory } from '@/lib/product'
-
-const DEALS = [
-  { name: 'The Brew Room', offer: '10% off your purchase', cat: 'Cafe', area: 'Ardmore', featured: true, photo: 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/016a6f95-c5f9-45bb-a312-88da2ae64b14/photo.png' },
-  { name: 'Prince Tea House', offer: '10% off your order', cat: 'Cafe', area: 'Chinatown', featured: false, photo: 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/7dc520df-84e1-40aa-bd96-0aa45f0de47b/photo.png' },
-  { name: 'Scoop DeVille', offer: '25% off all items', cat: 'Cafe', area: 'Center City', featured: false, photo: 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/c22ae3bd-7d0f-4b85-96a5-63f8542682ec/photo.png' },
-  { name: 'Mocha Melt Cafe', offer: '$3 off minimum purchase of $20', cat: 'Cafe', area: 'Philadelphia', featured: false, photo: 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/businesses/52259609-d50c-40c3-ae3c-bc3c56cd3b72/photo-1776914769817.png' },
-  { name: 'Cellar Dog', offer: 'Happy hour specials: 1/2 off games, drinks, & bites under $10', cat: 'Restaurant', area: 'Philadelphia', featured: false, photo: 'https://nstqhqhwhzzvhddnbwvg.supabase.co/storage/v1/object/public/business-photos/businesses/88c5126c-0435-43ad-8291-864a68aca7f4/photo-1776962483796.webp' },
-]
 
 const CAT_COLORS: Record<string, { bg: string; color: string }> = {
   Dessert: { bg: '#ffe5d1', color: '#ae5d17' },
+}
+
+type LiveDeal = {
+  id: string
+  business_name: string
+  deal_description: string
+  category: string
+  address: string
+  photo_url?: string | null
+  schedule?: {
+    days?: number[]
+    start?: string
+    end?: string
+  } | null
 }
 
 const HOW = [
@@ -76,7 +84,63 @@ function ArrowUpRightIcon({ size = 16 }: { size?: number }) {
   )
 }
 
-export default function Home() {
+function isDealLiveNow(deal: LiveDeal, now: Date) {
+  if (!deal.schedule) return true
+  const days = Array.isArray(deal.schedule.days) ? deal.schedule.days : []
+  if (!days.includes(now.getDay())) return false
+  const start = deal.schedule.start
+  const end = deal.schedule.end
+  if (!start || !end) return true
+  const [startHour, startMinute] = start.split(':').map(Number)
+  const [endHour, endMinute] = end.split(':').map(Number)
+  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+  const startMinutes = startHour * 60 + startMinute
+  const endMinutes = endHour * 60 + endMinute
+  return currentMinutes >= startMinutes && currentMinutes < endMinutes
+}
+
+function buildSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) return null
+  return createClient(url, key)
+}
+
+async function loadSneakPeekDeals(): Promise<LiveDeal[]> {
+  const supabase = buildSupabaseClient()
+  if (!supabase) return []
+
+  const [{ data: deals, error: dealsError }, { data: applications, error: applicationsError }] = await Promise.all([
+    supabase
+      .from('deals')
+      .select('id, business_name, deal_description, category, address, photo_url, schedule')
+      .eq('active', true)
+      .eq('admin_disabled', false)
+      .order('created_at'),
+    supabase
+      .from('business_applications')
+      .select('business_name, status'),
+  ])
+
+  if (dealsError || applicationsError) return []
+
+  const pendingBusinesses = new Set(
+    (applications || [])
+      .filter((application) => (application.status || 'pending') === 'pending')
+      .map((application) => application.business_name.trim().toLowerCase()),
+  )
+
+  const now = new Date()
+
+  return ((deals || []) as LiveDeal[])
+    .filter((deal) => !pendingBusinesses.has(deal.business_name.trim().toLowerCase()))
+    .filter((deal) => isDealLiveNow(deal, now))
+    .slice(0, 5)
+}
+
+export default async function Home() {
+  await connection()
+  const liveDeals = await loadSneakPeekDeals()
   return (
     <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <style>{`
@@ -171,6 +235,9 @@ export default function Home() {
               <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px', padding: '15px 28px' }}>
                 Start saving for $3/mo
               </Link>
+              <Link href="#sneak-peek" className="btn btn-outline" style={{ fontSize: '17px', padding: '15px 28px' }}>
+                See live deals
+              </Link>
             </div>
             <div className="hero-proof">
               {[
@@ -242,63 +309,65 @@ export default function Home() {
           <div style={{ marginBottom: '32px' }}>
             <div className="preview-kicker">Inside the app</div>
             <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)' }}>
-              Sneak peek
+              Live right now
             </h2>
             <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '560px', lineHeight: 1.6 }}>
-              Preview the kind of member-only perks we are bringing to Philly as we continue onboarding neighborhood cafes, restaurants, fitness studios, self-care spots, shops, and local favorites.
+              These are real deals members can use right now across Philly. People kept asking to see the actual offers before joining, so here&apos;s a live look inside the lineup.
             </p>
           </div>
 
           <div className="preview-meta-grid">
             <div className="preview-meta-card">
-              <div className="preview-meta-label">Browse</div>
-              <div className="preview-meta-value">Neighborhood favorites across categories</div>
+              <div className="preview-meta-label">Live now</div>
+              <div className="preview-meta-value">{liveDeals.length || 0} current offers on the board</div>
             </div>
             <div className="preview-meta-card">
-              <div className="preview-meta-label">Discover</div>
-              <div className="preview-meta-value">New spots, casual go-tos, and hidden gems</div>
+              <div className="preview-meta-label">Browse</div>
+              <div className="preview-meta-value">Real spots across cafes, restaurants, dessert, fitness, and more</div>
             </div>
             <div className="preview-meta-card">
               <div className="preview-meta-label">Redeem</div>
-              <div className="preview-meta-value">Fast, simple codes right from your phone</div>
+              <div className="preview-meta-value">Open the app, show your code, and save in seconds</div>
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '32px' }}>
-            {DEALS.map((d, i) => {
-              const normalizedCategory = normalizeCategory(d.cat)
-              const categoryMeta = getCategoryMeta(d.cat)
-              const colors = CAT_COLORS[d.cat] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
-              const photo = d.photo || categoryMeta.photo
+            {liveDeals.map((d, i) => {
+              const normalizedCategory = normalizeCategory(d.category)
+              const categoryMeta = getCategoryMeta(d.category)
+              const colors = CAT_COLORS[d.category] || categoryMeta.color || { bg: 'var(--bg-2)', color: 'var(--ink-3)' }
+              const photo = d.photo_url || categoryMeta.photo
               return (
-                <div key={i} className="deal-card">
+                <div key={d.id} className="deal-card">
                   {photo && (
                     <div style={{ position: 'relative' }}>
                       <Image
                         src={photo}
-                        alt={d.name}
+                        alt={d.business_name}
                         className="deal-card-img"
                         width={1200}
                         height={675}
                         sizes="(max-width: 720px) 100vw, (max-width: 1100px) 50vw, 240px"
                         quality={72}
                         loading="lazy"
-                        preload={i === 0}
                       />
                       <span style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--ink)', color: 'var(--bg)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 8px', borderRadius: '3px' }}>
-                        Member preview
+                        Live now
                       </span>
                     </div>
                   )}
                   <div className="deal-card-body">
                     <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: colors.bg, color: colors.color, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '3px 9px', borderRadius: '4px' }}>
-                      {d.cat === 'Dessert' ? d.cat : normalizedCategory}
+                      {d.category === 'Dessert' ? d.category : normalizedCategory}
                     </span>
                     <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.1, letterSpacing: '-0.01em' }}>
-                      {d.name}
+                      {d.business_name}
                     </div>
                     <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--green-dk)', lineHeight: 1.35 }}>
-                      {d.offer}
+                      {d.deal_description}
+                    </div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink-4)', lineHeight: 1.45 }}>
+                      {d.address}
                     </div>
                   </div>
                 </div>
@@ -381,7 +450,7 @@ export default function Home() {
             </Link>
           </div>
           <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink-4)', marginBottom: '20px', lineHeight: 1.6 }}>
-            And this is just a preview. More perks, neighborhoods, categories, and Philly favorites are waiting inside the membership.
+            Offers rotate throughout the week, so the live board changes as new spots come online and time windows open up.
           </p>
           <div>
             <Link href="/signup" className="btn btn-primary" style={{ fontSize: '17px' }}>
