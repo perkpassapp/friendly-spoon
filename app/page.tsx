@@ -31,12 +31,6 @@ const SNEAK_PEEK_PRIORITY_BUSINESSES = [
   'prince tea house',
 ]
 
-const HOW = [
-  { num: '01', title: 'Join for $3/month',  body: 'Start monthly, unlock the member experience, and keep it simple. No contracts ever.' },
-  { num: '02', title: 'Browse Philly deals',    body: 'Restaurants, cafes, barbers, gyms, nail salons — all in one place.' },
-  { num: '03', title: 'Tap, show code, save',   body: 'A unique 6-letter code appears. Show it at the counter. Done in 10 seconds.' },
-]
-
 const FAQS = [
   {
     question: 'How does PerkPass work?',
@@ -209,6 +203,54 @@ export default async function Home() {
         .creator-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 14px; }
         .creator-card { background: var(--bg-2); border-radius: 14px; padding: 22px; }
         .creator-stack { display: grid; grid-template-columns: 1fr; gap: 14px; }
+        .lifestyle-section { padding: 72px 24px; border-top: 2px solid var(--ink); background: var(--bg-2); }
+        .lifestyle-wrap { max-width: 1080px; margin: 0 auto; }
+        .lifestyle-intro { max-width: 680px; margin-bottom: 28px; }
+        .lifestyle-hero { height: clamp(280px, 38vw, 430px); overflow: hidden; border-radius: 18px; }
+        .lifestyle-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .lifestyle-hero .lifestyle-image { object-position: center 48%; }
+        .lifestyle-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+        .lifestyle-fact { min-height: 170px; padding: 22px; border-radius: 12px; background: var(--bg); }
+        .lifestyle-fact-title { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 900; line-height: 1; text-transform: uppercase; margin-bottom: 12px; }
+        .lifestyle-fact-copy { max-width: 250px; color: var(--ink-3); font-size: 15px; font-weight: 500; line-height: 1.5; }
+        .lifestyle-support { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 48px; }
+        .lifestyle-support-image { height: 280px; overflow: hidden; border-radius: 16px; }
+        .lifestyle-support-copy { padding: 18px 4px 0; }
+        .lifestyle-support-title { font-family: 'Barlow Condensed', sans-serif; font-size: 30px; font-weight: 900; line-height: 1; text-transform: uppercase; margin-bottom: 9px; }
+        .lifestyle-support-text { max-width: 430px; color: var(--ink-3); font-size: 15px; font-weight: 500; line-height: 1.55; }
+        .redemption-section { position: relative; overflow: hidden; padding: 82px 24px; border-top: 2px solid var(--ink); background: var(--bg-3); }
+        .redemption-section::before { content: ''; position: absolute; width: 420px; height: 420px; border-radius: 999px; right: -110px; top: -170px; background: var(--green); opacity: 0.22; }
+        .redemption-section::after { content: ''; position: absolute; width: 220px; height: 220px; border-radius: 999px; left: -80px; bottom: -120px; border: 42px solid rgba(26,46,26,0.05); }
+        .redemption-grid { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(340px, 1.05fr); gap: 56px; align-items: center; }
+        .redemption-title { max-width: 520px; font-family: 'Barlow Condensed', sans-serif; font-size: clamp(52px, 8vw, 86px); font-weight: 900; line-height: 0.9; letter-spacing: -0.035em; text-transform: uppercase; color: var(--ink); margin-bottom: 32px; }
+        .redemption-benefits { display: grid; gap: 10px; }
+        .redemption-benefit { display: grid; grid-template-columns: 36px 1fr; gap: 13px; align-items: center; padding: 15px; border: 1px solid rgba(26,46,26,0.2); border-radius: 12px; background: var(--bg-2); }
+        .redemption-benefit-mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: var(--forest); color: var(--green); font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 900; }
+        .redemption-benefit-title { color: var(--ink); font-size: 14px; font-weight: 800; margin-bottom: 2px; }
+        .redemption-benefit-copy { color: var(--ink-3); font-size: 13px; line-height: 1.45; }
+        .redemption-stage { position: relative; min-height: 520px; display: grid; place-items: center; }
+        .redemption-stage::before { content: ''; position: absolute; width: 410px; height: 410px; border-radius: 50%; background: var(--green); opacity: 0.28; }
+        .redemption-card { position: relative; z-index: 2; width: min(100%, 390px); overflow: hidden; border: 2px solid var(--forest); border-radius: 28px; background: var(--bg-2); box-shadow: 0 24px 56px rgba(26,46,26,0.22); }
+        .redemption-card-top { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--border-2); }
+        .redemption-card-brand { font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 900; color: var(--forest); text-transform: uppercase; }
+        .redemption-card-close { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 999px; background: var(--bg-2); color: var(--ink-3); font-size: 18px; }
+        .redemption-card-body { padding: 28px 24px 24px; text-align: center; }
+        .redemption-business { font-size: 13px; font-weight: 800; color: var(--green-dk); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 9px; }
+        .redemption-offer { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 900; line-height: 1; color: var(--ink); text-transform: uppercase; margin-bottom: 24px; }
+        .redemption-code-label { font-size: 12px; font-weight: 700; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+        .redemption-code { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 16px; }
+        .redemption-code-letter { display: grid; place-items: center; aspect-ratio: 1; border-radius: 9px; background: var(--forest); color: var(--green); font-family: 'Barlow Condensed', sans-serif; font-size: 27px; font-weight: 900; }
+        .redemption-timer { color: var(--ink-3); font-size: 13px; font-weight: 700; margin-bottom: 20px; }
+        .redemption-timer strong { color: var(--green-dk); }
+        .redemption-status { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 13px 16px; border: 2px solid var(--forest); border-radius: 10px; background: var(--green); color: var(--forest); font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }
+        .redemption-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--forest); }
+        .launch-banner { position: relative; overflow: hidden; padding: 12px 24px; border-bottom: 2px solid var(--ink); background: var(--green); color: var(--forest); }
+        .launch-banner::before { content: ''; position: absolute; inset: 0; opacity: 0.14; background-image: radial-gradient(var(--forest) 1px, transparent 1px); background-size: 15px 15px; }
+        .launch-banner-inner { position: relative; max-width: 1080px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 13px; text-align: center; }
+        .launch-banner-badge { padding: 5px 9px; border-radius: 999px; background: var(--forest); color: #ffffff; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap; }
+        .launch-banner-copy { font-size: 14px; font-weight: 900; line-height: 1.35; }
+        .launch-banner-spark { font-size: 17px; line-height: 1; }
+        .launch-banner-link { color: var(--forest); font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
         .home-hero { position: relative; overflow: hidden; padding: 64px 24px 56px; border-bottom: 2px solid var(--ink); background: var(--bg); }
         .home-hero-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.82fr); gap: 42px; align-items: center; }
         .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: var(--bg); padding: 6px 11px; border-radius: 999px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 20px; }
@@ -232,6 +274,12 @@ export default async function Home() {
           .trust-strip-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); }
           .faq-grid { grid-template-columns: 1fr; }
           .creator-grid { grid-template-columns: 1fr; }
+          .lifestyle-facts { grid-template-columns: 1fr; }
+          .lifestyle-fact { min-height: auto; }
+          .lifestyle-support { grid-template-columns: 1fr; }
+          .redemption-grid { grid-template-columns: 1fr; gap: 42px; }
+          .redemption-copy { max-width: 600px; }
+          .redemption-stage { min-height: 500px; }
           .home-hero { padding: 48px 20px 42px; }
           .home-hero-inner { grid-template-columns: 1fr; gap: 36px; }
           .hero-proof { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -246,6 +294,16 @@ export default async function Home() {
           .trust-strip-inner { grid-template-columns: 1fr; }
           .hero-phone { border-radius: 26px; padding: 12px; }
           .hero-phone-screen { border-radius: 18px; }
+          .lifestyle-section { padding: 56px 20px; }
+          .lifestyle-hero { height: 260px; border-radius: 14px; }
+          .lifestyle-support { margin-top: 38px; }
+          .lifestyle-support-image { height: 240px; border-radius: 14px; }
+          .redemption-section { padding: 64px 20px; }
+          .redemption-stage { min-height: 440px; }
+          .redemption-card { width: min(94%, 360px); box-shadow: 0 18px 42px rgba(26,46,26,0.2); }
+          .launch-banner-inner { flex-wrap: wrap; gap: 5px 9px; }
+          .launch-banner-copy { font-size: 13px; }
+          .launch-banner-spark { display: none; }
         }
       `}</style>
 
@@ -262,6 +320,16 @@ export default async function Home() {
         </div>
       </nav>
 
+      <div className="launch-banner" role="status" aria-label="PerkPass iOS app launch announcement">
+        <div className="launch-banner-inner">
+          <span className="launch-banner-spark" aria-hidden="true">✦</span>
+          <span className="launch-banner-badge">Coming soon to iPhone</span>
+          <span className="launch-banner-copy">Philly perks are about to live in your pocket.</span>
+          <Link href="/signup" className="launch-banner-link">Join before launch →</Link>
+          <span className="launch-banner-spark" aria-hidden="true">✦</span>
+        </div>
+      </div>
+
       {/* Hero */}
       <section className="home-hero">
         <div className="home-hero-inner">
@@ -270,7 +338,7 @@ export default async function Home() {
               Philly perks, made easy
             </div>
             <h1 className="display fade-up-2" style={{ fontSize: 'clamp(44px, 7.4vw, 84px)', marginBottom: '20px', lineHeight: 0.94, letterSpacing: '-0.035em' }}>
-              Your Philly favorites. Member perks. One place.
+              Your <span style={{ color: 'var(--green)' }}>Philly favorites.</span> Member perks. One place.
             </h1>
             <p className="fade-up-3" style={{ fontSize: 'clamp(17px, 2vw, 20px)', fontWeight: 600, color: 'var(--ink-2)', maxWidth: '560px', marginBottom: '14px', lineHeight: 1.45 }}>
               PerkPass brings Philly restaurants, cafes, gyms, self-care spots, and neighborhood gems into one simple local membership.
@@ -366,7 +434,7 @@ export default async function Home() {
           <div className="preview-meta-grid">
             <div className="preview-meta-card">
               <div className="preview-meta-label">Live now</div>
-              <div className="preview-meta-value">{liveDeals.length || 0} current offers on the board</div>
+              <div className="preview-meta-value"><span style={{ color: 'var(--green)', fontWeight: 900 }}>35+</span> current offers on the board</div>
             </div>
             <div className="preview-meta-card">
               <div className="preview-meta-label">Categories</div>
@@ -508,6 +576,87 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Lifestyle */}
+      <section className="lifestyle-section">
+        <div className="lifestyle-wrap">
+          <div className="lifestyle-intro">
+            <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)', marginBottom: '12px' }}>
+              More reasons to go out.
+            </h2>
+            <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ink-3)', maxWidth: '590px', lineHeight: 1.65 }}>
+              PerkPass makes it easier to try a new neighborhood spot, revisit an old favorite, or turn an ordinary day into a plan.
+            </p>
+          </div>
+
+          <div className="lifestyle-hero">
+            <Image
+              src="/perkpass-lifestyle-dining.png"
+              alt="Friends sharing a meal at a neighborhood restaurant"
+              className="lifestyle-image"
+              width={1122}
+              height={1402}
+              sizes="(max-width: 1120px) 100vw, 1080px"
+              quality={75}
+              loading="lazy"
+            />
+          </div>
+
+          <div className="lifestyle-facts">
+            <div className="lifestyle-fact">
+              <div className="lifestyle-fact-title">One membership</div>
+              <p className="lifestyle-fact-copy">Food, fitness, self-care, and neighborhood experiences in one place.</p>
+            </div>
+            <div className="lifestyle-fact">
+              <div className="lifestyle-fact-title">$3 a month</div>
+              <p className="lifestyle-fact-copy">Low commitment by design, with no annual contract and the freedom to cancel.</p>
+            </div>
+            <div className="lifestyle-fact">
+              <div className="lifestyle-fact-title">Easy to use</div>
+              <p className="lifestyle-fact-copy">Choose a deal, visit the business, and show your redemption code at checkout.</p>
+            </div>
+          </div>
+
+          <div className="lifestyle-support">
+            <article>
+              <div className="lifestyle-support-image">
+                <Image
+                  src="/perkpass-lifestyle-cafe.png"
+                  alt="Friends enjoying coffee and pastries on a Philadelphia sidewalk"
+                  className="lifestyle-image"
+                  width={1122}
+                  height={1402}
+                  sizes="(max-width: 900px) 100vw, 50vw"
+                  quality={75}
+                  loading="lazy"
+                />
+              </div>
+              <div className="lifestyle-support-copy">
+                <h3 className="lifestyle-support-title">Make the usual feel new.</h3>
+                <p className="lifestyle-support-text">A coffee run, lunch break, or quick catch-up can become the best part of the day.</p>
+              </div>
+            </article>
+            <article>
+              <div className="lifestyle-support-image">
+                <Image
+                  src="/perkpass-lifestyle-city.png"
+                  alt="Friends enjoying a walk through a Philadelphia neighborhood"
+                  className="lifestyle-image"
+                  width={1122}
+                  height={1402}
+                  sizes="(max-width: 900px) 100vw, 50vw"
+                  quality={75}
+                  loading="lazy"
+                />
+              </div>
+              <div className="lifestyle-support-copy">
+                <h3 className="lifestyle-support-title">Keep it local.</h3>
+                <p className="lifestyle-support-text">Discover independent Philadelphia businesses and spend more time in the neighborhoods you love.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section style={{ padding: '64px 24px', borderTop: '2px solid var(--ink)' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
@@ -607,43 +756,55 @@ export default async function Home() {
       )}
 
       {/* How it works */}
-      <section style={{ padding: '64px 24px', background: 'var(--forest)', borderTop: '2px solid var(--ink)' }}>
-        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-          <h2 className="display" style={{ fontSize: 'clamp(40px, 8vw, 64px)', color: '#ffffff', marginBottom: '40px' }}>
-            How it works
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            {HOW.map(s => (
-              <div key={s.num} style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', padding: '28px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                <div className="display" style={{ fontSize: '48px', color: 'var(--green)', flexShrink: 0, lineHeight: 1 }}>
-                  {s.num}
-                </div>
+      <section className="redemption-section">
+        <div className="redemption-grid">
+          <div>
+            <h2 className="redemption-title">Your perk, ready at checkout.</h2>
+            <div className="redemption-benefits">
+              <div className="redemption-benefit">
+                <span className="redemption-benefit-mark">↗</span>
                 <div>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '22px', fontWeight: 800, color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.01em', marginBottom: '6px' }}>
-                    {s.title}
-                  </div>
-                  <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.5)', fontWeight: 400, lineHeight: 1.55 }}>
-                    {s.body}
-                  </div>
+                  <div className="redemption-benefit-title">One tap when you are ready</div>
+                  <div className="redemption-benefit-copy">Your code appears right inside the deal.</div>
                 </div>
               </div>
-            ))}
+              <div className="redemption-benefit">
+                <span className="redemption-benefit-mark">ABC</span>
+                <div>
+                  <div className="redemption-benefit-title">Built for the counter</div>
+                  <div className="redemption-benefit-copy">Six bold characters are easy to show and verify.</div>
+                </div>
+              </div>
+              <div className="redemption-benefit">
+                <span className="redemption-benefit-mark">✓</span>
+                <div>
+                  <div className="redemption-benefit-title">No coupon clutter</div>
+                  <div className="redemption-benefit-copy">No printing, screenshots, or checkout math.</div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
 
-      {/* Final CTA */}
-      <section style={{ padding: '80px 24px', borderTop: '2px solid var(--ink)' }}>
-        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-          <h2 className="display" style={{ fontSize: 'clamp(52px, 11vw, 96px)', marginBottom: '24px' }}>
-            Ready to save?
-          </h2>
-          <p style={{ fontSize: '17px', fontWeight: 500, color: 'var(--ink-3)', marginBottom: '32px', maxWidth: '400px', lineHeight: 1.6 }}>
-            Cancel anytime. No contracts. No BS. Just deals at places you already go.
-          </p>
-          <Link href="/signup" className="btn btn-dark" style={{ fontSize: '18px', padding: '18px 40px' }}>
-            Get PerkPass — $3/month
-          </Link>
+          <div className="redemption-stage" aria-label="Example PerkPass redemption screen">
+            <div className="redemption-card">
+              <div className="redemption-card-top">
+                <div className="redemption-card-brand">PerkPass</div>
+                <div className="redemption-card-close" aria-hidden="true">×</div>
+              </div>
+              <div className="redemption-card-body">
+                <div className="redemption-business">Neighborhood café</div>
+                <div className="redemption-offer">Your member perk is ready</div>
+                <div className="redemption-code-label">Show this code at checkout</div>
+                <div className="redemption-code" aria-label="Example code PERKUP">
+                  {'PERKUP'.split('').map((letter, index) => (
+                    <span key={`${letter}-${index}`} className="redemption-code-letter">{letter}</span>
+                  ))}
+                </div>
+                <div className="redemption-timer">Code expires in <strong>1:48</strong></div>
+                <div className="redemption-status"><span className="redemption-status-dot" aria-hidden="true" />Ready to redeem</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
