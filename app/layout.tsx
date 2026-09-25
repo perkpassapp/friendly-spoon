@@ -144,6 +144,15 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <div className="site-launch-banner" role="status" aria-label="PerkPass iOS app launch announcement">
+          <div className="site-launch-banner-inner">
+            <span className="site-launch-banner-spark" aria-hidden="true">✦</span>
+            <span className="site-launch-banner-badge">Coming soon to iPhone</span>
+            <span className="site-launch-banner-copy">Philly perks are about to live in your pocket.</span>
+            <Link href="/signup" className="site-launch-banner-link">Join before launch →</Link>
+            <span className="site-launch-banner-spark" aria-hidden="true">✦</span>
+          </div>
+        </div>
         {children}
         <footer
           style={{

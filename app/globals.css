@@ -40,6 +40,71 @@ body {
   line-height: 1.55;
 }
 
+.site-launch-banner {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 24px;
+  border-bottom: 2px solid var(--ink);
+  background: var(--green);
+  color: var(--forest);
+}
+
+.site-launch-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.14;
+  background-image: radial-gradient(var(--forest) 1px, transparent 1px);
+  background-size: 15px 15px;
+}
+
+.site-launch-banner-inner {
+  position: relative;
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  text-align: center;
+}
+
+.site-launch-banner-badge {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--forest);
+  color: #ffffff;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.site-launch-banner-copy {
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.site-launch-banner-spark {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.site-launch-banner-link {
+  color: var(--forest);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
 .display {
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 900;
@@ -196,6 +261,19 @@ body {
 }
 
 @media (max-width: 640px) {
+  .site-launch-banner-inner {
+    flex-wrap: wrap;
+    gap: 5px 9px;
+  }
+
+  .site-launch-banner-copy {
+    font-size: 13px;
+  }
+
+  .site-launch-banner-spark {
+    display: none;
+  }
+
   .site-footer-grid {
     grid-template-columns: 1fr !important;
   }

@@ -244,13 +244,6 @@ export default async function Home() {
         .redemption-timer strong { color: var(--green-dk); }
         .redemption-status { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 13px 16px; border: 2px solid var(--forest); border-radius: 10px; background: var(--green); color: var(--forest); font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }
         .redemption-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--forest); }
-        .launch-banner { position: relative; overflow: hidden; padding: 12px 24px; border-bottom: 2px solid var(--ink); background: var(--green); color: var(--forest); }
-        .launch-banner::before { content: ''; position: absolute; inset: 0; opacity: 0.14; background-image: radial-gradient(var(--forest) 1px, transparent 1px); background-size: 15px 15px; }
-        .launch-banner-inner { position: relative; max-width: 1080px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 13px; text-align: center; }
-        .launch-banner-badge { padding: 5px 9px; border-radius: 999px; background: var(--forest); color: #ffffff; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap; }
-        .launch-banner-copy { font-size: 14px; font-weight: 900; line-height: 1.35; }
-        .launch-banner-spark { font-size: 17px; line-height: 1; }
-        .launch-banner-link { color: var(--forest); font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
         .home-hero { position: relative; overflow: hidden; padding: 64px 24px 56px; border-bottom: 2px solid var(--ink); background: var(--bg); }
         .home-hero-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.82fr); gap: 42px; align-items: center; }
         .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: var(--bg); padding: 6px 11px; border-radius: 999px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 20px; }
@@ -301,9 +294,6 @@ export default async function Home() {
           .redemption-section { padding: 64px 20px; }
           .redemption-stage { min-height: 440px; }
           .redemption-card { width: min(94%, 360px); box-shadow: 0 18px 42px rgba(26,46,26,0.2); }
-          .launch-banner-inner { flex-wrap: wrap; gap: 5px 9px; }
-          .launch-banner-copy { font-size: 13px; }
-          .launch-banner-spark { display: none; }
         }
       `}</style>
 
@@ -319,16 +309,6 @@ export default async function Home() {
           </Link>
         </div>
       </nav>
-
-      <div className="launch-banner" role="status" aria-label="PerkPass iOS app launch announcement">
-        <div className="launch-banner-inner">
-          <span className="launch-banner-spark" aria-hidden="true">✦</span>
-          <span className="launch-banner-badge">Coming soon to iPhone</span>
-          <span className="launch-banner-copy">Philly perks are about to live in your pocket.</span>
-          <Link href="/signup" className="launch-banner-link">Join before launch →</Link>
-          <span className="launch-banner-spark" aria-hidden="true">✦</span>
-        </div>
-      </div>
 
       {/* Hero */}
       <section className="home-hero">
