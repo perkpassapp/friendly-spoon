@@ -816,7 +816,7 @@ export default function MemberDeals() {
           </div>
           <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500 }}>
             {showLiveOnly
-              ? 'Showing deals customers can redeem right now.'
+              ? 'Deals you can redeem right now.'
               : `Showing deals scheduled for ${selectedWeekdayLabel}.`}
           </p>
         </div>
