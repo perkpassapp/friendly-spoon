@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -41,9 +40,9 @@ export default function SiteLaunchBanner() {
     <div className="site-launch-banner" role="status" aria-label="PerkPass iOS app launch announcement">
       <div className="site-launch-banner-inner">
         <span className="site-launch-banner-spark" aria-hidden="true">✦</span>
-        <span className="site-launch-banner-badge">Coming soon to iPhone</span>
-        <span className="site-launch-banner-copy">Philly perks are about to live in your pocket.</span>
-        <Link href="/signup" className="site-launch-banner-link">Join before launch →</Link>
+        <span className="site-launch-banner-badge">Now live on iPhone</span>
+        <span className="site-launch-banner-copy">Philly perks, now in your pocket.</span>
+        <a href="https://apps.apple.com/us/app/perkpass-exclusive-deals/id6770689802" className="site-launch-banner-link">Download on the App Store →</a>
         <span className="site-launch-banner-spark" aria-hidden="true">✦</span>
       </div>
     </div>,
