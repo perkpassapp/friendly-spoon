@@ -496,12 +496,14 @@ export default function MemberDeals() {
 
     return (
       <section style={{ marginBottom: '32px' }}>
-        <div style={{ marginBottom: '12px' }}>
-          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '4px' }}>
-            {title}
+        {title || subtitle ? (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-4)', marginBottom: '4px' }}>
+              {title}
+            </div>
+            <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500 }}>{subtitle}</p>
           </div>
-          <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500 }}>{subtitle}</p>
-        </div>
+        ) : null}
         {featuredGroups.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: restGroups.length > 0 ? '12px' : 0 }}>
             {featuredGroups.map(renderDealGroupCard)}
@@ -814,11 +816,9 @@ export default function MemberDeals() {
               </button>
             ))}
           </div>
-          <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500 }}>
-            {showLiveOnly
-              ? 'Deals you can redeem right now.'
-              : `Showing deals scheduled for ${selectedWeekdayLabel}.`}
-          </p>
+          {!showLiveOnly ? (
+            <p style={{ fontSize: '14px', color: 'var(--ink-3)', fontWeight: 500 }}>Showing deals scheduled for {selectedWeekdayLabel}.</p>
+          ) : null}
         </div>
 
         {/* Category filters */}
@@ -850,7 +850,7 @@ export default function MemberDeals() {
                 ? 'Saved for today'
                 : `Saved for ${selectedWeekdayLabel}`
             : showLiveOnly
-              ? 'Live now'
+              ? ''
               : selectedWeekday === currentDay
                 ? 'Today'
                 : selectedWeekdayLabel,
@@ -859,7 +859,7 @@ export default function MemberDeals() {
               ? 'Browse saved deals you can redeem right now.'
               : `Browse saved deals scheduled for ${selectedWeekdayLabel}.`
             : showLiveOnly
-              ? 'Browse deals customers can redeem right now.'
+              ? ''
               : `Browse what is scheduled for ${selectedWeekdayLabel}.`,
           weekDeals,
         )}
